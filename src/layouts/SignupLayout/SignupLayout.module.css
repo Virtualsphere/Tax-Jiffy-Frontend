@@ -1,0 +1,37 @@
+.page {
+  min-height: 100vh;
+  background: #f5f6fc;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 512px;
+  align-items: center;
+  gap: 48px;
+  max-width: 1200px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 40px;
+  box-sizing: border-box;
+}
+
+.formColumn {
+  display: flex;
+  justify-content: flex-start;
+  width: 512px;
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 40px;
+    padding: 32px 24px;
+  }
+
+  .formColumn {
+    justify-content: center;
+    width: 100%;
+  }
+}
