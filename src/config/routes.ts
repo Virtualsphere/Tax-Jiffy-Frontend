@@ -7,5 +7,3 @@ export const ROUTES = {
   },
   notFound: '*',
 } as const;
-
-export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

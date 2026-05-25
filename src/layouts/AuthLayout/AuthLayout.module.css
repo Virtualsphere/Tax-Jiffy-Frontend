@@ -16,3 +16,19 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
 }
+
+@media (max-width: 480px) {
+  .wrapper {
+    padding: var(--space-4) var(--space-3);
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: var(--space-6) var(--space-4);
+    border-radius: var(--radius-md);
+    box-shadow: none;
+    border: none;
+  }
+}
