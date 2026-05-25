@@ -14,7 +14,7 @@ export default defineConfig({
     open: true,
   },
   build: {
-    sourcemap: true,
+    sourcemap: !process.env.NETLIFY,
     rollupOptions: {
       output: {
         manualChunks: {

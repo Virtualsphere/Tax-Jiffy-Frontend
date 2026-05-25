@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { env } from '@/config/env';
+import { authStorage } from '@/features/auth/lib/auth-storage';
 
 export const apiClient = axios.create({
   baseURL: env.VITE_API_BASE_URL,
@@ -10,7 +11,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('access_token');
+  const token = authStorage.getToken();
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -24,9 +25,10 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Centralized auth expiry handling — extend as needed
-      localStorage.removeItem('access_token');
+      authStorage.clearToken();
     }
 
     return Promise.reject(error);
   },
 );
+
