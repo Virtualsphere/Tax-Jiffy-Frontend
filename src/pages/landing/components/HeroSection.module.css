@@ -1,0 +1,502 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding: 64px 0 80px;
+}
+
+/* ── Copy block ── */
+.copy {
+  max-width: 640px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.description {
+  margin: 24px 0 0;
+  max-width: 520px;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.65;
+  color: #64748b;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.primaryBtn {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgb(99 102 241 / 0.2);
+}
+
+.primaryBtn:hover {
+  background: #4f46e5;
+}
+
+.secondaryBtn {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.secondaryBtn:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+/* ── Mockup container (Figma: 1232×544) ── */
+.preview {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  height: 544px;
+  overflow: hidden;
+}
+
+.glowPurple {
+  position: absolute;
+  top: -48px;
+  right: -48px;
+  z-index: 0;
+  width: 256px;
+  height: 256px;
+  border-radius: 9999px;
+  background: rgb(94 106 210 / 0.1);
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.glowGreen {
+  position: absolute;
+  bottom: -48px;
+  left: -48px;
+  z-index: 1;
+  width: 256px;
+  height: 256px;
+  border-radius: 9999px;
+  background: rgb(16 185 129 / 0.1);
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.dashboardOuter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 16px;
+  background: #08090a;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+.dashboardInner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 14px;
+  background: #08090a;
+}
+
+.titleBar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  background: #121417;
+}
+
+.titleBarStart {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.trafficLights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dotRed,
+.dotYellow,
+.dotGreen {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+}
+
+.dotRed {
+  background: rgb(239 68 68 / 0.4);
+}
+
+.dotYellow {
+  background: rgb(245 158 11 / 0.4);
+}
+
+.dotGreen {
+  background: rgb(16 185 129 / 0.4);
+}
+
+.engineLabel {
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.4);
+  white-space: nowrap;
+}
+
+.titleBarEnd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBar {
+  width: 128px;
+  height: 24px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.05);
+}
+
+.iconGear {
+  color: rgb(255 255 255 / 0.2);
+}
+
+.dashboardBody {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1.436fr 1fr;
+  gap: 40px;
+  min-height: 0;
+  padding: 48px;
+  overflow: hidden;
+  background: #08090a;
+}
+
+.cardItc,
+.cardMatched,
+.cardStatus {
+  box-sizing: border-box;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 12px;
+  background: #121417;
+}
+
+.cardItc {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  min-height: 0;
+}
+
+.cardItcHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.cardItcCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.labelMuted {
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.4);
+}
+
+.labelGreen {
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #10b981;
+}
+
+.labelPurple {
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #5e6ad2;
+}
+
+.valueLarge {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(2rem, 4vw, 48px);
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgb(16 185 129 / 0.1);
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: -0.2px;
+  color: #10b981;
+}
+
+.chart {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  min-height: 120px;
+  padding: 0 8px;
+}
+
+.chartBar {
+  flex: 1;
+  min-width: 0;
+  max-width: 83px;
+  border-radius: 2px 2px 0 0;
+  background: rgb(94 106 210 / 0.2);
+}
+
+.chartBar:nth-child(2) {
+  background: rgb(94 106 210 / 0.3);
+}
+
+.chartBar:nth-child(3) {
+  background: rgb(94 106 210 / 0.4);
+}
+
+.chartBar:nth-child(4) {
+  background: rgb(94 106 210 / 0.6);
+}
+
+.chartBar:nth-child(6) {
+  background: rgb(94 106 210 / 0.7);
+}
+
+.chartBarHighlight {
+  background: #5e6ad2;
+  box-shadow: 0 0 20px rgb(94 106 210 / 0.3);
+}
+
+.cardColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+}
+
+.cardMatched,
+.cardStatus {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 32px;
+  min-height: 0;
+}
+
+.cardRowHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardMatched .valueLarge {
+  margin-top: 24px;
+}
+
+.iconCheck {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.progressTrack {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  margin-top: auto;
+  padding-top: 24px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.05);
+}
+
+.progressFill {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 99.8%;
+  height: 8px;
+  border-radius: 9999px;
+  background: #10b981;
+  box-shadow: 0 0 12px rgb(16 185 129 / 0.5);
+}
+
+.cardStatus .valueStatus {
+  margin: 16px 0 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.125rem, 2.5vw, 24px);
+  font-weight: 700;
+  line-height: 1.33;
+  color: #ffffff;
+}
+
+.iconCloud {
+  flex-shrink: 0;
+  color: #5e6ad2;
+}
+
+.statusSubtext {
+  margin: 8px 0 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgb(255 255 255 / 0.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero {
+    gap: 40px;
+    padding: 40px 0 56px;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .actions {
+    margin-top: 24px;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .dashboardBody {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  .glowPurple {
+    top: -24px;
+    right: -24px;
+    width: 160px;
+    height: 160px;
+  }
+
+  .glowGreen {
+    bottom: -24px;
+    left: -24px;
+    width: 160px;
+    height: 160px;
+  }
+
+  .engineLabel {
+    display: none;
+  }
+
+  .searchBar {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    gap: 32px;
+    padding: 32px 0 48px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    width: 100%;
+  }
+
+  .dashboardBody {
+    padding: 16px;
+  }
+
+  .cardItc,
+  .cardMatched,
+  .cardStatus {
+    padding: 20px;
+  }
+
+  .cardItcHeader {
+    margin-bottom: 20px;
+  }
+}
