@@ -82,14 +82,15 @@ export function HeroSection() {
       </div>
 
       <div className={styles.preview}>
-        <div className={styles.glowPurple} aria-hidden />
-        <div className={styles.glowGreen} aria-hidden />
+        <div className={styles.mockupCanvas}>
+          <div className={styles.glowPurple} aria-hidden />
+          <div className={styles.glowGreen} aria-hidden />
 
-        <div
-          className={styles.dashboardOuter}
-          role="img"
-          aria-label="GST reconciliation dashboard preview"
-        >
+          <div
+            className={styles.dashboardOuter}
+            role="img"
+            aria-label="GST reconciliation dashboard preview"
+          >
           <div className={styles.dashboardInner}>
             <div className={styles.titleBar}>
               <div className={styles.titleBarStart}>
@@ -149,6 +150,7 @@ export function HeroSection() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

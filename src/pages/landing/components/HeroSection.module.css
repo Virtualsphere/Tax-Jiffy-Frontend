@@ -88,6 +88,46 @@
   overflow: hidden;
 }
 
+.mockupCanvas {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Proportional scale when content area is narrower than the design frame */
+@media (max-width: 1311px) {
+  .preview {
+    container-type: inline-size;
+    display: block;
+    height: auto;
+    aspect-ratio: 1232 / 544;
+    overflow: visible;
+  }
+
+  .mockupCanvas {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    flex: none;
+    width: 1232px;
+    height: 544px;
+    transform: translateX(-50%) scale(calc(100cqw / 1232px));
+    transform-origin: top center;
+  }
+
+  .valueLarge {
+    font-size: 48px;
+  }
+
+  .cardStatus .valueStatus {
+    font-size: 24px;
+  }
+}
+
 .glowPurple {
   position: absolute;
   top: -48px;
@@ -440,34 +480,6 @@
     flex: 1 1 auto;
     min-width: 140px;
   }
-
-  .dashboardBody {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 24px;
-  }
-
-  .glowPurple {
-    top: -24px;
-    right: -24px;
-    width: 160px;
-    height: 160px;
-  }
-
-  .glowGreen {
-    bottom: -24px;
-    left: -24px;
-    width: 160px;
-    height: 160px;
-  }
-
-  .engineLabel {
-    display: none;
-  }
-
-  .searchBar {
-    width: 80px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -484,19 +496,5 @@
   .primaryBtn,
   .secondaryBtn {
     width: 100%;
-  }
-
-  .dashboardBody {
-    padding: 16px;
-  }
-
-  .cardItc,
-  .cardMatched,
-  .cardStatus {
-    padding: 20px;
-  }
-
-  .cardItcHeader {
-    margin-bottom: 20px;
   }
 }
