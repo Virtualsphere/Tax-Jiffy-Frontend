@@ -10,8 +10,7 @@ src/
 │   ├── providers/          # Global React context providers
 │   └── router/             # Route definitions & RouterProvider
 ├── assets/                 # Static images, fonts, icons
-├── components/             # Shared, cross-feature UI
-│   └── ui/                 # Design-system primitives (Button, Input)
+├── components/             # Shared, cross-feature UI (add as needed)
 ├── config/                 # App-wide config (env, routes)
 ├── features/               # Business domains (primary code organization)
 │   └── [feature]/
@@ -28,14 +27,14 @@ src/
 ├── services/               # Cross-cutting app services (error handling)
 ├── styles/                 # Global CSS, tokens, reset
 ├── types/                  # Shared global TypeScript types
-└── utils/                  # Pure utility functions (no React)
+└── utils/                  # Pure utility functions (add as needed)
 ```
 
 ## Where does code go?
 
 | You are building… | Put it in… |
 |-------------------|------------|
-| Reusable button, input, modal | `src/components/ui/` |
+| Reusable button, input, modal | `src/components/` |
 | Login form, invoice table | `src/features/[name]/components/` |
 | `useLogin`, `useInvoices` | `src/features/[name]/hooks/` |
 | `GET /invoices` API call | `src/features/[name]/api/` |
@@ -44,7 +43,7 @@ src/
 | Landing page composition | `src/pages/landing/` |
 | Axios instance, React Query client | `src/lib/` |
 | API error normalizer | `src/services/` |
-| `cn()` | `src/utils/` |
+| Utility helpers | `src/utils/` |
 | Route paths, env vars | `src/config/` |
 | `ApiResponse`, shared API types | `src/types/` or feature `types/` |
 
@@ -63,8 +62,8 @@ src/
 | Hooks | camelCase, `use` prefix | `useLogin.ts` |
 | API modules | camelCase + `.api` suffix | `auth.api.ts` |
 | Types | PascalCase + `.types` suffix | `auth.types.ts` |
-| CSS modules | `ComponentName.module.css` | `Button.module.css` |
-| Barrels | `index.ts` per folder | `components/ui/Button/index.ts` |
+| CSS modules | `ComponentName.module.css` | `LoginForm.module.css` |
+| Barrels | `index.ts` per folder | `features/auth/index.ts` |
 
 ## Adding a new feature
 
