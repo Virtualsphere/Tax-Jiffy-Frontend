@@ -95,8 +95,12 @@
   }
 }
 
-@media (max-width: 768px) {
-  .section {
-    display: none;
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    max-width: 100%;
   }
 }

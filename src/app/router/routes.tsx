@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import { AuthLayout } from '@/layouts/AuthLayout';
 import { LandingLayout } from '@/layouts/LandingLayout';
 import { SignupLayout } from '@/layouts/SignupLayout';
 import { ROUTES } from '@/config/routes';
@@ -55,12 +54,12 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: ROUTES.auth.root,
-    element: <AuthLayout />,
+    path: ROUTES.auth.login,
+    element: <SignupLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: ROUTES.auth.login,
+        index: true,
         element: (
           <SuspenseWrapper>
             <LoginPage />
