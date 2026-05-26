@@ -1,36 +1,18 @@
 import { Link } from 'react-router-dom';
-import { ROUTES } from '@/config/routes';
+import { useDashboardData } from '@/pages/dashboard/hooks/useDashboardData';
 import styles from '@/pages/dashboard/DashboardPage.module.css';
 
-const STATS = [
-  { label: 'Invoices Filed', value: '1,247', emoji: '📄', colorClass: styles.cardIconBlue },
-  { label: 'Pending Returns', value: '3', emoji: '⏳', colorClass: styles.cardIconOrange },
-  { label: 'ITC Available', value: '₹4.2L', emoji: '💰', colorClass: styles.cardIconGreen },
-  { label: 'Tax Liability', value: '₹1.8L', emoji: '📊', colorClass: styles.cardIconPurple },
-];
-
-const QUICK_ACTIONS = [
-  {
-    label: 'File GSTR-1',
-    desc: 'Upload sales register & file your return',
-    path: ROUTES.dashboard.gstr1,
-    emoji: '📋',
-  },
-  {
-    label: 'File GSTR-3B',
-    desc: 'Prepare and submit your monthly summary',
-    path: ROUTES.dashboard.gstr3b,
-    emoji: '📝',
-  },
-  {
-    label: 'Generate E-Invoice',
-    desc: 'Create IRN for your B2B invoices',
-    path: ROUTES.dashboard.eInvoice,
-    emoji: '🧾',
-  },
-];
+/** Maps colorKey from hook data → CSS module class */
+const COLOR_CLASS_MAP: Record<string, string> = {
+  blue: styles.cardIconBlue,
+  orange: styles.cardIconOrange,
+  green: styles.cardIconGreen,
+  purple: styles.cardIconPurple,
+};
 
 export function DashboardPage() {
+  const { stats, quickActions } = useDashboardData();
+
   return (
     <div className={styles.page}>
       <h2 className={styles.greeting}>Welcome back 👋</h2>
@@ -39,9 +21,9 @@ export function DashboardPage() {
       </p>
 
       <div className={styles.cards}>
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className={styles.card}>
-            <div className={`${styles.cardIcon} ${stat.colorClass}`}>
+            <div className={`${styles.cardIcon} ${COLOR_CLASS_MAP[stat.colorKey] ?? ''}`}>
               {stat.emoji}
             </div>
             <p className={styles.cardLabel}>{stat.label}</p>
@@ -52,7 +34,7 @@ export function DashboardPage() {
 
       <h3 className={styles.actionsTitle}>Quick Actions</h3>
       <div className={styles.actions}>
-        {QUICK_ACTIONS.map((action) => (
+        {quickActions.map((action) => (
           <Link key={action.path} to={action.path} className={styles.actionCard}>
             <div className={styles.actionIcon}>{action.emoji}</div>
             <div className={styles.actionContent}>

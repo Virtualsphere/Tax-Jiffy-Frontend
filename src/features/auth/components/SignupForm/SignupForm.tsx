@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
+import { useSignup } from '@/features/auth/hooks/useSignup';
 import styles from '@/features/auth/components/SignupForm/SignupForm.module.css';
 
 function UserIcon() {
@@ -68,6 +69,7 @@ function EyeIcon({ hidden }: { hidden: boolean }) {
 }
 
 export function SignupForm() {
+  const signup = useSignup();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -76,7 +78,7 @@ export function SignupForm() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // API integration will be wired when signup endpoint is available
+    signup.mutate({ username, email, phone, password });
   };
 
   return (
@@ -180,8 +182,20 @@ export function SignupForm() {
           </div>
         </div>
 
-        <button type="submit" className={styles.submit}>
-          SIGN UP
+        {signup.isError ? (
+          <p className={styles.error} role="alert">
+            {signup.error ?? 'Signup failed'}
+          </p>
+        ) : null}
+
+        {signup.isSuccess ? (
+          <p className={styles.success} role="status">
+            Account created successfully! Redirecting to login…
+          </p>
+        ) : null}
+
+        <button type="submit" className={styles.submit} disabled={signup.isPending}>
+          {signup.isPending ? 'Creating account…' : 'SIGN UP'}
         </button>
       </form>
 
@@ -194,3 +208,4 @@ export function SignupForm() {
     </div>
   );
 }
+

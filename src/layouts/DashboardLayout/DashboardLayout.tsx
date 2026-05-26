@@ -1,5 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
+import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import styles from '@/layouts/DashboardLayout/DashboardLayout.module.css';
 
 /** Map route segments to human-readable page titles */
@@ -29,15 +31,18 @@ export function DashboardLayout() {
   const segment = pathname.replace('/dashboard', '').replace(/^\//, '');
   const title = TITLE_MAP[segment] ?? 'Dashboard';
 
+  const { data: entity } = useCurrentEntity();
+  const { data: user } = useCurrentUser();
+
   return (
     <div className={styles.shell}>
-      <Sidebar />
+      <Sidebar entity={entity} />
 
       <div className={styles.main}>
         <header className={styles.topbar}>
           <h1 className={styles.topbarTitle}>{title}</h1>
           <div className={styles.topbarActions}>
-            <div className={styles.avatar} aria-label="User avatar">JD</div>
+            <div className={styles.avatar} aria-label="User avatar">{user.initials}</div>
           </div>
         </header>
 
@@ -48,3 +53,4 @@ export function DashboardLayout() {
     </div>
   );
 }
+

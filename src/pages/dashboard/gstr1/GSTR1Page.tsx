@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
+import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
+import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
+import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
+import { useFileGstr1 } from '@/pages/dashboard/gstr1/hooks/useFileGstr1';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 
 /* ── Types ── */
-type UploadedFile = {
-  name: string;
-  size: number;
-  rows: number;
-};
-
 type Step = 1 | 2 | 3;
 
 const STEPS = [
@@ -18,37 +16,10 @@ const STEPS = [
   { num: 3 as const, label: 'Success' },
 ];
 
-/* ── Draft Preview Data ── */
-const DRAFT_TABS = ['Basic', 'Outward', 'Amendments', 'Advanced', 'Others'] as const;
-const DRAFT_TAB_BADGES: Record<string, number | null> = {
-  Basic: null,
-  Outward: 3,
-  Amendments: 2,
-  Advanced: null,
-  Others: null,
-};
-
-const DRAFT_ROWS = [
-  { sr: '1', label: 'GSTIN', sub: 'Goods and Services Tax Identification Number', value: '27AAACR1234A 1Z5', highlight: true },
-  { sr: '2(a)', label: 'Legal Name', sub: 'As per PAN database', value: 'GLOBAL SOLUTIONS PRIVATE LIMITED', highlight: false },
-  { sr: '2(b)', label: 'Trade Name', sub: 'If different from legal name', value: 'GLOBAL TECH SERVICES', highlight: false },
-  { sr: '3(a)', label: 'Aggregate Turnover (Preceding FY)', sub: 'Turnover for financial year 2022-23', value: '₹ 4,50,00,000.00', highlight: false },
-  { sr: '3(b)', label: 'Aggregate Turnover (Apr-Jun 2017)', sub: 'Historical turnover context', value: '₹ 1,20,00,000.00', highlight: false },
-];
-
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-/* ── Allowed file extensions ── */
-const ALLOWED_EXTENSIONS = ['.xlsx', '.xls'];
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
-
-function isExcelFile(file: File): boolean {
-  const name = file.name.toLowerCase();
-  return ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
 }
 
 /* ── Icons ── */
@@ -137,121 +108,57 @@ function MatchingIcon() {
 /* ── Component ── */
 export function GSTR1Page() {
   const [step, setStep] = useState<Step>(1);
-  const [file, setFile] = useState<UploadedFile | null>(null);
-  const [dragOver, setDragOver] = useState(false);
-  const [fileTypeError, setFileTypeError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [isMatching, setIsMatching] = useState(false);
-  const [matchProgress, setMatchProgress] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Simulate matching progress when isMatching is true
-  useEffect(() => {
-    if (!isMatching) return;
+  // Hooks — all mock data lives inside these; swap internals for real API later
+  const upload = useUploadSalesRegister();
+  const match = useGstr1Match();
+  const draft = useGstr1Draft();
+  const filing = useFileGstr1();
 
-    setMatchProgress(0);
-    let current = 0;
-    const interval = setInterval(() => {
-      // Increment by random amount (2-8%) for realistic feel
-      current += Math.random() * 6 + 2;
-      if (current >= 100) {
-        current = 100;
-        setMatchProgress(100);
-        clearInterval(interval);
-        // Short pause at 100% then transition to results
-        setTimeout(() => {
-          setIsMatching(false);
-          setStep(2);
-        }, 500);
-      } else {
-        setMatchProgress(Math.round(current));
-      }
-    }, 300);
+  const [activeTab, setActiveTab] = useState<string>('Basic');
 
-    return () => clearInterval(interval);
-  }, [isMatching]);
+  // When matching completes, move to step 2
+  const handleStartMatching = useCallback(() => {
+    match.startMatching();
+  }, [match]);
 
-  const handleFile = useCallback((f: File) => {
-    // Reset errors
-    setFileTypeError(null);
-    setValidationErrors([]);
+  // Check if matching just completed and we need to advance
+  if (match.isComplete && step === 1) {
+    setStep(2);
+  }
 
-    // Validate file type
-    if (!isExcelFile(f)) {
-      setFileTypeError(
-        `"${f.name}" is not a supported file format. Please upload an Excel file (.xlsx or .xls).`,
-      );
-      setFile(null);
-      if (inputRef.current) inputRef.current.value = '';
-      return;
-    }
+  const handleConfirmFiling = useCallback(() => {
+    filing.mutate(upload.data?.rows ?? 4502);
+    setStep(3);
+  }, [filing, upload.data?.rows]);
 
-    // Validate file size
-    if (f.size > MAX_FILE_SIZE) {
-      setFileTypeError(
-        `File size (${formatFileSize(f.size)}) exceeds the 25MB limit. Please upload a smaller file.`,
-      );
-      setFile(null);
-      if (inputRef.current) inputRef.current.value = '';
-      return;
-    }
-
-    // Simulate parsing rows from Excel file
-    const mockRows = Math.floor(f.size / 250) + Math.floor(Math.random() * 2000) + 1000;
-    setFile({
-      name: f.name,
-      size: f.size,
-      rows: mockRows,
-    });
-
-    // Simulate validation — in real app this would parse the Excel and check columns
-    // For demo, randomly show validation errors
-    const hasValidationError = Math.random() > 0.5;
-    if (hasValidationError) {
-      setValidationErrors([
-        'GSTIN, Invoice Number, and Date are mandatory fields. Ensure date format is DD-MM-YYYY.',
-      ]);
-    }
-  }, []);
+  const resetWizard = useCallback(() => {
+    setStep(1);
+    upload.reset();
+    match.reset();
+    filing.reset();
+    setActiveTab('Basic');
+  }, [upload, match, filing]);
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      setDragOver(false);
       const f = e.dataTransfer.files[0];
-      if (f) handleFile(f);
+      if (f) upload.mutate(f);
     },
-    [handleFile],
+    [upload],
   );
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
-      if (f) handleFile(f);
+      if (f) upload.mutate(f);
     },
-    [handleFile],
+    [upload],
   );
 
-  const removeFile = useCallback(() => {
-    setFile(null);
-    setFileTypeError(null);
-    setValidationErrors([]);
-    if (inputRef.current) inputRef.current.value = '';
-  }, []);
-
-  const resetWizard = useCallback(() => {
-    setStep(1);
-    setFile(null);
-    setFileTypeError(null);
-    setValidationErrors([]);
-    setIsMatching(false);
-    setMatchProgress(0);
-    if (inputRef.current) inputRef.current.value = '';
-  }, []);
-
-  const startMatching = useCallback(() => {
-    setIsMatching(true);
-  }, []);
+  /* ── Drag state (UI-only, no data) ── */
+  const [dragOver, setDragOver] = useState(false);
 
   /* ── Matching Progress Screen ── */
   const renderMatchingProgress = () => (
@@ -263,7 +170,7 @@ export function GSTR1Page() {
         </h3>
         <p className={styles.matchingProgressSubtitle}>
           Please wait while we cross-reference{' '}
-          {file?.rows.toLocaleString() ?? '4,502'} records with the official GST
+          {upload.data?.rows.toLocaleString() ?? '4,502'} records with the official GST
           database. This ensures your E-invoice and E-way bill data is perfectly
           aligned.
         </p>
@@ -271,12 +178,12 @@ export function GSTR1Page() {
         <div className={styles.progressBarSection}>
           <div className={styles.progressBarHeader}>
             <span className={styles.progressLabel}>Progress</span>
-            <span className={styles.progressPercent}>{matchProgress}%</span>
+            <span className={styles.progressPercent}>{match.progress}%</span>
           </div>
           <div className={styles.progressBarTrack}>
             <div
               className={styles.progressBarFill}
-              style={{ width: `${matchProgress}%` }}
+              style={{ width: `${match.progress}%` }}
             />
           </div>
         </div>
@@ -354,12 +261,15 @@ export function GSTR1Page() {
           setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        onClick={() => inputRef.current?.click()}
+        onDrop={(e) => {
+          setDragOver(false);
+          onDrop(e);
+        }}
+        onClick={() => upload.inputRef.current?.click()}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click();
+          if (e.key === 'Enter' || e.key === ' ') upload.inputRef.current?.click();
         }}
       >
         <div className={styles.dropzoneIcon}>⬆</div>
@@ -374,13 +284,13 @@ export function GSTR1Page() {
           className={styles.uploadBtn}
           onClick={(e) => {
             e.stopPropagation();
-            inputRef.current?.click();
+            upload.inputRef.current?.click();
           }}
         >
           Click to Upload
         </button>
         <input
-          ref={inputRef}
+          ref={upload.inputRef}
           type="file"
           accept=".xlsx,.xls"
           className={styles.hiddenInput}
@@ -389,39 +299,39 @@ export function GSTR1Page() {
       </div>
 
       {/* File type error */}
-      {fileTypeError && (
+      {upload.isError && (
         <div className={styles.fileTypeError}>
           <div className={styles.fileTypeErrorIcon}>
             <AlertTriangleIcon className={styles.fileTypeErrorIconSvg} />
           </div>
           <div className={styles.fileTypeErrorContent}>
             <p className={styles.fileTypeErrorTitle}>Invalid File Format</p>
-            <p className={styles.fileTypeErrorMessage}>{fileTypeError}</p>
+            <p className={styles.fileTypeErrorMessage}>{upload.error}</p>
           </div>
         </div>
       )}
 
       {/* Uploaded file card */}
-      {file && (
+      {upload.data && (
         <div className={styles.fileCard}>
           <div className={styles.fileIcon}>
             <FileIcon />
           </div>
           <div className={styles.fileInfo}>
             <p className={styles.fileName}>
-              {file.name}
+              {upload.data.fileName}
               <span className={styles.fileBadge}>
-                {validationErrors.length > 0 ? 'Has errors' : 'Ready for validation'}
+                {upload.data.validationErrors.length > 0 ? 'Has errors' : 'Ready for validation'}
               </span>
             </p>
             <p className={styles.fileMeta}>
-              {formatFileSize(file.size)} • {file.rows.toLocaleString()} rows detected • Uploaded successfully
+              {formatFileSize(upload.data.fileSize)} • {upload.data.rows.toLocaleString()} rows detected • Uploaded successfully
             </p>
           </div>
           <button
             type="button"
             className={styles.fileRemove}
-            onClick={removeFile}
+            onClick={upload.reset}
             aria-label="Remove file"
           >
             ✕
@@ -430,14 +340,14 @@ export function GSTR1Page() {
       )}
 
       {/* Validation error card */}
-      {validationErrors.length > 0 && (
+      {upload.data && upload.data.validationErrors.length > 0 && (
         <div className={styles.validationError}>
           <div className={styles.validationErrorIcon}>
             <InfoCircleIcon className={styles.validationErrorIconSvg} />
           </div>
           <div className={styles.validationErrorContent}>
             <p className={styles.validationErrorTitle}>Validation Error</p>
-            {validationErrors.map((err) => (
+            {upload.data.validationErrors.map((err) => (
               <p key={err} className={styles.validationErrorMessage}>{err}</p>
             ))}
           </div>
@@ -447,8 +357,6 @@ export function GSTR1Page() {
   );
 
   /* ── Step 2: Match & Confirm ── */
-  const [activeTab, setActiveTab] = useState<string>('Basic');
-
   const renderMatching = () => (
     <>
       {/* Header */}
@@ -470,7 +378,7 @@ export function GSTR1Page() {
             </svg>
           </div>
           <div>
-            <p className={styles.matchStatValue}>4,450</p>
+            <p className={styles.matchStatValue}>{match.matchStats?.matched.toLocaleString() ?? '—'}</p>
             <p className={styles.matchStatLabel}>MATCHED</p>
           </div>
         </div>
@@ -483,7 +391,7 @@ export function GSTR1Page() {
             </svg>
           </div>
           <div>
-            <p className={styles.matchStatValue}>32</p>
+            <p className={styles.matchStatValue}>{match.matchStats?.mismatched.toLocaleString() ?? '—'}</p>
             <p className={styles.matchStatLabel}>MISMATCHED</p>
           </div>
         </div>
@@ -495,7 +403,7 @@ export function GSTR1Page() {
             </svg>
           </div>
           <div>
-            <p className={styles.matchStatValue}>20</p>
+            <p className={styles.matchStatValue}>{match.matchStats?.missingInSystem.toLocaleString() ?? '—'}</p>
             <p className={styles.matchStatLabel}>MISSING IN SYSTEM</p>
           </div>
         </div>
@@ -515,7 +423,7 @@ export function GSTR1Page() {
 
         {/* Tabs */}
         <div className={styles.draftTabs}>
-          {DRAFT_TABS.map((tab) => (
+          {draft.data.tabs.map((tab) => (
             <button
               key={tab}
               type="button"
@@ -523,8 +431,8 @@ export function GSTR1Page() {
               onClick={() => setActiveTab(tab)}
             >
               {tab}
-              {DRAFT_TAB_BADGES[tab] != null && (
-                <span className={styles.draftTabBadge}>{DRAFT_TAB_BADGES[tab]}</span>
+              {draft.data.tabBadges[tab] != null && (
+                <span className={styles.draftTabBadge}>{draft.data.tabBadges[tab]}</span>
               )}
             </button>
           ))}
@@ -534,8 +442,8 @@ export function GSTR1Page() {
         <div className={styles.draftTableWrap}>
           <div className={styles.draftFilingPeriod}>
             <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
-            <span className={styles.filingPeriodYear}>2023{"\n"}-24</span>
-            <span className={styles.filingPeriodMonth}>October</span>
+            <span className={styles.filingPeriodYear}>{draft.data.filingPeriodYear}</span>
+            <span className={styles.filingPeriodMonth}>{draft.data.filingPeriodMonth}</span>
             <span className={styles.filingPeriodSync}>
               <span className={styles.syncIcon}>ⓘ</span>
               Data synced from GST Portal
@@ -551,7 +459,7 @@ export function GSTR1Page() {
               </tr>
             </thead>
             <tbody>
-              {DRAFT_ROWS.map((row) => (
+              {draft.data.rows.map((row) => (
                 <tr key={row.sr}>
                   <td className={styles.draftTdSr}>{row.sr}</td>
                   <td>
@@ -581,7 +489,7 @@ export function GSTR1Page() {
         <button
           type="button"
           className={styles.confirmFilingBtn}
-          onClick={() => setStep(3)}
+          onClick={handleConfirmFiling}
         >
           Confirm & Proceed to Filing →
         </button>
@@ -604,19 +512,15 @@ export function GSTR1Page() {
         <div className={styles.successDetails}>
           <p className={styles.successDetail}>
             <span className={styles.successDetailLabel}>ARN: </span>
-            AA270626001234Z
+            {filing.data?.arn ?? '—'}
           </p>
           <p className={styles.successDetail}>
             <span className={styles.successDetailLabel}>Date: </span>
-            {new Date().toLocaleDateString('en-IN', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })}
+            {filing.data?.date ?? '—'}
           </p>
           <p className={styles.successDetail}>
             <span className={styles.successDetailLabel}>Invoices: </span>
-            {file?.rows.toLocaleString() ?? '4,502'} processed
+            {filing.data?.invoicesProcessed.toLocaleString() ?? '—'} processed
           </p>
         </div>
 
@@ -645,23 +549,23 @@ export function GSTR1Page() {
 
       {renderStepper()}
 
-      {step === 1 && !isMatching && (
+      {step === 1 && !match.isMatching && (
         <>
           {renderUpload()}
           <button
             type="button"
             className={styles.proceedBtn}
-            disabled={!file || validationErrors.length > 0}
-            onClick={startMatching}
+            disabled={!upload.data || upload.data.validationErrors.length > 0}
+            onClick={handleStartMatching}
           >
             Proceed to Matching →
           </button>
         </>
       )}
 
-      {step === 1 && isMatching && renderMatchingProgress()}
+      {step === 1 && match.isMatching && renderMatchingProgress()}
 
-      {step === 2 && !isMatching && renderMatching()}
+      {step === 2 && !match.isMatching && renderMatching()}
       {step === 3 && renderSuccess()}
     </div>
   );

@@ -154,6 +154,28 @@
   cursor: not-allowed;
 }
 
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.success {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #f0fdf4;
+  color: #16a34a;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .footer {
   margin: 0;
   font-size: 0.875rem;
