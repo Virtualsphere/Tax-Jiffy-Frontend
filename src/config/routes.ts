@@ -5,5 +5,6 @@ export const ROUTES = {
     login: '/auth/login',
     signup: '/auth/signup',
   },
+  preview: '/preview',
   notFound: '*',
 } as const;
