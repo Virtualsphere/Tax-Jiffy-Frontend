@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LandingLayout } from '@/layouts/LandingLayout';
 import { SignupLayout } from '@/layouts/SignupLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -15,8 +15,16 @@ const LoginPage = lazy(() =>
 const SignupPage = lazy(() =>
   import('@/features/auth/pages/SignupPage').then((m) => ({ default: m.SignupPage })),
 );
-const PreviewPage = lazy(() =>
-  import('@/pages/preview/PreviewPage').then((m) => ({ default: m.PreviewPage })),
+const DashboardPage = lazy(() =>
+  import('@/pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
+const GSTR1Page = lazy(() =>
+  import('@/pages/dashboard/gstr1/GSTR1Page').then((m) => ({ default: m.GSTR1Page })),
+);
+const ModulePlaceholderPage = lazy(() =>
+  import('@/pages/dashboard/ModulePlaceholderPage').then((m) => ({
+    default: m.ModulePlaceholderPage,
+  })),
 );
 const NotFoundPage = lazy(() =>
   import('@/pages/errors/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
@@ -73,7 +81,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: ROUTES.preview,
+    path: ROUTES.dashboard.root,
     element: <DashboardLayout />,
     errorElement: <ErrorPage />,
     children: [
@@ -81,11 +89,31 @@ export const router = createBrowserRouter([
         index: true,
         element: (
           <SuspenseWrapper>
-            <PreviewPage />
+            <DashboardPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'gstr-1',
+        element: (
+          <SuspenseWrapper>
+            <GSTR1Page />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: ':moduleId',
+        element: (
+          <SuspenseWrapper>
+            <ModulePlaceholderPage />
           </SuspenseWrapper>
         ),
       },
     ],
+  },
+  {
+    path: '/preview',
+    element: <Navigate to={ROUTES.dashboard.root} replace />,
   },
   {
     path: ROUTES.notFound,
@@ -96,5 +124,3 @@ export const router = createBrowserRouter([
     ),
   },
 ]);
-
-

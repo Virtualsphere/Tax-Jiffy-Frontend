@@ -11,11 +11,13 @@ import {
   IconTruck,
   IconWallet,
 } from '@/components/Sidebar/SidebarIcons';
+import { ROUTES } from '@/config/routes';
 
 export type SidebarNavChild = {
   id: string;
   label: string;
   icon: ReactNode;
+  path: string;
 };
 
 export type SidebarNavSection = {
@@ -29,6 +31,7 @@ export type SidebarNavLink = {
   id: string;
   label: string;
   icon: ReactNode;
+  path: string;
 };
 
 export const SIDEBAR_NAV_SECTIONS: SidebarNavSection[] = [
@@ -37,9 +40,9 @@ export const SIDEBAR_NAV_SECTIONS: SidebarNavSection[] = [
     label: 'OUTWARD SUPPLY',
     icon: <IconOutwardSupply />,
     children: [
-      { id: 'sale-register', label: 'Sale Register', icon: <IconRegister /> },
-      { id: 'gstr-1', label: 'GSTR-1', icon: <IconClipboard /> },
-      { id: 'gstr-1a', label: 'GSTR-1A', icon: <IconClipboard /> },
+      { id: 'sale-register', label: 'Sale Register', icon: <IconRegister />, path: ROUTES.dashboard.saleRegister },
+      { id: 'gstr-1', label: 'GSTR-1', icon: <IconClipboard />, path: ROUTES.dashboard.gstr1 },
+      { id: 'gstr-1a', label: 'GSTR-1A', icon: <IconClipboard />, path: ROUTES.dashboard.gstr1a },
     ],
   },
   {
@@ -47,25 +50,25 @@ export const SIDEBAR_NAV_SECTIONS: SidebarNavSection[] = [
     label: 'INWARD SUPPLY',
     icon: <IconInwardSupply />,
     children: [
-      { id: 'purchase-register', label: 'Purchase Register', icon: <IconRegister /> },
-      { id: 'ims', label: 'IMS', icon: <IconDocument /> },
-      { id: 'gstr-2a', label: 'GSTR-2A', icon: <IconClipboard /> },
-      { id: 'gstr-2b', label: 'GSTR-2B', icon: <IconClipboard /> },
-      { id: 'itc-03', label: 'ITC-03', icon: <IconClipboard /> },
-      { id: 'itc-04', label: 'ITC-04', icon: <IconClipboard /> },
+      { id: 'purchase-register', label: 'Purchase Register', icon: <IconRegister />, path: ROUTES.dashboard.purchaseRegister },
+      { id: 'ims', label: 'IMS', icon: <IconDocument />, path: ROUTES.dashboard.ims },
+      { id: 'gstr-2a', label: 'GSTR-2A', icon: <IconClipboard />, path: ROUTES.dashboard.gstr2a },
+      { id: 'gstr-2b', label: 'GSTR-2B', icon: <IconClipboard />, path: ROUTES.dashboard.gstr2b },
+      { id: 'itc-03', label: 'ITC-03', icon: <IconClipboard />, path: ROUTES.dashboard.itc03 },
+      { id: 'itc-04', label: 'ITC-04', icon: <IconClipboard />, path: ROUTES.dashboard.itc04 },
     ],
   },
 ];
 
 export const SIDEBAR_NAV_LINKS: SidebarNavLink[] = [
-  { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument /> },
-  { id: 'e-way-bill', label: 'E-WAY BILL', icon: <IconTruck /> },
-  { id: 'gstr-3b', label: 'GSTR-3B', icon: <IconClipboardCheck /> },
-  { id: 'gstr-9', label: 'GSTR-9', icon: <IconGstr9 /> },
-  { id: 'gstr-9c', label: 'GSTR-9C', icon: <IconGstr9 /> },
-  { id: 'gst-ledgers', label: 'GST LEDGERS', icon: <IconWallet /> },
-  { id: 'vendor-ledger', label: 'VENDOR LEDGER', icon: <IconBook /> },
-  { id: 'challan', label: 'CHALLAN', icon: <IconBook /> },
+  { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },
+  { id: 'e-way-bill', label: 'E-WAY BILL', icon: <IconTruck />, path: ROUTES.dashboard.eWayBill },
+  { id: 'gstr-3b', label: 'GSTR-3B', icon: <IconClipboardCheck />, path: ROUTES.dashboard.gstr3b },
+  { id: 'gstr-9', label: 'GSTR-9', icon: <IconGstr9 />, path: ROUTES.dashboard.gstr9 },
+  { id: 'gstr-9c', label: 'GSTR-9C', icon: <IconGstr9 />, path: ROUTES.dashboard.gstr9c },
+  { id: 'gst-ledgers', label: 'GST LEDGERS', icon: <IconWallet />, path: ROUTES.dashboard.gstLedgers },
+  { id: 'vendor-ledger', label: 'VENDOR LEDGER', icon: <IconBook />, path: ROUTES.dashboard.vendorLedger },
+  { id: 'challan', label: 'CHALLAN', icon: <IconBook />, path: ROUTES.dashboard.challan },
 ];
 
 export const DEFAULT_SIDEBAR_ENTITY = {

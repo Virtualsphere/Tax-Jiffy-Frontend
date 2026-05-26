@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import logo from '@/assets/logo-icon.png';
 import {
   DEFAULT_SIDEBAR_ENTITY,
@@ -22,8 +23,6 @@ export type SidebarEntity = {
 export type SidebarProps = {
   entity?: SidebarEntity;
   defaultCollapsed?: boolean;
-  defaultActiveItemId?: string;
-  onActiveItemChange?: (itemId: string) => void;
 };
 
 const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_NAV_SECTIONS.map((section) => section.id);
@@ -31,25 +30,14 @@ const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_NAV_SECTIONS.map((section) => section.
 export function Sidebar({
   entity = DEFAULT_SIDEBAR_ENTITY,
   defaultCollapsed = false,
-  defaultActiveItemId = 'gstr-1',
-  onActiveItemChange,
 }: SidebarProps) {
   const navId = useId();
   const sidebarRef = useRef<HTMLElement>(null);
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  const [activeItemId, setActiveItemId] = useState(defaultActiveItemId);
   const [expandedSections, setExpandedSections] = useState<string[]>(
     DEFAULT_EXPANDED_SECTIONS,
   );
   const [openFlyoutSectionId, setOpenFlyoutSectionId] = useState<string | null>(null);
-
-  const setActiveItem = useCallback(
-    (itemId: string) => {
-      setActiveItemId(itemId);
-      onActiveItemChange?.(itemId);
-    },
-    [onActiveItemChange],
-  );
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => !prev);
@@ -94,6 +82,14 @@ export function Sidebar({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [collapsed, openFlyoutSectionId]);
+
+  /** Build className for NavLink sub-items */
+  const subItemClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.subItem} ${isActive ? styles.subItemActive : ''}`;
+
+  /** Build className for NavLink top-level links */
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`;
 
   return (
     <aside
@@ -166,21 +162,18 @@ export function Sidebar({
                   >
                     {section.children.map((child) => (
                       <li key={child.id}>
-                        <button
-                          type="button"
-                          className={`${styles.subItem} ${
-                            activeItemId === child.id ? styles.subItemActive : ''
-                          }`}
+                        <NavLink
+                          to={child.path}
+                          className={subItemClass}
                           onClick={() => {
-                            setActiveItem(child.id);
                             if (collapsed) setOpenFlyoutSectionId(null);
                           }}
-                          aria-current={activeItemId === child.id ? 'page' : undefined}
                           title={collapsed ? child.label : undefined}
+                          end
                         >
                           <span className={styles.subIcon}>{child.icon}</span>
                           <span className={styles.subLabel}>{child.label}</span>
-                        </button>
+                        </NavLink>
                       </li>
                     ))}
                   </ul>
@@ -191,18 +184,15 @@ export function Sidebar({
 
           {SIDEBAR_NAV_LINKS.map((link) => (
             <li key={link.id}>
-              <button
-                type="button"
-                className={`${styles.navLink} ${
-                  activeItemId === link.id ? styles.navLinkActive : ''
-                }`}
-                onClick={() => setActiveItem(link.id)}
-                aria-current={activeItemId === link.id ? 'page' : undefined}
+              <NavLink
+                to={link.path}
+                className={navLinkClass}
                 title={collapsed ? link.label : undefined}
+                end
               >
                 <span className={styles.navLinkIcon}>{link.icon}</span>
                 <span className={styles.navLinkLabel}>{link.label}</span>
-              </button>
+              </NavLink>
             </li>
           ))}
         </ul>
