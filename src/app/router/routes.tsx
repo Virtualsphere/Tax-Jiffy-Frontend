@@ -15,9 +15,7 @@ const LoginPage = lazy(() =>
 const SignupPage = lazy(() =>
   import('@/features/auth/pages/SignupPage').then((m) => ({ default: m.SignupPage })),
 );
-const DashboardPage = lazy(() =>
-  import('@/pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })),
-);
+
 const GSTR1Page = lazy(() =>
   import('@/pages/dashboard/gstr1/GSTR1Page').then((m) => ({ default: m.GSTR1Page })),
 );
@@ -87,11 +85,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-          <SuspenseWrapper>
-            <DashboardPage />
-          </SuspenseWrapper>
-        ),
+        element: <Navigate to="gstr-1" replace />,
       },
       {
         path: 'gstr-1',
