@@ -1612,9 +1612,14 @@ export function GSTR1Page() {
           You can see the recent filed returns in the<br />
           Recent/Filled section of your dashboard.
         </p>
-        <Link to={ROUTES.dashboard.root} className={styles.successDashboardBtn}>
-          Go to Dashboard
-        </Link>
+        <div className={styles.successActions}>
+          <button type="button" className={styles.successNewFilingBtn} onClick={resetWizard}>
+            Start new filing
+          </button>
+          <Link to={ROUTES.dashboard.root} className={styles.successDashboardBtn}>
+            Go to Dashboard
+          </Link>
+        </div>
       </div>
     </div>
   );

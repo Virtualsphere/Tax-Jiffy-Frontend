@@ -960,12 +960,40 @@
   line-height: 1.5;
 }
 
+.successActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 400px;
+}
+
+.successNewFilingBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #5a6acf;
+  border-radius: 9999px;
+  background: transparent;
+  color: #5a6acf;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.successNewFilingBtn:hover {
+  background: rgb(90 106 207 / 0.08);
+}
+
 .successDashboardBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 400px;
   padding: 16px;
   border: none;
   border-radius: 9999px;
