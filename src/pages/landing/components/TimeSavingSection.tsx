@@ -8,33 +8,6 @@ function LightningIcon() {
   );
 }
 
-function VerifiedBadgeIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6366f1' }}>
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-    </svg>
-  );
-}
-
-function VerifiedSealIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6366f1' }}>
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-      <path d="m9 12 2 2 4-4"></path>
-    </svg>
-  );
-}
-
-// More accurate badge icon for the "100% Matched" row
-function RosetteCheckIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#5e6ad2' }}>
-      <path d="M12 22.0002C12 22.0002 14.4727 20.8931 16.5 21.0002C17.5029 21.0531 18.5292 21.5768 19.3496 20.7564C20.17 19.936 19.6463 18.9097 19.5934 17.9068C19.4863 15.8795 20.5934 13.4068 20.5934 13.4068C20.5934 13.4068 21.6443 11.4552 21.6443 10.0002C21.6443 8.54519 20.5934 6.59359 20.5934 6.59359C20.5934 6.59359 19.4863 4.1209 19.5934 2.09359C19.6463 1.09069 20.17 0.0643916 19.3496 -0.756008C18.5292 -1.57641 17.5029 -1.05271 16.5 -0.999808C14.4727 -0.892708 12 -2.00021 12 -2.00021C12 -2.00021 9.52733 -0.892708 7.5 -0.999808C6.49712 -1.05271 5.47082 -1.57641 4.65042 -0.756008C3.83002 0.0643916 4.35372 1.09069 4.40662 2.09359C4.51372 4.1209 3.40662 6.59359 3.40662 6.59359C3.40662 6.59359 2.35572 8.54519 2.35572 10.0002C2.35572 11.4552 3.40662 13.4068 3.40662 13.4068C3.40662 13.4068 4.51372 15.8795 4.40662 17.9068C4.35372 18.9097 3.83002 19.936 4.65042 20.7564C5.47082 21.5768 6.49712 21.0531 7.5 21.0002C9.52733 20.8931 12 22.0002 12 22.0002Z" />
-      <path d="M9 12L11 14L15 10" />
-    </svg>
-  );
-}
 
 function SmallCheckCircle() {
   return (
