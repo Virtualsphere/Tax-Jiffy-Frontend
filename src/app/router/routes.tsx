@@ -12,6 +12,9 @@ const LandingPage = lazy(() =>
 const PricingPage = lazy(() =>
   import('@/pages/pricing/PricingPage').then((m) => ({ default: m.PricingPage })),
 );
+const BuyPlanPage = lazy(() =>
+  import('@/pages/pricing/BuyPlanPage').then((m) => ({ default: m.BuyPlanPage })),
+);
 const ContactPage = lazy(() =>
   import('@/pages/contact/ContactPage').then((m) => ({ default: m.ContactPage })),
 );
@@ -66,6 +69,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <PricingPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'buy-plan',
+        element: (
+          <SuspenseWrapper>
+            <BuyPlanPage />
           </SuspenseWrapper>
         ),
       },

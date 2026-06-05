@@ -108,7 +108,6 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 32px;
   width: 100%;
-  max-width: 1200px;
 }
 
 .card {
