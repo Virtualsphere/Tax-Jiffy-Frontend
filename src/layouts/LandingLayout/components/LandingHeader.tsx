@@ -5,11 +5,11 @@ import { ROUTES } from '@/config/routes';
 import styles from '@/layouts/LandingLayout/components/LandingHeader.module.css';
 
 const NAV_LINKS = [
-  { label: 'Product', href: '#product' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Resources', href: '#resources' },
-  { label: 'Contact us', href: '#contact' },
-] as const;
+  { label: 'Product', href: '/#product' },
+  { label: 'Pricing', href: ROUTES.pricing },
+  { label: 'Resources', href: '/#resources' },
+  { label: 'Contact us', href: '/#contact' },
+];
 
 export function LandingHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,9 +54,9 @@ export function LandingHeader() {
           <ul className={styles.navList}>
             {NAV_LINKS.map((item) => (
               <li key={item.href}>
-                <a href={item.href} className={styles.navLink}>
+                <Link to={item.href} className={styles.navLink}>
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
             <li>
@@ -99,13 +99,13 @@ export function LandingHeader() {
             <ul className={styles.drawerList}>
               {NAV_LINKS.map((item) => (
                 <li key={item.href}>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.href}
                     className={styles.drawerLink}
                     onClick={closeMenu}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

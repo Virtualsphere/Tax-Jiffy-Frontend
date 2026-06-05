@@ -1,5 +1,6 @@
 export const ROUTES = {
   home: '/',
+  pricing: '/pricing',
   auth: {
     root: '/auth',
     login: '/auth/login',

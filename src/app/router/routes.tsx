@@ -9,6 +9,9 @@ import { ErrorPage } from '@/pages/errors/ErrorPage';
 const LandingPage = lazy(() =>
   import('@/pages/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
 );
+const PricingPage = lazy(() =>
+  import('@/pages/pricing/PricingPage').then((m) => ({ default: m.PricingPage })),
+);
 const LoginPage = lazy(() =>
   import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
 );
@@ -43,6 +46,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <LandingPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'pricing',
+        element: (
+          <SuspenseWrapper>
+            <PricingPage />
           </SuspenseWrapper>
         ),
       },
