@@ -12,6 +12,18 @@ const LandingPage = lazy(() =>
 const PricingPage = lazy(() =>
   import('@/pages/pricing/PricingPage').then((m) => ({ default: m.PricingPage })),
 );
+const ContactPage = lazy(() =>
+  import('@/pages/contact/ContactPage').then((m) => ({ default: m.ContactPage })),
+);
+const ContactSalesPage = lazy(() =>
+  import('@/pages/contact/ContactSalesPage').then((m) => ({ default: m.ContactSalesPage })),
+);
+const ContactSupportPage = lazy(() =>
+  import('@/pages/contact/ContactSupportPage').then((m) => ({ default: m.ContactSupportPage })),
+);
+const ResourcesPage = lazy(() =>
+  import('@/pages/resources/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
+);
 const LoginPage = lazy(() =>
   import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
 );
@@ -54,6 +66,43 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <PricingPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'contact',
+        children: [
+          {
+            index: true,
+            element: (
+              <SuspenseWrapper>
+                <ContactPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'sales',
+            element: (
+              <SuspenseWrapper>
+                <ContactSalesPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'support',
+            element: (
+              <SuspenseWrapper>
+                <ContactSupportPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'resources',
+        element: (
+          <SuspenseWrapper>
+            <ResourcesPage />
           </SuspenseWrapper>
         ),
       },

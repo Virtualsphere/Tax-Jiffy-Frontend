@@ -7,8 +7,8 @@ import styles from '@/layouts/LandingLayout/components/LandingHeader.module.css'
 const NAV_LINKS = [
   { label: 'Product', href: '/#product' },
   { label: 'Pricing', href: ROUTES.pricing },
-  { label: 'Resources', href: '/#resources' },
-  { label: 'Contact us', href: '/#contact' },
+  { label: 'Resources', href: ROUTES.resources },
+  { label: 'Contact us', href: ROUTES.contact },
 ];
 
 export function LandingHeader() {

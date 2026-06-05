@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import logo from '@/assets/logo.png';
+import { ROUTES } from '@/config/routes';
 import styles from '@/layouts/LandingLayout/components/LandingFooter.module.css';
 
 const FOOTER_LINKS = {
@@ -19,8 +20,8 @@ const FOOTER_LINKS = {
     { label: 'Enterprise', href: '/pricing' },
   ],
   contact: [
-    { label: 'Sales', href: '#' },
-    { label: 'Technical Support', href: '#' },
+    { label: 'Sales', href: ROUTES.contact },
+    { label: 'Technical Support', href: ROUTES.contact },
   ],
 };
 
@@ -75,7 +76,7 @@ export function LandingFooter() {
             <ul className={styles.linkList}>
               {FOOTER_LINKS.contact.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className={styles.link}>{link.label}</a>
+                  <Link to={link.href} className={styles.link}>{link.label}</Link>
                 </li>
               ))}
             </ul>
