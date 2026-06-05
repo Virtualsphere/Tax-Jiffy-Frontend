@@ -1,0 +1,268 @@
+.section {
+  width: 100%;
+  padding: 6rem 0;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+
+.headings {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.titleBlack {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.textContent {
+  flex: 1;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  text-align: right;
+}
+
+.exploreBtn {
+  align-self: flex-end;
+  background-color: #6366f1; /* indigo-500 */
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.exploreBtn:hover {
+  background-color: #4f46e5;
+}
+
+.cardContainer {
+  position: relative;
+  background-color: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  width: 100%;
+}
+
+.floatingBadge {
+  position: absolute;
+  top: -20px;
+  right: 40px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.engineIconBox {
+  width: 48px;
+  height: 48px;
+  background-color: #eef2ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #6366f1;
+}
+
+.engineTitles {
+  display: flex;
+  flex-direction: column;
+}
+
+.engineName {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0f172a;
+}
+
+.engineVersion {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.avatars {
+  display: flex;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid #f8fafc;
+  margin-left: -8px;
+}
+
+.avatar:first-child {
+  margin-left: 0;
+}
+
+.avatarBlue { background-color: #6366f1; }
+.avatarGreen { background-color: #10b981; }
+.avatarGray { background-color: #e2e8f0; color: #64748b; }
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.listItem {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.itemContent {
+  padding: 16px 24px 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.itemIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.iconGreen { background-color: #ecfdf5; color: #10b981; }
+.iconBlue { background-color: #eef2ff; color: #6366f1; }
+.iconGray { background-color: #f1f5f9; color: #94a3b8; }
+
+.itemName {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.itemNameMuted {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.itemStatus {
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.statusGreen { color: #10b981; }
+.statusBlue { color: #6366f1; }
+.statusRed { color: #ef4444; }
+
+.progressTrack {
+  margin: 0 24px 16px 24px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #f1f5f9;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.bgGreen { background-color: #10b981; }
+.bgBlue { background-color: #6366f1; }
+
+@media (max-width: 768px) {
+  .headerRow {
+    flex-direction: column;
+  }
+  .textContent {
+    max-width: 100%;
+  }
+  .description {
+    text-align: left;
+  }
+  .exploreBtn {
+    align-self: flex-start;
+  }
+  .floatingBadge {
+    top: -16px;
+    right: 16px;
+  }
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .itemContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .itemStatus {
+    align-self: flex-end;
+  }
+}

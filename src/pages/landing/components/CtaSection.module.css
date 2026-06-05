@@ -1,0 +1,104 @@
+.section {
+  width: 100%;
+  padding: 6rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background-color: #5e6ad2; /* Indigo/blue matching the design */
+  border-radius: 16px;
+  width: 100%;
+  padding: 5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.content {
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #e0e7ff; /* Light indigo text */
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryBtn {
+  background-color: #ffffff;
+  color: #5e6ad2;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.primaryBtn:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.secondaryBtn {
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0.5rem 0 0 0;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 3rem 1.5rem;
+  }
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .primaryBtn, .secondaryBtn {
+    width: 100%;
+  }
+}

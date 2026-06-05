@@ -1,0 +1,229 @@
+.section {
+  width: 100%;
+  padding: 6rem 0;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+
+.headings {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.titleBlack {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.textContent {
+  flex: 1;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  text-align: right;
+}
+
+.exploreBtn {
+  align-self: flex-end;
+  background-color: #6366f1; /* indigo-500 */
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.exploreBtn:hover {
+  background-color: #4f46e5;
+}
+
+/* The Card */
+.windowCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTopBar {
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cardTopBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0f172a;
+}
+
+.cardBadge {
+  background-color: #d1fae5;
+  color: #059669;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Table Area */
+.tableGrid {
+  display: grid;
+  grid-template-columns: 1fr 150px 100px;
+  align-items: center;
+  padding: 0 32px;
+}
+
+.tableHeader {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.headerCell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tableRow {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.noBorder {
+  border-bottom: none;
+}
+
+.rowSection {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.rowAmount {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.alignRight { text-align: right; }
+.alignCenter { display: flex; justify-content: center; align-items: center; }
+
+/* Card Footer */
+.cardFooter {
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+}
+
+.footerStatusText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.generateBtn {
+  background-color: #6366f1;
+  color: white;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.generateBtn:hover {
+  background-color: #4f46e5;
+}
+
+@media (max-width: 768px) {
+  .headerRow {
+    flex-direction: column;
+  }
+  .textContent {
+    max-width: 100%;
+  }
+  .description {
+    text-align: left;
+  }
+  .exploreBtn {
+    align-self: flex-start;
+  }
+  .tableGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .headerCell.alignRight, .headerCell.alignCenter {
+    display: none; /* hide extra headers on mobile */
+  }
+  .rowAmount, .alignCenter {
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .cardFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

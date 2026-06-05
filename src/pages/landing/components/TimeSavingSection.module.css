@@ -1,0 +1,202 @@
+.section {
+  width: 100%;
+  padding: 6rem 0;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+
+.headings {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.titleBlack {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.textContent {
+  flex: 1;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  text-align: right;
+}
+
+.exploreBtn {
+  align-self: flex-end;
+  background-color: #6366f1; /* indigo-500 */
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.exploreBtn:hover {
+  background-color: #4f46e5;
+}
+
+/* Card Styles */
+.cardContainer {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1.5px solid #6366f1;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTopBar {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cardTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.automationTitle {
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.successBadge {
+  background-color: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cardContent {
+  padding: 32px 32px 24px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.statusLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5e6ad2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.mainContentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mainTitle {
+  font-weight: 900;
+  font-size: 2.25rem;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.verifiedIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressBar {
+  height: 6px;
+  background-color: #f1f5f9;
+  border-radius: 3px;
+  width: 100%;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: 98%; /* Close to 100% to match design */
+  background-color: #5e6ad2;
+  border-radius: 3px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerText {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+@media (max-width: 768px) {
+  .headerRow {
+    flex-direction: column;
+  }
+  .textContent {
+    max-width: 100%;
+  }
+  .description {
+    text-align: left;
+  }
+  .exploreBtn {
+    align-self: flex-start;
+  }
+  .cardContent {
+    padding: 24px 20px;
+  }
+  .mainTitle {
+    font-size: 1.75rem;
+  }
+}
