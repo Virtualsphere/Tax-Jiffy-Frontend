@@ -37,6 +37,9 @@ const SignupPage = lazy(() =>
 const GSTR1Page = lazy(() =>
   import('@/pages/dashboard/gstr1/GSTR1Page').then((m) => ({ default: m.GSTR1Page })),
 );
+const EWayBillPage = lazy(() =>
+  import('@/pages/dashboard/eWayBill/EWayBillPage').then((m) => ({ default: m.EWayBillPage })),
+);
 const ModulePlaceholderPage = lazy(() =>
   import('@/pages/dashboard/ModulePlaceholderPage').then((m) => ({
     default: m.ModulePlaceholderPage,
@@ -163,6 +166,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <GSTR1Page />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'e-way-bill',
+        element: (
+          <SuspenseWrapper>
+            <EWayBillPage />
           </SuspenseWrapper>
         ),
       },
