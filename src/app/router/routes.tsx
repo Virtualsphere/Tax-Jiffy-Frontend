@@ -40,6 +40,9 @@ const GSTR1Page = lazy(() =>
 const EWayBillPage = lazy(() =>
   import('@/pages/dashboard/eWayBill/EWayBillPage').then((m) => ({ default: m.EWayBillPage })),
 );
+const EInvoicePage = lazy(() =>
+  import('@/pages/dashboard/eInvoice/EInvoicePage').then((m) => ({ default: m.EInvoicePage })),
+);
 const ModulePlaceholderPage = lazy(() =>
   import('@/pages/dashboard/ModulePlaceholderPage').then((m) => ({
     default: m.ModulePlaceholderPage,
@@ -174,6 +177,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <EWayBillPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'e-invoice',
+        element: (
+          <SuspenseWrapper>
+            <EInvoicePage />
           </SuspenseWrapper>
         ),
       },

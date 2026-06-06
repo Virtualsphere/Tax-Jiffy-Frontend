@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './EWayBillPage.module.css';
+import { useEWayBillData } from '../../../hooks/useEWayBillData';
 
 // SVG Icons
 const TruckIcon = () => (
@@ -112,288 +113,7 @@ const TABS = [
   { id: 'partially-matched', label: 'Partially matched', badge: '55' },
 ];
 
-const LIST_MOCK_DATA = [
-  {
-    ewayBillNo: '121548796325',
-    ewbDateTime: '24-Oct-2023 14:30',
-    docType: 'INV',
-    docDate: '23-Oct-2023',
-    partyGstin: '27AAACV1234F1Z5',
-    transporterGstin: '27ABCDE1234A1Z1',
-    status: 'ACTIVE',
-    value: '1,50,000.00'
-  },
-  {
-    ewayBillNo: '121548796336',
-    ewbDateTime: '24-Oct-2023 16:15',
-    docType: 'INV',
-    docDate: '24-Oct-2023',
-    partyGstin: '07AAAAA0000A1Z5',
-    transporterGstin: '07BBBBB1111B1Z2',
-    status: 'PENDING',
-    value: '2,10,100.00'
-  },
-  {
-    ewayBillNo: '121548796401',
-    ewbDateTime: '25-Oct-2023 09:00',
-    docType: 'INV',
-    docDate: '25-Oct-2023',
-    partyGstin: '29CCCCC2222C1Z3',
-    transporterGstin: '29DDDDD3333D1Z4',
-    status: 'EXPIRING',
-    value: '85,000.00'
-  }
-];
 
-const UNLINKED_MOCK_DATA = [
-  {
-    ewayBillNo: '128956743210',
-    ewbDateTime: '26-Oct-2023 11:20',
-    docType: 'INV',
-    docDate: '25-Oct-2023',
-    partyGstin: '27AABCV5678D1Z4',
-    transporterGstin: '27ABCDE1234A1Z1',
-    status: 'ACTIVE',
-    value: '2,45,000.00'
-  },
-  {
-    ewayBillNo: '128956743211',
-    ewbDateTime: '26-Oct-2023 13:45',
-    docType: 'INV',
-    docDate: '26-Oct-2023',
-    partyGstin: '07GHIJK9012L1Z9',
-    transporterGstin: '07BBBBB1111B1Z2',
-    status: 'PENDING',
-    value: '89,200.00'
-  },
-  {
-    ewayBillNo: '128956743212',
-    ewbDateTime: '27-Oct-2023 09:10',
-    docType: 'INV',
-    docDate: '26-Oct-2023',
-    partyGstin: '29LMNOP3456Q1Z0',
-    transporterGstin: '29DDDDD3333D1Z4',
-    status: 'ACTIVE',
-    value: '5,12,000.00'
-  },
-  {
-    ewayBillNo: '128956743213',
-    ewbDateTime: '27-Oct-2023 10:30',
-    docType: 'INV',
-    docDate: '27-Oct-2023',
-    partyGstin: '33QRRTY7890V1Z2',
-    transporterGstin: '27ABCDE1234A1Z1',
-    status: 'EXPIRING',
-    value: '1,28,500.00'
-  },
-  {
-    ewayBillNo: '128956743214',
-    ewbDateTime: '27-Oct-2023 15:55',
-    docType: 'INV',
-    docDate: '27-Oct-2023',
-    partyGstin: '27WXYZA1234B1Z5',
-    transporterGstin: '07BBBBB1111B1Z2',
-    status: 'ACTIVE',
-    value: '3,42,100.00'
-  }
-];
-
-const UNLINKED_INVOICE_MOCK_DATA = [
-  {
-    docNo: 'INV/23-24/00125',
-    docDate: '25-Oct-2023',
-    docType: 'Tax Invoice',
-    partyGstin: '27AABCV5678D1Z4',
-    assessableValue: '2,45,000.00',
-    sgstValue: '12,250.00',
-    cgstValue: '12,250.00'
-  },
-  {
-    docNo: 'INV/23-24/00126',
-    docDate: '26-Oct-2023',
-    docType: 'Tax Invoice',
-    partyGstin: '07GHIJK9012L1Z9',
-    assessableValue: '89,200.00',
-    sgstValue: '0.00',
-    cgstValue: '0.00'
-  },
-  {
-    docNo: 'INV/23-24/00127',
-    docDate: '26-Oct-2023',
-    docType: 'Tax Invoice',
-    partyGstin: '29LMNOP3456Q1Z0',
-    assessableValue: '5,12,000.00',
-    sgstValue: '0.00',
-    cgstValue: '0.00'
-  },
-  {
-    docNo: 'INV/23-24/00128',
-    docDate: '27-Oct-2023',
-    docType: 'Tax Invoice',
-    partyGstin: '33QRRTY7890V1Z2',
-    assessableValue: '1,28,500.00',
-    sgstValue: '11,565.00',
-    cgstValue: '11,565.00'
-  },
-  {
-    docNo: 'INV/23-24/00129',
-    docDate: '27-Oct-2023',
-    docType: 'Tax Invoice',
-    partyGstin: '27WXYZA1234B1Z5',
-    assessableValue: '3,42,100.00',
-    sgstValue: '0.00',
-    cgstValue: '0.00'
-  }
-];
-
-const PARTIALLY_MATCHED_MOCK_DATA = [
-  {
-    type: 'ONE-TO-MANY',
-    title: 'INV-2024-0012',
-    status: 'PARTIALLY MATCHED',
-    recordBlocks: [
-      {
-        parent: {
-          gstin: '27AAACV1234F1Z5',
-          docType: 'INV',
-          docNo: 'INV-2024-0012',
-          date: '12-Mar-2024',
-          assessableValue: '1,25,000.00',
-          sgstValue: '11,250.00',
-          cgstValue: '11,250.00',
-          igstValue: '0.00',
-          totalValue: '1,47,500.00'
-        },
-        children: [
-          {
-            gstin: 'Recipient Unit A',
-            docType: 'EWB',
-            docNo: '1214-5582-9012',
-            date: '13-Mar-2024',
-            assessableValue: '40,000.00',
-            sgstValue: '3,600.00',
-            cgstValue: '3,600.00',
-            igstValue: '0.00',
-            totalValue: '47,200.00'
-          },
-          {
-            gstin: 'Recipient Unit B',
-            docType: 'EWB',
-            docNo: '1214-5582-9013',
-            date: '13-Mar-2024',
-            assessableValue: '40,000.00',
-            sgstValue: '3,600.00',
-            cgstValue: '3,600.00',
-            igstValue: '0.00',
-            totalValue: '47,200.00'
-          }
-        ],
-        totals: {
-          assessableValue: '80,000.00',
-          sgstValue: '7,200.00',
-          cgstValue: '7,200.00',
-          igstValue: '0.00',
-          totalValue: '94,400.00'
-        }
-      },
-      {
-        parent: {
-          gstin: '27AAACV1234F1Z5',
-          docType: 'INV',
-          docNo: 'INV-2024-0012',
-          date: '12-Mar-2024',
-          assessableValue: '1,25,000.00',
-          sgstValue: '11,250.00',
-          cgstValue: '11,250.00',
-          igstValue: '0.00',
-          totalValue: '1,47,500.00'
-        },
-        children: [
-          {
-            gstin: 'Recipient Unit A',
-            docType: 'EWB',
-            docNo: '1214-5582-9012',
-            date: '13-Mar-2024',
-            assessableValue: '40,000.00',
-            sgstValue: '3,600.00',
-            cgstValue: '3,600.00',
-            igstValue: '0.00',
-            totalValue: '47,200.00'
-          },
-          {
-            gstin: 'Recipient Unit B',
-            docType: 'EWB',
-            docNo: '1214-5582-9013',
-            date: '13-Mar-2024',
-            assessableValue: '40,000.00',
-            sgstValue: '3,600.00',
-            cgstValue: '3,600.00',
-            igstValue: '0.00',
-            totalValue: '47,200.00'
-          }
-        ],
-        totals: {
-          assessableValue: '80,000.00',
-          sgstValue: '7,200.00',
-          cgstValue: '7,200.00',
-          igstValue: '0.00',
-          totalValue: '94,400.00'
-        }
-      }
-    ]
-  },
-  {
-    type: 'MANY-TO-ONE',
-    title: 'EWB-991200331',
-    status: 'PARTIALLY MATCHED',
-    recordBlocks: [
-      {
-        parent: {
-          gstin: 'Consolidated Logistics',
-          docType: 'EWB',
-          docNo: 'EWB-991200331',
-          date: '15-Mar-2024',
-          assessableValue: '2,00,000.00',
-          sgstValue: '0.00',
-          cgstValue: '0.00',
-          igstValue: '36,000.00',
-          totalValue: '2,36,000.00'
-        },
-        children: [
-          {
-            gstin: '07GHIJK9012L1Z9',
-            docType: 'INV',
-            docNo: 'INV/23/00881',
-            date: '14-Mar-2024',
-            assessableValue: '1,00,000.00',
-            sgstValue: '0.00',
-            cgstValue: '0.00',
-            igstValue: '18,000.00',
-            totalValue: '1,18,000.00'
-          },
-          {
-            gstin: '27WXYZA1234B1Z5',
-            docType: 'INV',
-            docNo: 'INV/23/00882',
-            date: '14-Mar-2024',
-            assessableValue: '1,00,000.00',
-            sgstValue: '0.00',
-            cgstValue: '0.00',
-            igstValue: '18,000.00',
-            totalValue: '1,18,000.00'
-          }
-        ],
-        totals: {
-          assessableValue: '2,00,000.00',
-          sgstValue: '0.00',
-          cgstValue: '0.00',
-          igstValue: '36,000.00',
-          totalValue: '2,36,000.00'
-        }
-      }
-    ]
-  }
-];
 
 
 export function EWayBillPage() {
@@ -402,6 +122,8 @@ export function EWayBillPage() {
   // Filter state
   const [globalSearch, setGlobalSearch] = useState('');
   const [colFilters, setColFilters] = useState<Record<string, string>>({});
+
+  const { listData, unlinkedEWayBillData, unlinkedInvoiceData, partiallyMatchedData, loading } = useEWayBillData(activeTab, globalSearch, colFilters);
 
   const handleColFilterChange = (col: string, val: string) => {
     setColFilters(prev => ({ ...prev, [col]: val }));
@@ -416,34 +138,16 @@ export function EWayBillPage() {
     }
   };
 
-  const getFilteredData = (data: any[]) => {
-    return data.filter(row => {
-      // Global search
-      if (globalSearch) {
-        const query = globalSearch.toLowerCase();
-        const matchesGlobal = Object.values(row).some(val => 
-          String(val).toLowerCase().includes(query)
-        );
-        if (!matchesGlobal) return false;
-      }
-      
-      // Column filters
-      for (const [col, query] of Object.entries(colFilters)) {
-        if (query) {
-          const val = String(row[col as keyof typeof row] || '').toLowerCase();
-          if (!val.includes(query.toLowerCase())) return false;
-        }
-      }
-      
-      return true;
-    });
-  };
+
 
   const renderPartiallyMatchedView = () => {
     return (
       <div className={styles.partiallyMatchedContainer}>
-        {PARTIALLY_MATCHED_MOCK_DATA.map((group, groupIndex) => (
-          <div key={groupIndex} className={styles.reconCard}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>Loading partially matched data...</div>
+        ) : (
+          partiallyMatchedData.map((group: any, groupIndex: number) => (
+            <div key={groupIndex} className={styles.reconCard}>
             <div className={styles.reconHeader}>
               <div className={styles.reconHeaderLeft}>
                 <span className={group.type === 'ONE-TO-MANY' ? styles.badgeOneToMany : styles.badgeManyToOne}>
@@ -482,7 +186,7 @@ export function EWayBillPage() {
                 </tr>
               </thead>
               <tbody>
-                {group.recordBlocks.map((block, blockIndex) => (
+                {group.recordBlocks.map((block: any, blockIndex: number) => (
                   <React.Fragment key={blockIndex}>
                     {/* Parent Row */}
                     <tr className={styles.rowParent}>
@@ -491,7 +195,7 @@ export function EWayBillPage() {
                         {block.parent.docType === 'INV' ? <DocumentIconSmall /> : <TruckIconSmall />}
                         <a href="#" className={styles.linkText}>{block.parent.docNo}</a>
                       </td>
-                      <td>{block.parent.date.split('-').map((line, i) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
+                      <td>{block.parent.date.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
                       <td className={styles.valueCellBold}>₹ {block.parent.assessableValue}</td>
                       <td className={styles.valueCellBold}>₹ {block.parent.sgstValue}</td>
                       <td className={styles.valueCellBold}>₹ {block.parent.cgstValue}</td>
@@ -500,14 +204,14 @@ export function EWayBillPage() {
                     </tr>
                     
                     {/* Child Rows */}
-                    {block.children.map((child, childIndex) => (
+                    {block.children.map((child: any, childIndex: number) => (
                       <tr key={childIndex} className={styles.rowChild}>
                         <td className={styles.lightText}>{child.gstin}</td>
                         <td className={styles.linkDocCell}>
                           {child.docType === 'INV' ? <DocumentIconSmall /> : <TruckIconSmall />}
                           <span className={styles.lightText}>{child.docNo}</span>
                         </td>
-                        <td className={styles.lightText}>{child.date.split('-').map((line, i) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
+                        <td className={styles.lightText}>{child.date.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
                         <td className={styles.lightText}>₹ {child.assessableValue}</td>
                         <td className={styles.lightText}>₹ {child.sgstValue}</td>
                         <td className={styles.lightText}>₹ {child.cgstValue}</td>
@@ -548,7 +252,8 @@ export function EWayBillPage() {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     );
   };
@@ -556,10 +261,13 @@ export function EWayBillPage() {
   const renderTable = (
     title: string,
     searchPlaceholder: string,
-    data: any[],
     tabType: 'list' | 'unlinked-ewaybill' | 'unlinked-invoice'
   ) => {
-    const filteredData = getFilteredData(data);
+    let currentData: any[] = [];
+    if (tabType === 'list') currentData = listData;
+    else if (tabType === 'unlinked-ewaybill') currentData = unlinkedEWayBillData;
+    else if (tabType === 'unlinked-invoice') currentData = unlinkedInvoiceData;
+
     const isInvoice = tabType === 'unlinked-invoice';
 
     let totalEntries = 850;
@@ -656,8 +364,12 @@ export function EWayBillPage() {
             )}
           </thead>
           <tbody>
-            {isInvoice ? (
-              filteredData.map((row) => (
+            {loading ? (
+              <tr>
+                <td colSpan={isInvoice ? 7 : 8} style={{ textAlign: 'center', padding: '40px' }}>Loading data...</td>
+              </tr>
+            ) : isInvoice ? (
+              currentData.map((row) => (
                 <tr key={row.docNo}>
                   <td><a href="#" className={styles.linkText}>{row.docNo}</a></td>
                   <td>{row.docDate}</td>
@@ -669,7 +381,7 @@ export function EWayBillPage() {
                 </tr>
               ))
             ) : (
-              filteredData.map((row) => (
+              currentData.map((row) => (
                 <tr key={row.ewayBillNo}>
                   <td><a href="#" className={styles.linkText}>{row.ewayBillNo}</a></td>
                   <td>{row.ewbDateTime.split(' ').map((line: string, i: number) => <div key={i}>{line}</div>)}</td>
@@ -688,25 +400,25 @@ export function EWayBillPage() {
             )}
 
             {/* Footer Row */}
-            {isInvoice ? (
+            {!loading && (isInvoice ? (
               <tr className={styles.footerRow}>
-                <td colSpan={4}>Count: 38</td>
+                <td colSpan={4}>Count: {currentData.length}</td>
                 <td style={{ textAlign: 'right', paddingRight: '24px' }}>Total ₹</td>
                 <td>23,815.00</td>
                 <td>23,815.00</td>
               </tr>
-            ) : tabType === 'list' && (
+            ) : tabType === 'list' ? (
               <tr className={styles.footerRow}>
-                <td colSpan={7}>Count: {filteredData.length}</td>
+                <td colSpan={7}>Count: {currentData.length}</td>
                 <td>Total</td>
               </tr>
-            )}
+            ) : null)}
           </tbody>
         </table>
 
         {/* Pagination */}
         <div className={styles.pagination}>
-          <span>Showing 1-{Math.min(tabType === 'list' ? 3 : 5, filteredData.length)} of {totalEntries} entries</span>
+          <span>Showing 1-{Math.min(tabType === 'list' ? 3 : 5, currentData.length)} of {totalEntries} entries</span>
           <div className={styles.paginationControls}>
             <button className={`${styles.pageBtn} ${styles.pageBtnOutline}`}><ChevronLeftIcon /></button>
             <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
@@ -895,13 +607,13 @@ export function EWayBillPage() {
       )}
 
       {/* List View Table Container */}
-      {activeTab === 'list' && renderTable('List View', 'Search...', LIST_MOCK_DATA, 'list')}
+      {activeTab === 'list' && renderTable('List View', 'Search...', 'list')}
 
       {/* Unlinked Ewaybill Table Container */}
-      {activeTab === 'unlinked-ewaybill' && renderTable('Unlinked Ewaybills', 'Search unlinked bills...', UNLINKED_MOCK_DATA, 'unlinked-ewaybill')}
+      {activeTab === 'unlinked-ewaybill' && renderTable('Unlinked Ewaybills', 'Search unlinked bills...', 'unlinked-ewaybill')}
 
       {/* Unlinked Invoice Table Container */}
-      {activeTab === 'unlinked-invoice' && renderTable('Unlinked Invoices', 'Search unlinked invoices...', UNLINKED_INVOICE_MOCK_DATA, 'unlinked-invoice')}
+      {activeTab === 'unlinked-invoice' && renderTable('Unlinked Invoices', 'Search unlinked invoices...', 'unlinked-invoice')}
 
       {/* Partially Matched View */}
       {activeTab === 'partially-matched' && renderPartiallyMatchedView()}
