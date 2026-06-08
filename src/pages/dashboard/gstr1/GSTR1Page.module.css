@@ -1259,3 +1259,97 @@
   margin-bottom: var(--space-2);
   text-transform: lowercase;
 }
+
+/* ── Parsing Spinner ── */
+.parsingCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: rgb(90 106 207 / 0.04);
+  border: 1px solid rgb(90 106 207 / 0.2);
+  animation: slideIn 0.3s ease both;
+}
+
+.parsingSpinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgb(90 106 207 / 0.15);
+  border-top-color: #5a6acf;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.parsingText {
+  flex: 1;
+}
+
+.parsingTitle {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #5a6acf;
+  margin: 0 0 2px;
+}
+
+.parsingSubtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── File Badge Variants ── */
+.fileBadgeSuccess {
+  background: rgb(22 163 74 / 0.12);
+  color: #16a34a;
+}
+
+.fileBadgeError {
+  background: rgb(220 38 38 / 0.1);
+  color: #dc2626;
+}
+
+/* ── Extraction Summary ── */
+.extractionSummary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgb(90 106 207 / 0.06) 0%, rgb(99 102 241 / 0.04) 100%);
+  border: 1px solid rgb(90 106 207 / 0.18);
+  animation: slideIn 0.35s 0.1s ease both;
+}
+
+.extractionSummaryIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.extractionSummaryContent {
+  flex: 1;
+}
+
+.extractionSummaryTitle {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #3b47a8;
+  margin: 0 0 4px;
+}
+
+.extractionSummaryText {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+

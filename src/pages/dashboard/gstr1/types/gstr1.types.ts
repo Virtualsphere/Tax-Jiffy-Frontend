@@ -17,6 +17,8 @@ export type Gstr1UploadResult = {
   fileSize: number;
   rows: number;
   validationErrors: string[];
+  /** Parsed draft data from the uploaded Excel, populated by parseGstr1Excel */
+  parsedDraftData?: Gstr1DraftData;
 };
 
 export type Gstr1FilingResult = {

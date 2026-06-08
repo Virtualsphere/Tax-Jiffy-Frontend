@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Gstr1UploadResult } from '@/pages/dashboard/gstr1/types/gstr1.types';
+import { parseGstr1Excel } from '@/pages/dashboard/gstr1/data/parseGstr1Excel';
 
 // TODO: Replace with useMutation(() => gstr1Api.upload(file))
 // when the backend endpoint POST /gstr1/upload is available.
@@ -14,7 +15,7 @@ function isExcelFile(file: File): boolean {
 }
 
 type UseUploadSalesRegisterReturn = {
-  /** Process a selected file (client-side mock parsing) */
+  /** Process a selected file (client-side Excel parsing) */
   mutate: (file: File) => void;
   /** Reset upload state */
   reset: () => void;
@@ -33,16 +34,18 @@ type UseUploadSalesRegisterReturn = {
 export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
   const [data, setData] = useState<Gstr1UploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reset = useCallback(() => {
     setData(null);
     setError(null);
+    setIsPending(false);
     if (inputRef.current) inputRef.current.value = '';
   }, []);
 
   const mutate = useCallback(
-    (file: File) => {
+    async (file: File) => {
       // Reset previous state
       setError(null);
       setData(null);
@@ -65,22 +68,35 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
         return;
       }
 
-      // TODO: Replace with actual API call that uploads file and gets parsed results
-      // Simulate parsing rows from Excel file
-      const mockRows = Math.floor(file.size / 250) + Math.floor(Math.random() * 2000) + 1000;
+      // Parse the Excel file client-side
+      setIsPending(true);
+      try {
+        const { draftData, rowCount } = await parseGstr1Excel(file);
 
-      // Simulate validation — in real app server would parse the Excel and check columns
-      const hasValidationError = Math.random() > 0.5;
-      const validationErrors = hasValidationError
-        ? ['GSTIN, Invoice Number, and Date are mandatory fields. Ensure date format is DD-MM-YYYY.']
-        : [];
+        // Basic validation: check that the workbook has the expected GSTR-1 sheets
+        const validationErrors: string[] = [];
+        const hasGstr1Sheets = draftData.outwardData !== undefined || draftData.othersData !== undefined;
+        if (!hasGstr1Sheets) {
+          validationErrors.push(
+            'This workbook does not appear to be a GSTR-1 template. Expected sheets (b2b, hsn, docs, etc.) were not found.',
+          );
+        }
 
-      setData({
-        fileName: file.name,
-        fileSize: file.size,
-        rows: mockRows,
-        validationErrors,
-      });
+        setData({
+          fileName: file.name,
+          fileSize: file.size,
+          rows: rowCount,
+          validationErrors,
+          parsedDraftData: draftData,
+        });
+      } catch (err) {
+        setError(
+          `Failed to parse the Excel file: ${err instanceof Error ? err.message : 'Unknown error'}. Please ensure it is a valid GSTR-1 template.`,
+        );
+        if (inputRef.current) inputRef.current.value = '';
+      } finally {
+        setIsPending(false);
+      }
     },
     [],
   );
@@ -89,7 +105,7 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
     mutate,
     reset,
     data,
-    isPending: false, // TODO: will be true during actual upload
+    isPending,
     isError: error !== null,
     error,
     inputRef,

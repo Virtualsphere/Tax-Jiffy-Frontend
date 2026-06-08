@@ -11,10 +11,15 @@ type UseGstr1DraftReturn = {
   error: null;
 };
 
-export function useGstr1Draft(): UseGstr1DraftReturn {
+/**
+ * Returns GSTR-1 draft data.
+ * If `parsedData` is provided (from the uploaded Excel), it takes precedence
+ * over the default mock data so the UI shows real file contents.
+ */
+export function useGstr1Draft(parsedData?: Gstr1DraftData): UseGstr1DraftReturn {
   // TODO: swap with useQuery(['gstr1', 'draft'], gstr1Api.getDraft)
   return {
-    data: MOCK_DRAFT_DATA,
+    data: parsedData ?? MOCK_DRAFT_DATA,
     isLoading: false,
     isError: false,
     error: null,

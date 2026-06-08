@@ -1,0 +1,151 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Trigger badges ── */
+.yearBadge,
+.monthBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.yearBadge {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.yearBadge:hover {
+  border-color: #5a6acf;
+  color: #5a6acf;
+  background: rgb(90 106 207 / 0.05);
+}
+
+.monthBadge {
+  border: 1px solid #5a6acf;
+  background: rgb(90 106 207 / 0.06);
+  color: #5a6acf;
+}
+
+.monthBadge:hover {
+  background: rgb(90 106 207 / 0.12);
+}
+
+.yearBadge:focus-visible,
+.monthBadge:focus-visible {
+  outline: 2px solid #5a6acf;
+  outline-offset: 2px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Popover ── */
+.popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 200;
+  width: 280px;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  animation: popoverIn 0.14s ease;
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.popoverTitle {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.section {
+  /* intentionally minimal */
+}
+
+.sectionLabel {
+  margin: 0 0 7px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f3f9;
+  margin: 10px 0;
+}
+
+/* Year: 2 columns */
+.yearGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 0;
+}
+
+/* Month: 4 columns */
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.optionBtn {
+  padding: 6px 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: transparent;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  text-align: center;
+}
+
+.optionBtn:hover {
+  background: rgb(90 106 207 / 0.07);
+  border-color: #5a6acf;
+  color: #5a6acf;
+}
+
+.optionBtnActive {
+  background: #5a6acf !important;
+  border-color: #5a6acf !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}

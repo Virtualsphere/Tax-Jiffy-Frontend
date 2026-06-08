@@ -5,6 +5,8 @@ import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadS
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
 import { useFileGstr1 } from '@/pages/dashboard/gstr1/hooks/useFileGstr1';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 
 /* ── Types ── */
@@ -108,14 +110,16 @@ function MatchingIcon() {
 /* ── Component ── */
 export function GSTR1Page() {
   const [step, setStep] = useState<Step>(1);
+  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
 
   // Hooks — all mock data lives inside these; swap internals for real API later
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
-  const draft = useGstr1Draft();
+  // Pass Excel-extracted data to the draft hook so all tabs show real file data
+  const draft = useGstr1Draft(upload.data?.parsedDraftData);
   const filing = useFileGstr1();
 
-  const [activeTab, setActiveTab] = useState<string>('Outward'); // Default to Outward for testing, wait, no, the prompt says "make outward section clickable", I should default to 'Basic' but I can set it to Outward for easier verification or leave as Basic. I'll leave as Basic.
+  const [activeTab, setActiveTab] = useState<string>('Basic');
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>('table4');
 
   // When matching completes, move to step 2
@@ -312,6 +316,17 @@ export function GSTR1Page() {
         </div>
       )}
 
+      {/* Parsing spinner */}
+      {upload.isPending && (
+        <div className={styles.parsingCard}>
+          <div className={styles.parsingSpinner} />
+          <div className={styles.parsingText}>
+            <p className={styles.parsingTitle}>Parsing Excel file…</p>
+            <p className={styles.parsingSubtitle}>Extracting GSTR-1 data from all worksheets</p>
+          </div>
+        </div>
+      )}
+
       {/* Uploaded file card */}
       {upload.data && (
         <div className={styles.fileCard}>
@@ -321,12 +336,14 @@ export function GSTR1Page() {
           <div className={styles.fileInfo}>
             <p className={styles.fileName}>
               {upload.data.fileName}
-              <span className={styles.fileBadge}>
-                {upload.data.validationErrors.length > 0 ? 'Has errors' : 'Ready for validation'}
+              <span className={`${styles.fileBadge} ${upload.data.validationErrors.length > 0 ? styles.fileBadgeError : styles.fileBadgeSuccess}`}>
+                {upload.data.validationErrors.length > 0 ? 'Has errors' : '✓ Data extracted'}
               </span>
             </p>
             <p className={styles.fileMeta}>
-              {formatFileSize(upload.data.fileSize)} • {upload.data.rows.toLocaleString()} rows detected • Uploaded successfully
+              {formatFileSize(upload.data.fileSize)}
+              {upload.data.rows > 0 && ` • ${upload.data.rows.toLocaleString()} records parsed`}
+              {upload.data.parsedDraftData && ' • Ready for review'}
             </p>
           </div>
           <button
@@ -337,6 +354,19 @@ export function GSTR1Page() {
           >
             ✕
           </button>
+        </div>
+      )}
+
+      {/* Extraction summary */}
+      {upload.data?.parsedDraftData && upload.data.validationErrors.length === 0 && (
+        <div className={styles.extractionSummary}>
+          <div className={styles.extractionSummaryIcon}>📊</div>
+          <div className={styles.extractionSummaryContent}>
+            <p className={styles.extractionSummaryTitle}>Data Successfully Extracted</p>
+            <p className={styles.extractionSummaryText}>
+              All worksheets parsed — outward supplies, amendments, advance data, HSN summary and documents are ready to review in the tabs below after matching.
+            </p>
+          </div>
         </div>
       )}
 
@@ -443,8 +473,15 @@ export function GSTR1Page() {
         <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
           <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0 } : {}}>
             <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
-            <span className={styles.filingPeriodYear}>{draft.data.filingPeriodYear}</span>
-            <span className={styles.filingPeriodMonth}>{draft.data.filingPeriodMonth}</span>
+            <PeriodSelector
+              year={selectedYear.label}
+              month={selectedMonth}
+              onYearChange={(yLabel) => {
+                const fy = FY_YEARS.find(f => f.label === yLabel);
+                if (fy) setSelectedYear(fy);
+              }}
+              onMonthChange={setSelectedMonth}
+            />
             <span className={styles.filingPeriodSync}>
               <span className={styles.syncIcon}>ⓘ</span>
               Data synced from GST Portal
@@ -1210,7 +1247,7 @@ export function GSTR1Page() {
                         <tbody>
                           <tr>
                             <td colSpan={2} className={styles.outwardTableSubRowHeader} style={{ fontSize: '0.625rem', fontWeight: 500 }}>Tax period for which the details are being revised</td>
-                            <td colSpan={3} className={styles.outwardTableSubRowHeader} style={{ fontSize: '0.625rem', fontWeight: 500 }}>October 2023</td>
+                            <td colSpan={3} className={styles.outwardTableSubRowHeader} style={{ fontSize: '0.625rem', fontWeight: 500 }}>{selectedMonth} {selectedYear.startYear}</td>
                           </tr>
                           <tr>
                             <td colSpan={5} className={styles.outwardTableSubRowHeader} style={{ color: '#5a6acf' }}>10A. Intra-State Supplies [including supplies made through e-commerce operator attracting TCS] [Rate wise]</td>
@@ -1643,10 +1680,10 @@ export function GSTR1Page() {
           <button
             type="button"
             className={styles.proceedBtn}
-            disabled={!upload.data || upload.data.validationErrors.length > 0}
+            disabled={!upload.data || upload.data.validationErrors.length > 0 || upload.isPending}
             onClick={handleStartMatching}
           >
-            Proceed to Matching →
+            {upload.isPending ? 'Parsing file…' : 'Proceed to Matching →'}
           </button>
         </>
       )}

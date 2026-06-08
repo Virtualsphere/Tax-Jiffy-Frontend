@@ -11,6 +11,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@/components/Sidebar/SidebarIcons';
+
 import styles from '@/components/Sidebar/Sidebar.module.css';
 
 export type SidebarEntity = {
@@ -60,6 +61,7 @@ export function Sidebar({
     [collapsed],
   );
 
+  // Close flyout on outside click / Escape
   useEffect(() => {
     if (!collapsed || !openFlyoutSectionId) return;
 
@@ -82,6 +84,8 @@ export function Sidebar({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [collapsed, openFlyoutSectionId]);
+
+
 
   /** Build className for NavLink sub-items */
   const subItemClass = ({ isActive }: { isActive: boolean }) =>
