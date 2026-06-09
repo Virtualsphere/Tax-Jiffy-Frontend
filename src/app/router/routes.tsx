@@ -43,6 +43,9 @@ const EWayBillPage = lazy(() =>
 const EInvoicePage = lazy(() =>
   import('@/pages/dashboard/eInvoice/EInvoicePage').then((m) => ({ default: m.EInvoicePage })),
 );
+const GSTR2BPage = lazy(() =>
+  import('@/pages/dashboard/gstr2b/GSTR2BPage').then((m) => ({ default: m.GSTR2BPage })),
+);
 const ModulePlaceholderPage = lazy(() =>
   import('@/pages/dashboard/ModulePlaceholderPage').then((m) => ({
     default: m.ModulePlaceholderPage,
@@ -185,6 +188,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <EInvoicePage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'gstr-2b',
+        element: (
+          <SuspenseWrapper>
+            <GSTR2BPage />
           </SuspenseWrapper>
         ),
       },

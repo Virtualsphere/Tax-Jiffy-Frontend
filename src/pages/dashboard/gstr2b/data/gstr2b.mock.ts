@@ -1,0 +1,105 @@
+import type { Gstr2bData } from '../types/gstr2b.types';
+
+export const MOCK_GSTR2B_DATA: Gstr2bData = {
+  registrationDetails: {
+    gstin: '09AADCV5659C1Z5',
+    legalName: 'VOLLERT INDIA PRIVATE LIMITED',
+    year: '2026',
+    month: 'June',
+    tradeName: 'VOLLERT INDIA PVT LTD',
+    generationDate: '2026-06-15',
+  },
+  itcAvailable: {
+    creditMayBeClaimed: [
+      {
+        section: 'I',
+        heading: 'All other ITC (B2B Supplies)',
+        gstr3bTable: '4(A)(5)',
+        igst: 120000,
+        cgst: 60000,
+        sgst: 60000,
+        cess: 5000,
+      },
+      {
+        section: 'II',
+        heading: 'Inward Supplies from ISD',
+        gstr3bTable: '4(A)(4)',
+        igst: 20000,
+        cgst: 10000,
+        sgst: 10000,
+        cess: 0,
+      },
+      {
+        section: 'III',
+        heading: 'Inward Supplies liable to Reverse Charge',
+        gstr3bTable: '4(A)(3)',
+        igst: 15000,
+        cgst: 7500,
+        sgst: 7500,
+        cess: 0,
+      },
+      {
+        section: 'IV',
+        heading: 'Import of Goods',
+        gstr3bTable: '4(A)(1)',
+        igst: 80000,
+        cgst: 0,
+        sgst: 0,
+        cess: 2000,
+      },
+    ],
+    creditShallBeReversed: [
+      {
+        section: 'I',
+        heading: 'Others (Credit Notes, etc.)',
+        gstr3bTable: '4(B)(2)',
+        igst: 10000,
+        cgst: 5000,
+        sgst: 5000,
+        cess: 0,
+      },
+    ],
+  },
+  itcUnavailable: {
+    itcNotAvailable: [
+      {
+        section: 'I',
+        heading: 'All other ITC (Blocked / Ineligible)',
+        gstr3bTable: 'NA',
+        igst: 25000,
+        cgst: 12500,
+        sgst: 12500,
+        cess: 0,
+      },
+      {
+        section: 'II',
+        heading: 'Inward Supplies from ISD',
+        gstr3bTable: 'NA',
+        igst: 5000,
+        cgst: 2500,
+        sgst: 2500,
+        cess: 0,
+      },
+      {
+        section: 'III',
+        heading: 'Reverse Charge (ITC not allowed)',
+        gstr3bTable: '3.1(D)',
+        igst: 8000,
+        cgst: 4000,
+        sgst: 4000,
+        cess: 0,
+      },
+    ],
+    itcReversal: [
+      {
+        section: 'I',
+        heading: 'Others (Credit Notes impact)',
+        gstr3bTable: '4(B)(2)',
+        igst: 3000,
+        cgst: 1500,
+        sgst: 1500,
+        cess: 0,
+      },
+    ],
+  },
+};
