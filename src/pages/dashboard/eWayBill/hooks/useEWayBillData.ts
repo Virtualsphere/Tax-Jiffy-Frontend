@@ -4,7 +4,7 @@ import {
   fetchUnlinkedEWayBills, 
   fetchUnlinkedInvoices, 
   fetchPartiallyMatched 
-} from '../services/mockEWayBillApi';
+} from '../data/eWayBill.mock';
 
 export const useEWayBillData = (activeTab: string, globalSearch: string, colFilters: any) => {
   const [listData, setListData] = useState<any[]>([]);

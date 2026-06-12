@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
 import styles from './EWayBillPage.module.css';
-import { useEWayBillData } from '../../../hooks/useEWayBillData';
+import { useEWayBillData } from './hooks/useEWayBillData';
 
 // SVG Icons
 const TruckIcon = () => (

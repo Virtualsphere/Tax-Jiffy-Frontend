@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from './EInvoicePage.module.css';
-import { useEInvoiceData } from '../../../hooks/useEInvoiceData';
+import { useEInvoiceData } from './hooks/useEInvoiceData';
 
 const CheckIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchEInvoiceList, fetchUnpairedEInvoices } from '../services/mockEInvoiceApi';
+import { fetchEInvoiceList, fetchUnpairedEInvoices } from '../data/eInvoice.mock';
 
 export const useEInvoiceData = (activeTab: string, globalSearch: string, unpairedColFilters: any) => {
   const [listData, setListData] = useState<any[]>([]);

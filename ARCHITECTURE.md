@@ -10,8 +10,9 @@ src/
 │   ├── providers/          # Global React context providers
 │   └── router/             # Route definitions & RouterProvider
 ├── assets/                 # Static images, fonts, icons
-├── components/             # Shared, cross-feature UI (add as needed)
+├── components/             # Shared, cross-feature UI (PeriodSelector, Sidebar)
 ├── config/                 # App-wide config (env, routes)
+├── context/                # Global React contexts (PeriodContext)
 ├── features/               # Business domains (primary code organization)
 │   └── [feature]/
 │       ├── api/            # Feature HTTP endpoints
@@ -21,13 +22,19 @@ src/
 │       ├── pages/          # Feature-owned route pages (when coupled)
 │       ├── types/          # Feature TypeScript types
 │       └── index.ts        # Public API barrel (import boundary)
-├── layouts/                # Route shell layouts (landing, auth, signup)
+├── hooks/                  # Shared cross-feature hooks
+├── layouts/                # Route shell layouts (landing, dashboard, signup)
 ├── lib/                    # Infrastructure (api client, query client)
 ├── pages/                  # Thin route pages that compose features
+│   └── dashboard/
+│       └── [module]/
+│           ├── data/       # Mock data / data helpers
+│           ├── hooks/      # Module-specific hooks
+│           ├── tabs/       # Tab sub-components (e.g. GSTR1 tabs)
+│           └── types/      # Module-specific types
 ├── services/               # Cross-cutting app services (error handling)
 ├── styles/                 # Global CSS, tokens, reset
-├── types/                  # Shared global TypeScript types
-└── utils/                  # Pure utility functions (add as needed)
+└── types/                  # Shared global TypeScript types
 ```
 
 ## Where does code go?
