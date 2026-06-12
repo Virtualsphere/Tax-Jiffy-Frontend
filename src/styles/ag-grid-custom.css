@@ -1,0 +1,125 @@
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-quartz.css";
+
+/* Base theme mimicking .table */
+.ag-theme-tax-jiffy {
+  --ag-font-family: inherit;
+  --ag-header-background-color: #f3f4f6;
+  --ag-header-foreground-color: #4b5563;
+  --ag-background-color: #ffffff;
+  --ag-data-color: #111827;
+  --ag-borders: solid 1px;
+  --ag-border-color: #e5e7eb;
+  --ag-row-border-color: #e5e7eb;
+  --ag-header-column-separator-display: block;
+  --ag-header-column-separator-color: #e5e7eb;
+  --ag-cell-horizontal-border: solid transparent;
+  
+  --ag-font-size: 15px;
+  --ag-header-font-weight: 700;
+  
+  /* border radius matching .table */
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.ag-theme-tax-jiffy .ag-root-wrapper {
+  border: none;
+  border-radius: 12px;
+}
+
+/* Header tweaks */
+.ag-theme-tax-jiffy .ag-header-cell {
+  padding: 16px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+}
+
+.ag-theme-tax-jiffy .ag-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Cell tweaks */
+.ag-theme-tax-jiffy .ag-cell {
+  padding: 10px 24px; /* ag-grid defaults to vertically centering, setting padding horizontally */
+  display: flex;
+  align-items: center;
+  border-right: none;
+}
+
+/* First column border right matching .table th:first-child */
+.ag-theme-tax-jiffy .ag-cell[col-id="field_attribute"],
+.ag-theme-tax-jiffy .ag-header-cell[col-id="field_attribute"] {
+  border-right: 1px solid #e5e7eb;
+}
+
+
+/* Data Table Theme matching .dataTable */
+.ag-theme-tax-jiffy-data {
+  --ag-font-family: inherit;
+  --ag-header-background-color: #5c6bc0;
+  --ag-header-foreground-color: #ffffff;
+  --ag-background-color: #ffffff;
+  --ag-data-color: #374151;
+  --ag-borders: none;
+  --ag-row-border-color: #e5e7eb;
+  --ag-header-column-separator-display: none;
+  --ag-font-size: 14px;
+  --ag-header-font-weight: 700;
+}
+
+.ag-theme-tax-jiffy-data .ag-root-wrapper {
+  border: none;
+  border-radius: 0;
+}
+
+.ag-theme-tax-jiffy-data .ag-header-cell {
+  padding: 16px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+}
+
+.ag-theme-tax-jiffy-data .ag-cell {
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.ag-theme-tax-jiffy-data .ag-header {
+  border-bottom: none;
+}
+
+/* Utility to make cells bold */
+.ag-cell-bold {
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+/* Right align utility */
+.ag-cell-right {
+  justify-content: flex-end;
+}
+.ag-header-cell-right .ag-header-cell-label {
+  justify-content: flex-end;
+}
+
+/* Original Design Match Utilities */
+.ag-theme-blue-headers {
+  --ag-header-background-color: #5a6acf;
+  --ag-header-foreground-color: #ffffff;
+  --ag-header-column-separator-color: rgba(255, 255, 255, 0.1);
+}
+
+.ag-theme-blue-group-headers .ag-header-group-cell {
+  background-color: #5c73e8;
+  color: #ffffff;
+}
+
+.ag-theme-blue-group-headers .ag-header-group-cell-label {
+  justify-content: center;
+}

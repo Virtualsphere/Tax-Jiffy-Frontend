@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from './EInvoicePage.module.css';
 import { useEInvoiceData } from '../../../hooks/useEInvoiceData';
 
@@ -63,9 +65,22 @@ export function EInvoicePage() {
 
   const { listData, unpairedData, loading } = useEInvoiceData(activeTab, globalSearch, unpairedColFilters);
 
-  const handleUnpairedFilterChange = (col: string, val: string) => {
-    setUnpairedColFilters({ ...unpairedColFilters, [col as keyof typeof unpairedColFilters]: val });
-  };
+  const handleUnpairedFilterChange = useCallback((col: string, val: string) => {
+    setUnpairedColFilters((prev) => ({ ...prev, [col]: val }));
+  }, []);
+
+  const CustomFloatingFilter = useCallback((props: any) => {
+    const field = props.column.colId;
+    return (
+      <input 
+        type="text" 
+        placeholder="Col. Filter" 
+        className={styles.filterInput} 
+        value={props.filterValues[field] || ''} 
+        onChange={(e) => props.onFilterChange(field, e.target.value)} 
+      />
+    );
+  }, []);
 
   const renderOverview = () => (
     <div className={styles.cardsGrid}>
@@ -131,6 +146,108 @@ export function EInvoicePage() {
     </div>
   );
 
+  const listColDefs = useMemo<(ColDef | ColGroupDef)[]>(() => [
+    {
+      headerName: 'BASIC DETAILS',
+      children: [
+        { field: 'docTypeCode', headerName: 'DOC TYPE CODE', cellClass: styles.docTypeLabel, autoHeight: true },
+        { 
+          field: 'documentNo', 
+          headerName: 'DOCUMENT NO',
+          cellClass: (params: any) => params.data?.docTypeCode === 'CRN' ? styles.docNoRed : styles.docNoBlue,
+          autoHeight: true
+        },
+        { field: 'documentDate', headerName: 'DOCUMENT DATE', autoHeight: true },
+        { field: 'supplyTypeCode', headerName: 'SUPPLY TYPE CODE', autoHeight: true },
+      ]
+    },
+    {
+      headerName: 'SUPPLIER',
+      children: [
+        { 
+          field: 'legalName', 
+          headerName: 'LEGAL NAME',
+          cellRenderer: (p: any) => <div>{p.value?.split(' ').map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+          autoHeight: true
+        },
+        { 
+          field: 'gstin', 
+          headerName: 'GSTIN',
+          cellRenderer: (p: any) => <div>{p.value?.split(/(.{9})/).filter((x:string)=>x).map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+          autoHeight: true
+        },
+        { field: 'address', headerName: 'ADDRESS', autoHeight: true },
+        { 
+          field: 'state', 
+          headerName: 'STATE',
+          cellRenderer: (p: any) => <div>{p.value?.split(' ').map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+          autoHeight: true
+        },
+        { field: 'pincode', headerName: 'PINCODE', autoHeight: true },
+      ]
+    },
+    { 
+      field: 'buyerName', 
+      headerName: 'NAME', 
+      cellRenderer: (p: any) => <div>{p.value?.split(' ').map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+      autoHeight: true
+    }
+  ], []);
+
+  const unpairedColDefs = useMemo<ColDef[]>(() => [
+    { 
+      field: 'gstin', headerName: 'GSTIN', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      cellRenderer: (p: any) => <div>{p.value?.split(/(.{9})/).filter((x:string)=>x).map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+      autoHeight: true
+    },
+    { 
+      field: 'partyName', headerName: 'PARTY NAME', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      cellRenderer: (p: any) => <div>{p.value?.split(' ').map((w:string,i:number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</div>,
+      autoHeight: true
+    },
+    { 
+      field: 'invoiceNo', headerName: 'INVOICE NO.', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      cellClass: (p: any) => p.value?.startsWith('CRN') ? styles.docNoRed : styles.docNoBlue,
+      autoHeight: true
+    },
+    { 
+      field: 'invoiceDate', headerName: 'INVOICE DATE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      autoHeight: true
+    },
+    { 
+      field: 'taxRate', headerName: 'TAX RATE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      autoHeight: true
+    },
+    { 
+      field: 'taxableValue', headerName: 'TAXABLE VALUE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      autoHeight: true
+    },
+    { 
+      field: 'cgstValue', headerName: 'CGST VALUE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      autoHeight: true
+    },
+    { 
+      field: 'sgstValue', headerName: 'SGST VALUE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleUnpairedFilterChange, filterValues: unpairedColFilters },
+      autoHeight: true
+    },
+  ], [unpairedColFilters, handleUnpairedFilterChange, CustomFloatingFilter]);
+
   const renderListTable = () => {
     return (
       <div className={styles.listContainer}>
@@ -156,55 +273,15 @@ export function EInvoicePage() {
 
         {/* Table */}
         <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.blueSubHeader}>
-                <th colSpan={4}>BASIC DETAILS</th>
-                <th colSpan={5}>SUPPLIER</th>
-                <th></th>
-              </tr>
-              <tr className={styles.colHeaders}>
-                <th>DOC<br/>TYPE<br/>CODE</th>
-                <th>DOCUMENT<br/>NO</th>
-                <th>DOCUMENT<br/>DATE</th>
-                <th>SUPPLY<br/>TYPE<br/>CODE</th>
-                <th>LEGAL<br/>NAME</th>
-                <th>GSTIN</th>
-                <th>ADDRESS</th>
-                <th>STATE</th>
-                <th>PINCODE</th>
-                <th>NAME</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={10} style={{ textAlign: 'center', padding: '40px' }}>Loading data...</td>
-                </tr>
-              ) : (
-                listData.map((row: any, idx: number) => (
-                  <tr key={idx} className={styles.tableBodyRow}>
-                    <td className={styles.docTypeLabel}>{row.docTypeCode}</td>
-                    <td className={row.docTypeCode === 'CRN' ? styles.docNoRed : styles.docNoBlue}>
-                      {row.documentNo}
-                    </td>
-                    <td>{row.documentDate}</td>
-                    <td>{row.supplyTypeCode}</td>
-                    <td style={{ maxWidth: '100px' }}>{row.legalName.split(' ').map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                    <td>{row.gstin.split(/(.{9})/).filter((x: string)=>x).map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                    <td>{row.address}</td>
-                    <td>{row.state.split(' ').map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                    <td>{row.pincode}</td>
-                    <td style={{ maxWidth: '100px' }}>{row.buyerName.split(' ').map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                  </tr>
-                ))
-              )}
-              {/* Summary Row */}
-              <tr className={styles.summaryRow}>
-                <td colSpan={10}>COUNT: 850</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '500px' }}>
+            <AgGridReact theme="legacy"
+              rowData={loading ? undefined : listData}
+              columnDefs={listColDefs}
+              domLayout="autoHeight"
+              suppressMenuHide={true}
+              pinnedBottomRowData={[{ docTypeCode: 'COUNT: 850' }]}
+            />
+          </div>
         </div>
 
         {/* Footer */}
@@ -253,60 +330,17 @@ export function EInvoicePage() {
 
         {/* Table */}
         <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.blueColHeaders}>
-                <th>GSTIN</th>
-                <th>PARTY NAME</th>
-                <th>INVOICE NO.</th>
-                <th>INVOICE DATE</th>
-                <th>TAX<br/>RATE</th>
-                <th>TAXABLE VALUE</th>
-                <th>CGST VALUE</th>
-                <th>SGST VALUE</th>
-              </tr>
-              <tr className={styles.filterRow}>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.gstin} onChange={(e) => handleUnpairedFilterChange('gstin', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.partyName} onChange={(e) => handleUnpairedFilterChange('partyName', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.invoiceNo} onChange={(e) => handleUnpairedFilterChange('invoiceNo', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.invoiceDate} onChange={(e) => handleUnpairedFilterChange('invoiceDate', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.taxRate} onChange={(e) => handleUnpairedFilterChange('taxRate', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.taxableValue} onChange={(e) => handleUnpairedFilterChange('taxableValue', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.cgstValue} onChange={(e) => handleUnpairedFilterChange('cgstValue', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={unpairedColFilters.sgstValue} onChange={(e) => handleUnpairedFilterChange('sgstValue', e.target.value)} /></th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>Loading data...</td>
-                </tr>
-              ) : (
-                unpairedData.map((row: any, idx: number) => (
-                  <tr key={idx} className={styles.tableBodyRow}>
-                    <td style={{ maxWidth: '120px' }}>{row.gstin.split(/(.{9})/).filter((x: string)=>x).map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                    <td style={{ maxWidth: '100px' }}>{row.partyName.split(' ').map((w: string,i: number)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</td>
-                    <td className={row.invoiceNo.startsWith('CRN') ? styles.docNoRed : styles.docNoBlue}>
-                      {row.invoiceNo}
-                    </td>
-                    <td>{row.invoiceDate}</td>
-                    <td>{row.taxRate}</td>
-                    <td>{row.taxableValue}</td>
-                    <td>{row.cgstValue}</td>
-                    <td>{row.sgstValue}</td>
-                  </tr>
-                ))
-              )}
-              {/* Summary Row */}
-              <tr className={styles.summaryRowUnpaired}>
-                <td colSpan={4}>Count: 4</td>
-                <td style={{ textAlign: 'right' }}>Total</td>
-                <td style={{ textAlign: 'left' }}></td>
-                <td style={{ textAlign: 'left' }}>19,980.00</td>
-                <td style={{ textAlign: 'left' }}>19,980.00</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '500px' }}>
+             <AgGridReact theme="legacy"
+                rowData={loading ? undefined : unpairedData}
+                columnDefs={unpairedColDefs}
+                domLayout="autoHeight"
+                suppressMenuHide={true}
+                pinnedBottomRowData={[
+                  { gstin: 'Count: 4', taxRate: 'Total', taxableValue: '', cgstValue: '19,980.00', sgstValue: '19,980.00' }
+                ]}
+              />
+          </div>
         </div>
 
         {/* Footer */}

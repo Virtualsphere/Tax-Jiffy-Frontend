@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import type { ColDef } from 'ag-grid-community';
 import styles from '@/pages/pricing/components/PricingComparisonSection.module.css';
 
 interface PricingComparisonSectionProps {
@@ -23,7 +26,7 @@ function CrossIcon() {
 }
 
 export function PricingComparisonSection({ isAnnual }: PricingComparisonSectionProps) {
-  const COMPARISON_DATA = [
+  const COMPARISON_DATA = useMemo(() => [
     { feature: 'Users Included', free: '1', basic: '1', business: '3', enterprise: 'Unlimited' },
     { feature: 'Add-on Users', free: <CrossIcon />, basic: '₹30 per add-on user', business: '₹30 per add-on user', enterprise: 'Unlimited' },
     { feature: 'Transactions/Month', free: isAnnual ? '50 (600/yr)' : '50', basic: isAnnual ? '100 (1200/yr)' : '100', business: isAnnual ? '400 (4800/yr)' : '400', enterprise: 'Unlimited' },
@@ -39,7 +42,15 @@ export function PricingComparisonSection({ isAnnual }: PricingComparisonSectionP
     { feature: 'Data Storage', free: 'Our Server', basic: 'Our Server', business: 'Our Server', enterprise: 'Custom/Cloud' },
     { feature: 'Support', free: 'Email', basic: 'Chat', business: 'Priority', enterprise: 'Dedicated' },
     { feature: 'Data Migration', free: <CrossIcon />, basic: <CrossIcon />, business: 'Self-serve', enterprise: <CheckCircleIcon /> },
-  ];
+  ], [isAnnual]);
+
+  const colDefs = useMemo<ColDef[]>(() => [
+    { field: 'feature', headerName: 'FEATURES', cellClass: styles.featureCell, flex: 2 },
+    { field: 'free', headerName: 'FREE', flex: 1, cellRenderer: (p: any) => p.value },
+    { field: 'basic', headerName: 'BASIC', flex: 1, cellRenderer: (p: any) => p.value },
+    { field: 'business', headerName: 'BUSINESS', flex: 1, cellRenderer: (p: any) => p.value },
+    { field: 'enterprise', headerName: 'ENTERPRISE', flex: 1, cellRenderer: (p: any) => p.value },
+  ], []);
 
   return (
     <section className={styles.comparisonSection}>
@@ -49,28 +60,14 @@ export function PricingComparisonSection({ isAnnual }: PricingComparisonSectionP
       </div>
 
       <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>FEATURES</th>
-              <th>FREE</th>
-              <th>BASIC</th>
-              <th>BUSINESS</th>
-              <th>ENTERPRISE</th>
-            </tr>
-          </thead>
-          <tbody>
-            {COMPARISON_DATA.map((row, idx) => (
-              <tr key={idx}>
-                <td className={styles.featureCell}>{row.feature}</td>
-                <td>{row.free}</td>
-                <td>{row.basic}</td>
-                <td>{row.business}</td>
-                <td>{row.enterprise}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="ag-theme-tax-jiffy" style={{ width: '100%' }}>
+          <AgGridReact theme="legacy"
+            rowData={COMPARISON_DATA}
+            columnDefs={colDefs}
+            domLayout="autoHeight"
+            suppressMenuHide={true}
+          />
+        </div>
       </div>
     </section>
   );

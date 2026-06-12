@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
 import styles from './EWayBillPage.module.css';
 import { useEWayBillData } from '../../../hooks/useEWayBillData';
 
@@ -104,7 +106,6 @@ const DocumentIconSmall = () => (
   </svg>
 );
 
-
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'list', label: 'List', badge: '850' },
@@ -112,9 +113,6 @@ const TABS = [
   { id: 'unlinked-invoice', label: 'Unlinked Invoice', badge: '38' },
   { id: 'partially-matched', label: 'Partially matched', badge: '55' },
 ];
-
-
-
 
 export function EWayBillPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -125,9 +123,9 @@ export function EWayBillPage() {
 
   const { listData, unlinkedEWayBillData, unlinkedInvoiceData, partiallyMatchedData, loading } = useEWayBillData(activeTab, globalSearch, colFilters);
 
-  const handleColFilterChange = (col: string, val: string) => {
+  const handleColFilterChange = useCallback((col: string, val: string) => {
     setColFilters(prev => ({ ...prev, [col]: val }));
-  };
+  }, []);
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -138,6 +136,201 @@ export function EWayBillPage() {
     }
   };
 
+  const CustomFloatingFilter = useCallback((props: any) => {
+    const field = props.column.colId;
+    return (
+      <input 
+        type="text" 
+        placeholder="Col. Filter" 
+        className={styles.filterInput} 
+        value={props.filterValues[field] || ''} 
+        onChange={(e) => props.onFilterChange(field, e.target.value)} 
+      />
+    );
+  }, []);
+
+  const invoiceColDefs = useMemo<(ColDef | ColGroupDef)[]>(() => [
+    {
+      headerName: 'DOCUMENT INFO',
+      children: [
+        { 
+          field: 'docNo', headerName: 'Document No.', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellRenderer: (p: any) => <a href="#" className={styles.linkText}>{p.value}</a>
+        },
+        { 
+          field: 'docDate', headerName: 'Document Date', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+        { 
+          field: 'docType', headerName: 'Document Type', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+      ]
+    },
+    {
+      headerName: 'PARTY DETAILS',
+      children: [
+        { 
+          field: 'partyGstin', headerName: 'Party GSTIN', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+      ]
+    },
+    {
+      headerName: 'FINANCIALS',
+      children: [
+        { 
+          field: 'assessableValue', headerName: 'Assessable Value', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellClass: styles.valueCell
+        },
+        { 
+          field: 'sgstValue', headerName: 'SGST Value', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellClass: styles.valueCellLight
+        },
+        { 
+          field: 'cgstValue', headerName: 'CGST Value', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellClass: styles.valueCellLight
+        },
+      ]
+    }
+  ], [colFilters, handleColFilterChange, CustomFloatingFilter]);
+
+  const ewayBillColDefs = useMemo<(ColDef | ColGroupDef)[]>(() => [
+    {
+      headerName: 'EWAY BILL DETAILS',
+      children: [
+        { 
+          field: 'ewayBillNo', headerName: 'Eway Bill No.', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellRenderer: (p: any) => <a href="#" className={styles.linkText}>{p.value}</a>
+        },
+        { 
+          field: 'ewbDateTime', headerName: 'EWB Date & Time', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellRenderer: (p: any) => <div>{p.value?.split(' ').map((line: string, i: number) => <div key={i}>{line}</div>)}</div>,
+          autoHeight: true
+        },
+        { 
+          field: 'docType', headerName: 'Document Type', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+        { 
+          field: 'docDate', headerName: 'Document Date', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+          cellRenderer: (p: any) => <div>{p.value?.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}</span>)}</div>
+        },
+      ]
+    },
+    {
+      headerName: 'PARTY DETAILS',
+      children: [
+        { 
+          field: 'partyGstin', headerName: 'Party GSTIN', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+        { 
+          field: 'transporterGstin', headerName: 'Transporter GSTIN', floatingFilter: true,
+          floatingFilterComponent: CustomFloatingFilter,
+          floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters }
+        },
+      ]
+    },
+    { 
+      field: 'status', headerName: 'STATUS', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+      cellRenderer: (p: any) => <span className={`${styles.statusBadge} ${getStatusClass(p.value)}`}>{p.value}</span>
+    },
+    { 
+      field: 'value', headerName: 'ASSESSABLE', floatingFilter: true,
+      floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: { onFilterChange: handleColFilterChange, filterValues: colFilters },
+      cellClass: styles.valueCell
+    },
+  ], [colFilters, handleColFilterChange, CustomFloatingFilter]);
+
+  const listColDefs = useMemo<(ColDef | ColGroupDef)[]>(() => [
+    {
+      headerName: 'EWAY BILL DETAILS',
+      children: [
+        { field: 'ewayBillNo', headerName: 'Eway Bill No.', cellRenderer: (p: any) => <a href="#" className={styles.linkText}>{p.value}</a> },
+        { field: 'ewbDateTime', headerName: 'EWB Date & Time', cellRenderer: (p: any) => <div>{p.value?.split(' ').map((line: string, i: number) => <div key={i}>{line}</div>)}</div>, autoHeight: true },
+        { field: 'docType', headerName: 'Document Type' },
+        { field: 'docDate', headerName: 'Document Date', cellRenderer: (p: any) => <div>{p.value?.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}</span>)}</div> },
+        { field: 'partyGstin', headerName: 'Party GSTIN' },
+        { field: 'transporterGstin', headerName: 'Transporter GSTIN' },
+        { field: 'status', headerName: 'Status', cellRenderer: (p: any) => <span className={`${styles.statusBadge} ${getStatusClass(p.value)}`}>{p.value}</span> },
+        { field: 'value', headerName: 'Assessable Value (₹)', cellClass: styles.valueCell },
+      ]
+    }
+  ], []);
+
+  const reconColDefs = useMemo<(ColDef | ColGroupDef)[]>(() => [
+    {
+      headerName: '',
+      children: [
+        {
+          field: 'gstin', headerName: 'GSTIN', 
+          colSpan: (p: any) => p.data.rowType === 'total' ? 3 : 1,
+          cellRenderer: (p: any) => p.data.rowType === 'total' ? 'TOTAL (LINKED DOCUMENTS)' : <span className={p.data.rowType === 'child' ? styles.lightText : ''}>{p.value}</span>,
+          cellClass: (p: any) => p.data.rowType === 'total' ? styles.totalLabelCell : ''
+        },
+        {
+          field: 'docNo', headerName: 'LINKED DOCUMENT TYPES & NO.',
+          cellRenderer: (p: any) => {
+            if (p.data.rowType === 'total') return null;
+            return (
+              <div className={styles.linkDocCell}>
+                {p.data.docType === 'INV' ? <DocumentIconSmall /> : <TruckIconSmall />}
+                {p.data.rowType === 'parent' ? <a href="#" className={styles.linkText}>{p.value}</a> : <span className={styles.lightText}>{p.value}</span>}
+              </div>
+            );
+          }
+        },
+        {
+          field: 'date', headerName: 'DATE',
+          cellRenderer: (p: any) => {
+            if (p.data.rowType === 'total') return null;
+            return <div className={p.data.rowType === 'child' ? styles.lightText : ''}>{p.value?.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</div>;
+          },
+          autoHeight: true
+        }
+      ]
+    },
+    {
+      headerName: 'TAX VALUES',
+      children: [
+        { field: 'assessableValue', headerName: 'ASSESSABLE VALUE', cellRenderer: (p: any) => `₹ ${p.value}`, cellClass: (p: any) => p.data.rowType === 'parent' ? styles.valueCellBold : (p.data?.rowType === 'child' ? styles.lightText : '') },
+        { field: 'sgstValue', headerName: 'SGST VALUE', cellRenderer: (p: any) => `₹ ${p.value}`, cellClass: (p: any) => p.data.rowType === 'parent' ? styles.valueCellBold : (p.data?.rowType === 'child' ? styles.lightText : '') },
+        { field: 'cgstValue', headerName: 'CGST VALUE', cellRenderer: (p: any) => `₹ ${p.value}`, cellClass: (p: any) => p.data.rowType === 'parent' ? styles.valueCellBold : (p.data?.rowType === 'child' ? styles.lightText : '') },
+        { field: 'igstValue', headerName: 'IGST VALUE', cellRenderer: (p: any) => `₹ ${p.value}`, cellClass: (p: any) => p.data.rowType === 'parent' ? styles.valueCellBold : (p.data?.rowType === 'child' ? styles.lightText : '') },
+        { field: 'totalValue', headerName: 'TOTAL INVOICE VALUE', cellRenderer: (p: any) => `₹ ${p.value}`, cellClass: (p: any) => p.data.rowType === 'parent' ? styles.valueCellBold : (p.data?.rowType === 'child' ? styles.lightText : '') },
+      ]
+    }
+  ], []);
+
+  const getReconRowClass = (params: RowClassParams) => {
+    if (params.data.rowType === 'parent') return styles.rowParent;
+    if (params.data.rowType === 'child') return styles.rowChild;
+    if (params.data.rowType === 'total') return styles.rowTotal;
+    return '';
+  };
 
 
   const renderPartiallyMatchedView = () => {
@@ -146,113 +339,58 @@ export function EWayBillPage() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>Loading partially matched data...</div>
         ) : (
-          partiallyMatchedData.map((group: any, groupIndex: number) => (
-            <div key={groupIndex} className={styles.reconCard}>
-            <div className={styles.reconHeader}>
-              <div className={styles.reconHeaderLeft}>
-                <span className={group.type === 'ONE-TO-MANY' ? styles.badgeOneToMany : styles.badgeManyToOne}>
-                  {group.type}
-                </span>
-                <span className={styles.reconTitle}>Reconciliation: {group.title}</span>
-              </div>
-              <span className={styles.badgePartiallyMatched}>{group.status}</span>
-            </div>
+          partiallyMatchedData.map((group: any, groupIndex: number) => {
+            const flatData: any[] = [];
+            group.recordBlocks.forEach((block: any) => {
+              flatData.push({ ...block.parent, rowType: 'parent' });
+              block.children.forEach((child: any) => {
+                flatData.push({ ...child, rowType: 'child' });
+              });
+              flatData.push({ ...block.totals, rowType: 'total' });
+            });
 
-            <table className={styles.table}>
-              <thead>
-                <tr className={styles.blueSubHeaderMultiRecon}>
-                  <th colSpan={3}></th>
-                  <th colSpan={5} className={styles.taxValuesHeader}>TAX VALUES</th>
-                </tr>
-                <tr className={styles.reconColHeaders}>
-                  <th>GSTIN</th>
-                  <th>LINKED DOCUMENT<br/>TYPES & NO.</th>
-                  <th>DATE</th>
-                  <th>ASSESSABLE<br/>VALUE</th>
-                  <th>SGST<br/>VALUE</th>
-                  <th>CGST<br/>VALUE</th>
-                  <th>IGST<br/>VALUE</th>
-                  <th>TOTAL INVOICE<br/>VALUE</th>
-                </tr>
-                <tr className={`${styles.filterRow} ${styles.reconFilterRow}`}>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                  <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} /></th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.recordBlocks.map((block: any, blockIndex: number) => (
-                  <React.Fragment key={blockIndex}>
-                    {/* Parent Row */}
-                    <tr className={styles.rowParent}>
-                      <td>{block.parent.gstin}</td>
-                      <td className={styles.linkDocCell}>
-                        {block.parent.docType === 'INV' ? <DocumentIconSmall /> : <TruckIconSmall />}
-                        <a href="#" className={styles.linkText}>{block.parent.docNo}</a>
-                      </td>
-                      <td>{block.parent.date.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
-                      <td className={styles.valueCellBold}>₹ {block.parent.assessableValue}</td>
-                      <td className={styles.valueCellBold}>₹ {block.parent.sgstValue}</td>
-                      <td className={styles.valueCellBold}>₹ {block.parent.cgstValue}</td>
-                      <td className={styles.valueCellBold}>₹ {block.parent.igstValue}</td>
-                      <td className={styles.valueCellBold}>₹ {block.parent.totalValue}</td>
-                    </tr>
-                    
-                    {/* Child Rows */}
-                    {block.children.map((child: any, childIndex: number) => (
-                      <tr key={childIndex} className={styles.rowChild}>
-                        <td className={styles.lightText}>{child.gstin}</td>
-                        <td className={styles.linkDocCell}>
-                          {child.docType === 'INV' ? <DocumentIconSmall /> : <TruckIconSmall />}
-                          <span className={styles.lightText}>{child.docNo}</span>
-                        </td>
-                        <td className={styles.lightText}>{child.date.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}<br/></span>)}</td>
-                        <td className={styles.lightText}>₹ {child.assessableValue}</td>
-                        <td className={styles.lightText}>₹ {child.sgstValue}</td>
-                        <td className={styles.lightText}>₹ {child.cgstValue}</td>
-                        <td className={styles.lightText}>₹ {child.igstValue}</td>
-                        <td className={styles.lightText}>₹ {child.totalValue}</td>
-                      </tr>
-                    ))}
-                    
-                    {/* Totals Row */}
-                    <tr className={styles.rowTotal}>
-                      <td colSpan={3} className={styles.totalLabelCell}>TOTAL (LINKED DOCUMENTS)</td>
-                      <td>₹ {block.totals.assessableValue}</td>
-                      <td>₹ {block.totals.sgstValue}</td>
-                      <td>₹ {block.totals.cgstValue}</td>
-                      <td>₹ {block.totals.igstValue}</td>
-                      <td>₹ {block.totals.totalValue}</td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Footer */}
-            <div className={styles.paginationRecon}>
-              <div className={styles.rowsPerPage}>
-                <span>Rows per page:</span>
-                <div className={styles.selectWrapper}>
-                  <select className={styles.rowsSelect}>
-                    <option>10</option>
-                  </select>
+            return (
+              <div key={groupIndex} className={styles.reconCard}>
+                <div className={styles.reconHeader}>
+                  <div className={styles.reconHeaderLeft}>
+                    <span className={group.type === 'ONE-TO-MANY' ? styles.badgeOneToMany : styles.badgeManyToOne}>
+                      {group.type}
+                    </span>
+                    <span className={styles.reconTitle}>Reconciliation: {group.title}</span>
+                  </div>
+                  <span className={styles.badgePartiallyMatched}>{group.status}</span>
                 </div>
-                <span>Showing 1-3 of 3 records</span>
+
+                <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '500px' }}>
+                  <AgGridReact theme="legacy"
+                    rowData={flatData}
+                    columnDefs={reconColDefs}
+                    domLayout="autoHeight"
+                    getRowClass={getReconRowClass}
+                    suppressMenuHide={true}
+                  />
+                </div>
+
+                {/* Footer */}
+                <div className={styles.paginationRecon}>
+                  <div className={styles.rowsPerPage}>
+                    <span>Rows per page:</span>
+                    <div className={styles.selectWrapper}>
+                      <select className={styles.rowsSelect}>
+                        <option>10</option>
+                      </select>
+                    </div>
+                    <span>Showing 1-3 of 3 records</span>
+                  </div>
+                  <div className={styles.paginationControls}>
+                    <button className={`${styles.pageBtn} ${styles.pageBtnOutline}`}><ChevronLeftIcon /></button>
+                    <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
+                    <button className={`${styles.pageBtn} ${styles.pageBtnOutline}`}><ChevronRightIcon /></button>
+                  </div>
+                </div>
               </div>
-              <div className={styles.paginationControls}>
-                <button className={`${styles.pageBtn} ${styles.pageBtnOutline}`}><ChevronLeftIcon /></button>
-                <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                <button className={`${styles.pageBtn} ${styles.pageBtnOutline}`}><ChevronRightIcon /></button>
-              </div>
-            </div>
-          </div>
-          ))
+            );
+          })
         )}
       </div>
     );
@@ -269,10 +407,22 @@ export function EWayBillPage() {
     else if (tabType === 'unlinked-invoice') currentData = unlinkedInvoiceData;
 
     const isInvoice = tabType === 'unlinked-invoice';
+    const isEwayBill = tabType === 'unlinked-ewaybill';
 
     let totalEntries = 850;
     if (tabType === 'unlinked-ewaybill') totalEntries = 15;
     if (tabType === 'unlinked-invoice') totalEntries = 38;
+
+    let colDefs = listColDefs;
+    if (isInvoice) colDefs = invoiceColDefs;
+    if (isEwayBill) colDefs = ewayBillColDefs;
+
+    let pinnedBottomRowData;
+    if (!loading && isInvoice) {
+      pinnedBottomRowData = [{ docNo: `Count: ${currentData.length}`, assessableValue: 'Total ₹', sgstValue: '23,815.00', cgstValue: '23,815.00' }];
+    } else if (!loading && tabType === 'list') {
+      pinnedBottomRowData = [{ ewayBillNo: `Count: ${currentData.length}`, value: 'Total' }];
+    }
 
     return (
       <div className={styles.tableContainer}>
@@ -296,125 +446,15 @@ export function EWayBillPage() {
           </div>
         </div>
 
-        <table className={styles.table}>
-          <thead>
-            {isInvoice ? (
-              <tr className={styles.blueSubHeaderMulti}>
-                <th colSpan={3}>DOCUMENT INFO</th>
-                <th colSpan={1}>PARTY DETAILS</th>
-                <th colSpan={3}>FINANCIALS</th>
-              </tr>
-            ) : tabType === 'unlinked-ewaybill' ? (
-              <tr className={styles.blueSubHeaderMulti}>
-                <th colSpan={4}>EWAY BILL DETAILS</th>
-                <th colSpan={2}>PARTY DETAILS</th>
-                <th>STATUS</th>
-                <th>ASSESSABLE</th>
-              </tr>
-            ) : (
-              <tr className={styles.blueSubHeader}>
-                <th colSpan={8}>EWAY BILL DETAILS</th>
-              </tr>
-            )}
-
-            {isInvoice ? (
-              <tr>
-                <th>Document No.</th>
-                <th>Document<br/>Date</th>
-                <th>Document<br/>Type</th>
-                <th>Party GSTIN</th>
-                <th>Assessable Value</th>
-                <th>SGST Value</th>
-                <th>CGST<br/>Value</th>
-              </tr>
-            ) : (
-              <tr>
-                <th>Eway Bill No.</th>
-                <th>EWB<br/>Date & Time</th>
-                <th>Document<br/>Type</th>
-                <th>Document<br/>Date</th>
-                <th>Party GSTIN</th>
-                <th>Transporter GSTIN</th>
-                <th>Status</th>
-                <th>Assessable<br/>Value (₹)</th>
-              </tr>
-            )}
-
-            {isInvoice ? (
-              <tr className={styles.filterRow}>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.docNo || ''} onChange={e => handleColFilterChange('docNo', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.docDate || ''} onChange={e => handleColFilterChange('docDate', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.docType || ''} onChange={e => handleColFilterChange('docType', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.partyGstin || ''} onChange={e => handleColFilterChange('partyGstin', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.assessableValue || ''} onChange={e => handleColFilterChange('assessableValue', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.sgstValue || ''} onChange={e => handleColFilterChange('sgstValue', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.cgstValue || ''} onChange={e => handleColFilterChange('cgstValue', e.target.value)} /></th>
-              </tr>
-            ) : (
-              <tr className={styles.filterRow}>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.ewayBillNo || ''} onChange={e => handleColFilterChange('ewayBillNo', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.ewbDateTime || ''} onChange={e => handleColFilterChange('ewbDateTime', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.docType || ''} onChange={e => handleColFilterChange('docType', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.docDate || ''} onChange={e => handleColFilterChange('docDate', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.partyGstin || ''} onChange={e => handleColFilterChange('partyGstin', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.transporterGstin || ''} onChange={e => handleColFilterChange('transporterGstin', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.status || ''} onChange={e => handleColFilterChange('status', e.target.value)} /></th>
-                <th><input type="text" placeholder="Col. Filter" className={styles.filterInput} value={colFilters.value || ''} onChange={e => handleColFilterChange('value', e.target.value)} /></th>
-              </tr>
-            )}
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={isInvoice ? 7 : 8} style={{ textAlign: 'center', padding: '40px' }}>Loading data...</td>
-              </tr>
-            ) : isInvoice ? (
-              currentData.map((row) => (
-                <tr key={row.docNo}>
-                  <td><a href="#" className={styles.linkText}>{row.docNo}</a></td>
-                  <td>{row.docDate}</td>
-                  <td>{row.docType}</td>
-                  <td>{row.partyGstin}</td>
-                  <td className={styles.valueCell}>{row.assessableValue}</td>
-                  <td className={styles.valueCellLight}>{row.sgstValue}</td>
-                  <td className={styles.valueCellLight}>{row.cgstValue}</td>
-                </tr>
-              ))
-            ) : (
-              currentData.map((row) => (
-                <tr key={row.ewayBillNo}>
-                  <td><a href="#" className={styles.linkText}>{row.ewayBillNo}</a></td>
-                  <td>{row.ewbDateTime.split(' ').map((line: string, i: number) => <div key={i}>{line}</div>)}</td>
-                  <td>{row.docType}</td>
-                  <td>{row.docDate.split('-').map((line: string, i: number) => <span key={i}>{line}{i < 2 ? '-' : ''}</span>)}</td>
-                  <td>{row.partyGstin}</td>
-                  <td>{row.transporterGstin}</td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${getStatusClass(row.status)}`}>
-                      {row.status}
-                    </span>
-                  </td>
-                  <td className={styles.valueCell}>{row.value}</td>
-                </tr>
-              ))
-            )}
-
-            {/* Footer Row */}
-            {!loading && (isInvoice ? (
-              <tr className={styles.footerRow}>
-                <td colSpan={4}>Count: {currentData.length}</td>
-                <td style={{ textAlign: 'right', paddingRight: '24px' }}>Total ₹</td>
-                <td>23,815.00</td>
-                <td>23,815.00</td>
-              </tr>
-            ) : tabType === 'list' ? (
-              <tr className={styles.footerRow}>
-                <td colSpan={7}>Count: {currentData.length}</td>
-                <td>Total</td>
-              </tr>
-            ) : null)}
-          </tbody>
-        </table>
+        <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '500px' }}>
+          <AgGridReact theme="legacy"
+            rowData={loading ? undefined : currentData}
+            columnDefs={colDefs}
+            domLayout="autoHeight"
+            suppressMenuHide={true}
+            pinnedBottomRowData={pinnedBottomRowData}
+          />
+        </div>
 
         {/* Pagination */}
         <div className={styles.pagination}>

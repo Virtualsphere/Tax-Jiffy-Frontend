@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AgGridReact } from 'ag-grid-react';
+import type { ColDef } from 'ag-grid-community';
 import styles from './GSTR2BPage.module.css';
 import { useGstr2bData } from './hooks/useGstr2bData';
 
@@ -94,6 +96,55 @@ export function GSTR2BPage() {
 
   const { data, isLoading } = useGstr2bData();
 
+  const registrationColDefs = useMemo<ColDef[]>(() => [
+    {
+      field: 'field_attribute',
+      headerName: 'FIELD ATTRIBUTE',
+      flex: 1,
+      cellRenderer: (params: any) => (
+        <div className={styles.fieldLabel}>
+          <div className={styles.iconWrapper}>
+            {params.data.icon}
+          </div>
+          {params.value}
+        </div>
+      )
+    },
+    { field: 'recorded_value', headerName: 'RECORDED VALUE', flex: 1, cellClass: styles.valueText }
+  ], []);
+
+  const registrationRowData = useMemo(() => {
+    if (!data) return [];
+    return [
+      { field_attribute: 'GSTIN', recorded_value: data.registrationDetails.gstin, icon: <IconGSTIN /> },
+      { field_attribute: 'LEGAL NAME OF REGISTERED PERSON', recorded_value: data.registrationDetails.legalName, icon: <IconBuilding /> },
+      { field_attribute: 'YEAR', recorded_value: data.registrationDetails.year, icon: <IconCalendar /> },
+      { field_attribute: 'MONTH', recorded_value: data.registrationDetails.month, icon: <IconCalendar /> },
+      { field_attribute: 'LEGAL TRADE NAME', recorded_value: data.registrationDetails.tradeName, icon: <IconStore /> },
+      { field_attribute: 'DATE OF GENERATION', recorded_value: data.registrationDetails.generationDate, icon: <IconCalendarCheck /> },
+    ];
+  }, [data]);
+
+  const itcColDefs = useMemo<ColDef[]>(() => [
+    { field: 'section', headerName: 'SECTION', width: 120, cellClass: 'ag-cell-bold' },
+    { field: 'heading', headerName: 'HEADING', flex: 1 },
+    { 
+      field: 'gstr3bTable', 
+      headerName: 'GSTR-3B TABLE', 
+      width: 150,
+      cellClass: (params: any) => params.value !== 'NA' ? 'ag-cell-bold' : '',
+      cellStyle: (params: any): any => {
+        if (params.value === 'NA') return { color: '#9ca3af', fontWeight: 600 };
+        if (params.value && params.value.length > 5) return { fontSize: '12px' };
+        return {};
+      }
+    },
+    { field: 'igst', headerName: 'IGST (₹)', width: 130, cellClass: 'ag-cell-right ag-cell-bold', headerClass: 'ag-header-cell-right', valueFormatter: (p: any) => p.value.toLocaleString('en-IN') },
+    { field: 'cgst', headerName: 'CGST (₹)', width: 130, cellClass: 'ag-cell-right ag-cell-bold', headerClass: 'ag-header-cell-right', valueFormatter: (p: any) => p.value.toLocaleString('en-IN') },
+    { field: 'sgst', headerName: 'SGST (₹)', width: 130, cellClass: 'ag-cell-right ag-cell-bold', headerClass: 'ag-header-cell-right', valueFormatter: (p: any) => p.value.toLocaleString('en-IN') },
+    { field: 'cess', headerName: 'CESS (₹)', width: 130, cellClass: 'ag-cell-right ag-cell-bold', headerClass: 'ag-header-cell-right', valueFormatter: (p: any) => p.value.toLocaleString('en-IN') },
+  ], []);
+
   if (isLoading) {
     return <div style={{ padding: '48px', textAlign: 'center' }}>Loading GSTR-2B data...</div>;
   }
@@ -119,22 +170,6 @@ export function GSTR2BPage() {
     );
   }
 
-  const renderItcRow = (row: any, idx: number) => (
-    <tr key={idx}>
-      <td className={styles.bold}>{row.section}</td>
-      <td>{row.heading}</td>
-      {row.gstr3bTable === 'NA' ? (
-        <td style={{ color: '#9ca3af', fontWeight: 600 }}>NA</td>
-      ) : (
-        <td className={styles.bold} style={row.gstr3bTable.length > 5 ? { fontSize: '12px' } : {}}>{row.gstr3bTable}</td>
-      )}
-      <td className={`${styles.textRight} ${styles.bold}`}>{row.igst.toLocaleString('en-IN')}</td>
-      <td className={`${styles.textRight} ${styles.bold}`}>{row.cgst.toLocaleString('en-IN')}</td>
-      <td className={`${styles.textRight} ${styles.bold}`}>{row.sgst.toLocaleString('en-IN')}</td>
-      <td className={`${styles.textRight} ${styles.bold}`}>{row.cess.toLocaleString('en-IN')}</td>
-    </tr>
-  );
-
   return (
     <div className={styles.pageContainer}>
       <h1 className={styles.pageTitle}>GSTR 2B Details</h1>
@@ -156,94 +191,13 @@ export function GSTR2BPage() {
           <h2 className={styles.cardTitle}>Registration Details</h2>
           <p className={styles.cardSubtitle}>Validated GST registration records from the official portal.</p>
           
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>FIELD ATTRIBUTE</th>
-                <th>RECORDED VALUE</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconGSTIN />
-                    </div>
-                    GSTIN
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.gstin}</div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconBuilding />
-                    </div>
-                    LEGAL NAME OF REGISTERED PERSON
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.legalName}</div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconCalendar />
-                    </div>
-                    YEAR
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.year}</div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconCalendar />
-                    </div>
-                    MONTH
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.month}</div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconStore />
-                    </div>
-                    LEGAL TRADE NAME
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.tradeName}</div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className={styles.fieldLabel}>
-                    <div className={styles.iconWrapper}>
-                      <IconCalendarCheck />
-                    </div>
-                    DATE OF GENERATION
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.valueText}>{data.registrationDetails.generationDate}</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="ag-theme-tax-jiffy" style={{ width: '100%' }}>
+            <AgGridReact theme="legacy"
+              rowData={registrationRowData}
+              columnDefs={registrationColDefs}
+              domLayout="autoHeight"
+            />
+          </div>
         </div>
       )}
 
@@ -262,22 +216,13 @@ export function GSTR2BPage() {
             </div>
             
             {isAccordionAExpanded && (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    <th>SECTION</th>
-                    <th>HEADING</th>
-                    <th>GSTR-3B TABLE</th>
-                    <th className={styles.textRight}>IGST (₹)</th>
-                    <th className={styles.textRight}>CGST (₹)</th>
-                    <th className={styles.textRight}>SGST (₹)</th>
-                    <th className={styles.textRight}>CESS (₹)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.itcAvailable.creditMayBeClaimed.map(renderItcRow)}
-                </tbody>
-              </table>
+              <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
+                <AgGridReact theme="legacy"
+                  rowData={data?.itcAvailable.creditMayBeClaimed || []}
+                  columnDefs={itcColDefs}
+                  domLayout="autoHeight"
+                />
+              </div>
             )}
           </div>
 
@@ -294,22 +239,13 @@ export function GSTR2BPage() {
             </div>
             
             {isAccordionBExpanded && (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    <th>SECTION</th>
-                    <th>HEADING</th>
-                    <th>GSTR-3B TABLE</th>
-                    <th className={styles.textRight}>IGST (₹)</th>
-                    <th className={styles.textRight}>CGST (₹)</th>
-                    <th className={styles.textRight}>SGST (₹)</th>
-                    <th className={styles.textRight}>CESS (₹)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.itcAvailable.creditShallBeReversed.map(renderItcRow)}
-                </tbody>
-              </table>
+              <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
+                <AgGridReact theme="legacy"
+                  rowData={data?.itcAvailable.creditShallBeReversed || []}
+                  columnDefs={itcColDefs}
+                  domLayout="autoHeight"
+                />
+              </div>
             )}
           </div>
 
@@ -333,22 +269,13 @@ export function GSTR2BPage() {
             </div>
             
             {isUnavailableAExpanded && (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    <th>SECTION</th>
-                    <th>HEADING</th>
-                    <th>GSTR-3B TABLE</th>
-                    <th className={styles.textRight}>IGST (₹)</th>
-                    <th className={styles.textRight}>CGST (₹)</th>
-                    <th className={styles.textRight}>SGST (₹)</th>
-                    <th className={styles.textRight}>CESS (₹)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.itcUnavailable.itcNotAvailable.map(renderItcRow)}
-                </tbody>
-              </table>
+              <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
+                <AgGridReact theme="legacy"
+                  rowData={data?.itcUnavailable.itcNotAvailable || []}
+                  columnDefs={itcColDefs}
+                  domLayout="autoHeight"
+                />
+              </div>
             )}
           </div>
 
@@ -365,22 +292,13 @@ export function GSTR2BPage() {
             </div>
             
             {isUnavailableBExpanded && (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    <th>SECTION</th>
-                    <th>HEADING</th>
-                    <th>GSTR-3B TABLE</th>
-                    <th className={styles.textRight}>IGST (₹)</th>
-                    <th className={styles.textRight}>CGST (₹)</th>
-                    <th className={styles.textRight}>SGST (₹)</th>
-                    <th className={styles.textRight}>CESS (₹)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.itcUnavailable.itcReversal.map(renderItcRow)}
-                </tbody>
-              </table>
+              <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
+                <AgGridReact theme="legacy"
+                  rowData={data?.itcUnavailable.itcReversal || []}
+                  columnDefs={itcColDefs}
+                  domLayout="autoHeight"
+                />
+              </div>
             )}
           </div>
 
