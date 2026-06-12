@@ -10,9 +10,15 @@ interface GSTR1OutwardTabProps {
 }
 
 export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OutwardTabProps) {
+  const defaultColDef = useMemo<ColDef>(() => ({
+    wrapHeaderText: true,
+    autoHeaderHeight: true,
+    minWidth: 100,
+    resizable: true,
+  }), []);
 
   const colDefs4 = useMemo<ColDef[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN/UIN' },
+    { field: 'gstin', headerName: 'GSTIN/UIN', colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1, cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF' } : null },
     { field: 'invoiceNo', headerName: 'INVOICE NO' },
     { field: 'invoiceDate', headerName: 'INVOICE DATE' },
     { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)' },
@@ -36,7 +42,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
   ], []);
 
   const colDefs5B = useMemo<ColDef[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN/UIN' },
+    { field: 'gstin', headerName: 'GSTIN/UIN', colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 4 : 1, cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF' } : null },
     { field: 'pos', headerName: 'PLACE OF SUPPLY' },
     { field: 'invoiceNo', headerName: 'INVOICE NO', cellClass: styles.centered, headerClass: styles.centered },
     { field: 'invoiceDate', headerName: 'INVOICE DATE', cellClass: styles.centered, headerClass: styles.centered },
@@ -102,6 +108,16 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
     </div>
   );
 
+  const DynamicAgGrid = (props: any) => {
+    const isLarge = props.rowData && props.rowData.length > 8;
+    const style = { width: '100%', height: isLarge ? '500px' : 'auto', marginBottom: props.marginBottom || '0' };
+    return (
+      <div className="ag-theme-tax-jiffy ag-theme-blue-headers" style={style}>
+        <AgGridReact {...props} domLayout={isLarge ? 'normal' : 'autoHeight'} />
+      </div>
+    );
+  };
+
   return (
     <div className={styles.outwardTabContent}>
       {/* Table 4 */}
@@ -116,36 +132,30 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         {expandedAccordion === 'table4' && (
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>4A. SUPPLIES OTHER THAN REVERSE CHARGE & E-COMMERCE</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitle}>4B. SUPPLIES ATTRACTING REVERSE CHARGE</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table4.section4B} columnDefs={colDefs4} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4B} columnDefs={colDefs4} suppressMenuHide={true} />
 
             <div className={styles.outwardEcommerceGSTIN}>E-COMMERCE OPERATOR GSTIN: {data.table4.section4C_ecommerceGstin}</div>
             <div className={styles.outwardSectionTitle}>4C. SUPPLIES THROUGH E-COMMERCE (TCS)</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" 
-                rowData={data.table4.section4C} 
-                columnDefs={colDefs4} 
-                
-                suppressMenuHide={true}
-                pinnedBottomRowData={[
-                  { 
-                    gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 4', 
-                    invoiceValue: data.table4.total.invoiceValue,
-                    taxableValue: data.table4.total.taxableValue,
-                    igst: data.table4.total.igst,
-                    cgst: data.table4.total.cgst,
-                    sgst: data.table4.total.sgst,
-                    cess: data.table4.total.cess
-                  }
-                ]}
-              />
-            </div>
+            <DynamicAgGrid theme="legacy" 
+              defaultColDef={defaultColDef}
+              rowData={data.table4.section4C} 
+              columnDefs={colDefs4} 
+              suppressMenuHide={true}
+              pinnedBottomRowData={[
+                { 
+                  gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 4', 
+                  invoiceValue: data.table4.total.invoiceValue,
+                  taxableValue: data.table4.total.taxableValue,
+                  igst: data.table4.total.igst,
+                  cgst: data.table4.total.cgst,
+                  sgst: data.table4.total.sgst,
+                  cess: data.table4.total.cess
+                }
+              ]}
+            />
           </div>
         )}
       </div>
@@ -163,28 +173,24 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>5A. OUTWARD SUPPLIES (OTHER THAN E-COMMERCE OPERATOR, RATE-WISE)</div>
             <div className={styles.outwardSectionTitleSub}>Inter-state supplies to unregistered persons (aggregated by rate)</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table5.section5A} columnDefs={colDefs5.filter(c => !c.hide)} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table5.section5A} columnDefs={colDefs5.filter(c => !c.hide)} suppressMenuHide={true} />
 
             <div className={styles.outwardEcommerceGSTIN}>GSTIN OF E-COMMERCE OPERATOR <span style={{ background: '#f1f3f9', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px' }}>{data.table5.section5B_ecommerceGstin}</span></div>
             <div className={styles.outwardSectionTitle}>5B. SUPPLIES MADE THROUGH E-COMMERCE OPERATOR (TCS APPLICABLE, RATE-WISE)</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" 
-                rowData={data.table5.section5B} 
-                columnDefs={colDefs5B} 
-                
-                suppressMenuHide={true}
-                pinnedBottomRowData={[
-                  { 
-                    gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 5', 
-                    invoiceValue: data.table5.total.invoiceValue,
-                    taxableValue: data.table5.total.taxableValue,
-                    igst: data.table5.total.igst,
-                  }
-                ]}
-              />
-            </div>
+            <DynamicAgGrid theme="legacy" 
+              defaultColDef={defaultColDef}
+              rowData={data.table5.section5B} 
+              columnDefs={colDefs5B} 
+              suppressMenuHide={true}
+              pinnedBottomRowData={[
+                { 
+                  gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 5', 
+                  invoiceValue: data.table5.total.invoiceValue,
+                  taxableValue: data.table5.total.taxableValue,
+                  igst: data.table5.total.igst,
+                }
+              ]}
+            />
           </div>
         )}
       </div>
@@ -201,19 +207,13 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         {expandedAccordion === 'table6' && (
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>6A. EXPORTS</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table6.section6A} columnDefs={colDefs6} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6A} columnDefs={colDefs6} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitle}>6B. SUPPLIES MADE TO SEZ UNIT / SEZ DEVELOPER</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table6.section6B} columnDefs={colDefs6} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6B} columnDefs={colDefs6} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitle}>6C. DEEMED EXPORTS</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" rowData={data.table6.section6C} columnDefs={colDefs6} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6C} columnDefs={colDefs6} suppressMenuHide={true} />
           </div>
         )}
       </div>
@@ -230,27 +230,19 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>7A. Intra-State supplies</div>
             <div className={styles.outwardSectionTitleSub}>7A (1). Consolidated rate wise outward supplies [including supplies made through e-commerce operator attracting TCS]</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table7.section7A1} columnDefs={colDefs7} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A1} columnDefs={colDefs7} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitleSub}>7A (2). Out of supplies mentioned at 7A(1), value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7A2_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table7.section7A2} columnDefs={colDefs7} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A2} columnDefs={colDefs7} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitle}>7B. Inter-State Supplies where invoice value is upto Rs 2.5 Lakh [Rate wise]</div>
             <div className={styles.outwardSectionTitleSub}>7B (1). Place of Supply (Name of State): {data.table7.section7B1_pos}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY' }]} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY' }]} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitleSub}>7B (2). Out of the supplies mentioned in 7B (1), the supplies made through e-Commerce Operators (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7B2_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" rowData={data.table7.section7B2} columnDefs={colDefs7} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B2} columnDefs={colDefs7} suppressMenuHide={true} />
           </div>
         )}
       </div>
@@ -266,22 +258,20 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         {expandedAccordion === 'table8' && (
           <div className={styles.accordionContent}>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" 
-                rowData={[data.table8.section8A, data.table8.section8B, data.table8.section8C, data.table8.section8D]} 
-                columnDefs={colDefs8} 
-                
-                suppressMenuHide={true}
-                pinnedBottomRowData={[
-                  {
-                    label: data.table8.total.label,
-                    nilRated: data.table8.total.nilRated,
-                    exempted: data.table8.total.exempted,
-                    nonGst: data.table8.total.nonGst
-                  }
-                ]}
-              />
-            </div>
+            <DynamicAgGrid theme="legacy" 
+              defaultColDef={defaultColDef}
+              rowData={[data.table8.section8A, data.table8.section8B, data.table8.section8C, data.table8.section8D]} 
+              columnDefs={colDefs8} 
+              suppressMenuHide={true}
+              pinnedBottomRowData={[
+                {
+                  label: data.table8.total.label,
+                  nilRated: data.table8.total.nilRated,
+                  exempted: data.table8.total.exempted,
+                  nonGst: data.table8.total.nonGst
+                }
+              ]}
+            />
           </div>
         )}
       </div>

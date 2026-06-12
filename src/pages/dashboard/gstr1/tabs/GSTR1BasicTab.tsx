@@ -36,7 +36,7 @@ export function GSTR1BasicTab({ data }: GSTR1BasicTabProps) {
       <AgGridReact theme="legacy"
         rowData={data}
         columnDefs={colDefs}
-       
+        domLayout="autoHeight"
         suppressMenuHide={true}
       />
     </div>
