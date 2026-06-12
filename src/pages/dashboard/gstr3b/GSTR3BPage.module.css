@@ -269,6 +269,27 @@
   transform: rotate(180deg);
 }
 
+.gstr3bGrid {
+  --ag-odd-row-background-color: #f8fbfc;
+}
+
+.gstr3bGrid :global(.ag-row-pinned) {
+  background-color: #ffffff !important;
+  border-top: 2px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+
+.gstr3bGrid :global(.ag-row-section-header) {
+  background-color: #f8fbfc !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.gstr3bGrid :global(.ag-row-total) {
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
 .accordionContent {
   padding: 0 var(--space-6) var(--space-6);
   border-top: 1px solid var(--color-border);
@@ -322,4 +343,63 @@
 .summaryRow td {
   font-weight: 700;
   background: #f8fafc;
+}
+
+/* ── Success Screen ── */
+.successScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.successCard {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 60px 48px;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.04);
+}
+
+.successIconWrapper {
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.successTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 16px;
+  line-height: 1.3;
+}
+
+.successSubtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin: 0 0 40px;
+  line-height: 1.6;
+}
+
+.successBtn {
+  width: 100%;
+  background: #5a6acf;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 16px 24px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.successBtn:hover {
+  background: #4a5ab8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgb(90 106 207 / 0.25);
 }

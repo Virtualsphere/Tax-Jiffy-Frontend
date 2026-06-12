@@ -49,9 +49,9 @@ export function LoginForm() {
             <label className={styles.label} htmlFor="login-password">
               PASSWORD
             </label>
-            <a href="#" className={styles.forgotLink} onClick={(e) => e.preventDefault()}>
+            <Link to={ROUTES.auth.forgotPassword} className={styles.forgotLink}>
               Forgot Password?
-            </a>
+            </Link>
           </div>
           <div className={styles.inputWrap}>
             <input

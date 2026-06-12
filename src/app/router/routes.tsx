@@ -33,6 +33,9 @@ const LoginPage = lazy(() =>
 const SignupPage = lazy(() =>
   import('@/features/auth/pages/SignupPage').then((m) => ({ default: m.SignupPage })),
 );
+const ForgotPasswordPage = lazy(() =>
+  import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
+);
 
 const GSTR1Page = lazy(() =>
   import('@/pages/dashboard/gstr1/GSTR1Page').then((m) => ({ default: m.GSTR1Page })),
@@ -156,6 +159,21 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <LoginPage />
+          </SuspenseWrapper>
+        ),
+      },
+    ],
+  },
+  {
+    path: ROUTES.auth.forgotPassword,
+    element: <SignupLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: (
+          <SuspenseWrapper>
+            <ForgotPasswordPage />
           </SuspenseWrapper>
         ),
       },

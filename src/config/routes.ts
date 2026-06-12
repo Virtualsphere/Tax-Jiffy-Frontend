@@ -10,6 +10,7 @@ export const ROUTES = {
     root: '/auth',
     login: '/auth/login',
     signup: '/auth/signup',
+    forgotPassword: '/auth/forgot-password',
   },
   dashboard: {
     root: '/dashboard',

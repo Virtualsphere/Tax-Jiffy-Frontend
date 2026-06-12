@@ -100,6 +100,15 @@
   color: #111827 !important;
 }
 
+/* Left align utility */
+.ag-cell-left {
+  justify-content: flex-start !important;
+}
+.ag-header-cell-left .ag-header-cell-label {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
 /* Right align utility */
 .ag-cell-right {
   justify-content: flex-end;
@@ -148,4 +157,20 @@
 .ag-theme-blue-headers .ag-row-pinned .ag-cell {
   border-top: 1px solid #d1d5db;
   color: inherit !important; /* ensure custom textBlue logic can still apply if needed or override */
+}
+
+/* Spreadsheet borders for specific tables like Payment of Tax */
+.ag-theme-spreadsheet-borders {
+  --ag-row-border-color: #a5b4fc;
+  --ag-cell-horizontal-border: solid 1px #a5b4fc;
+  border: 1px solid #a5b4fc !important;
+}
+
+.ag-theme-spreadsheet-borders .ag-cell {
+  border-right: 1px solid #a5b4fc !important;
+}
+
+.ag-theme-spreadsheet-borders .ag-header-cell,
+.ag-theme-spreadsheet-borders .ag-header-group-cell {
+  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
