@@ -61,30 +61,30 @@ export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion
             <div className={styles.outwardSectionTitleSub}>11A. Advance amount received in the tax period for which invoice has not been issued (tax amount to be added to output tax liability)</div>
             
             <div className={styles.outwardSectionTitleSub}>11A (1). Intra-State supplies (Rate Wise)</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table11.section11A1} columnDefs={colDefs11} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table11.section11A1} columnDefs={colDefs11} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitleSub}>11A (2). Inter-State Supplies (Rate Wise)</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table11.section11A2} columnDefs={colDefs11} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table11.section11A2} columnDefs={colDefs11} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitleSub}>11B. Advance amount received in earlier tax period and adjusted against the supplies being shown in this tax period in Table Nos. 4, 5, 6 and 7</div>
             
             <div className={styles.outwardSectionTitleSub}>11B (1). Intra-State Supplies (Rate Wise)</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table11.section11B1} columnDefs={colDefs11} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table11.section11B1} columnDefs={colDefs11} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitleSub}>11B (2). Inter-State Supplies (Rate Wise)</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table11.section11B2} columnDefs={colDefs11} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table11.section11B2} columnDefs={colDefs11} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitleSub} style={{ color: '#111827', fontWeight: 600 }}>II Amendment of information furnished in Table No. 11(1) in GSTR-1 statement for earlier tax periods [Furnish revised information]</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px' }}>
-              <AgGridReact theme="legacy" rowData={data.table11.amendments} columnDefs={colDefs11Amendments} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
+              <AgGridReact theme="legacy" rowData={data.table11.amendments} columnDefs={colDefs11Amendments} suppressMenuHide={true} />
             </div>
           </div>
         )}

@@ -73,18 +73,18 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
         {expandedAccordion === 'table9' && (
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9A. If the invoice/Shipping bill details furnished earlier were incorrect</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9A} columnDefs={colDefs9} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9B. Debit Notes/Credit Notes/Refund voucher [original]</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9B} columnDefs={colDefs9} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table9.section9B} columnDefs={colDefs9} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9C. Debit Notes/Credit Notes/Refund voucher [amendments thereof]</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9C} columnDefs={colDefs9} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
+              <AgGridReact theme="legacy" rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} />
             </div>
           </div>
         )}
@@ -104,26 +104,26 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
             <div className={styles.outwardSectionTitleSub}>Tax period for which the details are being revised: {selectedMonth} {selectedYear.startYear}</div>
             
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A. Intra-State Supplies [including supplies made through e-commerce operator attracting TCS] [Rate wise]</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10A} columnDefs={colDefs10} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table10.section10A} columnDefs={colDefs10} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A (1). Out of supplies mentioned at 10A, value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10A1_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10A1} columnDefs={colDefs10} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table10.section10A1} columnDefs={colDefs10} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B. Inter-State Supplies [including supplies made through e-commerce operator attracting TCS] [Rate wise]</div>
             <div className={styles.outwardSectionTitleSub}>Place of Supply (Name of State): {data.table10.section10B_pos}</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10B} columnDefs={colDefs10} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
+              <AgGridReact theme="legacy" rowData={data.table10.section10B} columnDefs={colDefs10} suppressMenuHide={true} />
             </div>
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B (1). Out of supplies mentioned at 10B, value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10B1_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10B1} columnDefs={colDefs10} domLayout="autoHeight" suppressMenuHide={true} />
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
+              <AgGridReact theme="legacy" rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} />
             </div>
           </div>
         )}

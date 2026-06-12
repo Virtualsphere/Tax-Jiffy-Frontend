@@ -32,11 +32,11 @@ export function GSTR1BasicTab({ data }: GSTR1BasicTabProps) {
   ], []);
 
   return (
-    <div className="ag-theme-tax-jiffy" style={{ width: '100%' }}>
+    <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%' }}>
       <AgGridReact theme="legacy"
         rowData={data}
         columnDefs={colDefs}
-        domLayout="autoHeight"
+       
         suppressMenuHide={true}
       />
     </div>

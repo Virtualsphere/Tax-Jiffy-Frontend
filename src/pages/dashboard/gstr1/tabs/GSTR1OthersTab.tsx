@@ -76,11 +76,11 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
         </div>
         {expandedAccordion === 'table12' && (
           <div className={styles.accordionContent}>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px' }}>
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
               <AgGridReact theme="legacy" 
                 rowData={data.table12.records} 
                 columnDefs={colDefs12} 
-                domLayout="autoHeight" 
+                
                 suppressMenuHide={true}
                 pinnedBottomRowData={[
                   {
@@ -111,11 +111,11 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
         </div>
         {expandedAccordion === 'table13' && (
           <div className={styles.accordionContent}>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: '300px' }}>
+            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
               <AgGridReact theme="legacy" 
                 rowData={data.table13.records} 
                 columnDefs={colDefs13} 
-                domLayout="autoHeight" 
+                
                 suppressMenuHide={true}
               />
             </div>
