@@ -21,8 +21,13 @@ export function useLogin() {
       return authApi.login(validation.data);
     },
     onSuccess: (session) => {
-      authStorage.setToken(session.accessToken);
-      void navigate(ROUTES.home);
+      authStorage.setToken(session.token);
+      authStorage.setUser({
+        userId: session.userId,
+        userName: session.userName,
+        email: session.email,
+      });
+      void navigate(ROUTES.dashboard.root);
     },
     onError: (error) => {
       const apiError = handleApiError(error);

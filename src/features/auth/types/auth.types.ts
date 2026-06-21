@@ -1,5 +1,5 @@
 export type User = {
-  id: string;
+  id: number;
   email: string;
   name: string;
 };
@@ -9,7 +9,17 @@ export type LoginCredentials = {
   password: string;
 };
 
+export type SignupCredentials = {
+  companyId: number;
+  userName: string;
+  userEmail: string;
+  userPassword: string;
+};
+
+/** Shape returned by POST /api/auth/login */
 export type AuthSession = {
-  user: User;
-  accessToken: string;
+  token: string;
+  userId: number;
+  userName: string;
+  email: string;
 };

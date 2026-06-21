@@ -19,6 +19,8 @@ export type Gstr1UploadResult = {
   validationErrors: string[];
   /** Parsed draft data from the uploaded Excel, populated by parseGstr1Excel */
   parsedDraftData?: Gstr1DraftData;
+  /** Filing ID returned by the backend after a successful upload */
+  filingId?: number;
 };
 
 export type Gstr1FilingResult = {

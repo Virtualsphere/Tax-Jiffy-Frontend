@@ -1,5 +1,4 @@
-// TODO: Replace mock data with useQuery(() => authApi.getMe())
-// when the backend endpoint GET /auth/me is available.
+import { authStorage } from '@/features/auth/lib/auth-storage';
 
 export type CurrentUser = {
   id: string;
@@ -8,17 +7,33 @@ export type CurrentUser = {
   initials: string;
 };
 
-const MOCK_USER: CurrentUser = {
-  id: 'usr_mock_001',
-  name: 'John Doe',
-  email: 'john@company.com',
-  initials: 'JD',
-};
-
 export function useCurrentUser() {
-  // TODO: swap with useQuery(['auth', 'me'], authApi.getMe)
+  const authUser = authStorage.getUser();
+
+  // Helper to extract initials
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const data: CurrentUser = authUser
+    ? {
+        id: String(authUser.userId),
+        name: authUser.userName,
+        email: authUser.email,
+        initials: getInitials(authUser.userName),
+      }
+    : {
+        id: 'usr_mock_001',
+        name: 'Guest User',
+        email: 'guest@example.com',
+        initials: 'G',
+      };
+
   return {
-    data: MOCK_USER,
+    data,
     isLoading: false,
     isError: false,
     error: null,

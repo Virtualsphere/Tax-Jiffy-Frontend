@@ -184,7 +184,7 @@ export function SignupForm() {
 
         {signup.isError ? (
           <p className={styles.error} role="alert">
-            {signup.error ?? 'Signup failed'}
+            {signup.error instanceof Error ? signup.error.message : 'Signup failed'}
           </p>
         ) : null}
 

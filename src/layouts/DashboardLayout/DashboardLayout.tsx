@@ -1,7 +1,9 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { authStorage } from '@/features/auth/lib/auth-storage';
+import { ROUTES } from '@/config/routes';
 import styles from '@/layouts/DashboardLayout/DashboardLayout.module.css';
 
 /** Map route segments to human-readable page titles */
@@ -28,11 +30,17 @@ const TITLE_MAP: Record<string, string> = {
 
 export function DashboardLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const segment = pathname.replace('/dashboard', '').replace(/^\//, '');
   const title = TITLE_MAP[segment] ?? 'Dashboard';
 
   const { data: entity } = useCurrentEntity();
   const { data: user } = useCurrentUser();
+
+  const handleLogout = () => {
+    authStorage.clearToken();
+    navigate(ROUTES.home);
+  };
 
   return (
     <div className={styles.shell}>
@@ -42,7 +50,21 @@ export function DashboardLayout() {
         <header className={styles.topbar}>
           <h1 className={styles.topbarTitle}>{title}</h1>
           <div className={styles.topbarActions}>
-            <div className={styles.avatar} aria-label="User avatar">{user.initials}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div className={styles.avatar} aria-label="User avatar" title={user.name}>{user.initials}</div>
+              <button onClick={handleLogout} className={styles.logoutButton} style={{
+                background: 'none',
+                border: '1px solid #e2e8f0',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                color: '#64748b',
+                fontWeight: 500,
+                fontSize: '14px'
+              }}>
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 

@@ -4,6 +4,8 @@ import logo from '@/assets/logo.png';
 import { ROUTES } from '@/config/routes';
 import styles from '@/layouts/LandingLayout/components/LandingHeader.module.css';
 
+import { authStorage } from '@/features/auth/lib/auth-storage';
+
 const NAV_LINKS = [
   { label: 'Product', href: '/#product' },
   { label: 'Pricing', href: ROUTES.pricing },
@@ -13,6 +15,7 @@ const NAV_LINKS = [
 
 export function LandingHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const isAuthenticated = !!authStorage.getToken();
 
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -59,15 +62,23 @@ export function LandingHeader() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link to={ROUTES.auth.login} className={styles.navLink}>
-                Sign in
-              </Link>
-            </li>
+            {isAuthenticated ? (
+              <li>
+                <Link to={ROUTES.dashboard.root} className={styles.cta}>
+                  Go to Dashboard
+                </Link>
+              </li>
+            ) : (
+              <li style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+                <Link to={ROUTES.auth.login} className={styles.navLink}>
+                  Sign in
+                </Link>
+                <Link to={ROUTES.auth.signup} className={styles.cta}>
+                  Start free trial
+                </Link>
+              </li>
+            )}
           </ul>
-          <Link to={ROUTES.auth.signup} className={styles.cta}>
-            Start free trial
-          </Link>
         </nav>
 
         {/* Hamburger button — visible only on mobile */}
@@ -108,23 +119,39 @@ export function LandingHeader() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  to={ROUTES.auth.login}
-                  className={styles.drawerLink}
-                  onClick={closeMenu}
-                >
-                  Sign in
-                </Link>
-              </li>
+              {isAuthenticated ? (
+                <li>
+                  <Link
+                    to={ROUTES.dashboard.root}
+                    className={styles.drawerCta}
+                    onClick={closeMenu}
+                  >
+                    Go to Dashboard
+                  </Link>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to={ROUTES.auth.login}
+                      className={styles.drawerLink}
+                      onClick={closeMenu}
+                    >
+                      Sign in
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to={ROUTES.auth.signup}
+                      className={styles.drawerCta}
+                      onClick={closeMenu}
+                    >
+                      Start free trial
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
-            <Link
-              to={ROUTES.auth.signup}
-              className={styles.drawerCta}
-              onClick={closeMenu}
-            >
-              Start free trial
-            </Link>
           </nav>
         </div>
       </div>

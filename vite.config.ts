@@ -12,6 +12,13 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    proxy: {
+      '/api': {
+        target: 'https://api.taxjiffy.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   build: {
     sourcemap: !process.env.NETLIFY,

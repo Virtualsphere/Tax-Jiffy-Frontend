@@ -118,7 +118,7 @@ export function GSTR1Page() {
   const [step, setStep] = useState<Step>(1);
   const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
 
-  // Hooks — all mock data lives inside these; swap internals for real API later
+  // Hooks
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
   // Pass Excel-extracted data to the draft hook so all tabs show real file data
@@ -130,8 +130,8 @@ export function GSTR1Page() {
 
   // When matching completes, move to step 2
   const handleStartMatching = useCallback(() => {
-    match.startMatching();
-  }, [match]);
+    match.startMatching(upload.data?.filingId);
+  }, [match, upload.data?.filingId]);
 
   // Check if matching just completed and we need to advance
   if (match.isComplete && step === 1) {
@@ -322,13 +322,13 @@ export function GSTR1Page() {
         </div>
       )}
 
-      {/* Parsing spinner */}
+      {/* Parsing / Uploading spinner */}
       {upload.isPending && (
         <div className={styles.parsingCard}>
           <div className={styles.parsingSpinner} />
           <div className={styles.parsingText}>
-            <p className={styles.parsingTitle}>Parsing Excel file…</p>
-            <p className={styles.parsingSubtitle}>Extracting GSTR-1 data from all worksheets</p>
+            <p className={styles.parsingTitle}>Processing file…</p>
+            <p className={styles.parsingSubtitle}>Parsing and uploading GSTR-1 data to server</p>
           </div>
         </div>
       )}
@@ -348,7 +348,8 @@ export function GSTR1Page() {
             </p>
             <p className={styles.fileMeta}>
               {formatFileSize(upload.data.fileSize)}
-              {upload.data.rows > 0 && ` • ${upload.data.rows.toLocaleString()} records parsed`}
+              {upload.data.rows > 0 && ` • ${upload.data.rows.toLocaleString()} records imported`}
+              {upload.data.filingId && ` • Filing ID: ${upload.data.filingId}`}
               {upload.data.parsedDraftData && ' • Ready for review'}
             </p>
           </div>
@@ -499,7 +500,6 @@ export function GSTR1Page() {
           {activeTab === 'Amendments' && draft.data.amendmentsData && <GSTR1AmendmentsTab data={draft.data.amendmentsData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} selectedMonth={selectedMonth} selectedYear={selectedYear} />}
           {activeTab === 'Advanced' && draft.data.advancedData && <GSTR1AdvancedTab data={draft.data.advancedData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
           {activeTab === 'Others' && draft.data.othersData && <GSTR1OthersTab data={draft.data.othersData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-
         </div>
       </div>
 
@@ -569,7 +569,7 @@ export function GSTR1Page() {
             disabled={!upload.data || upload.data.validationErrors.length > 0 || upload.isPending}
             onClick={handleStartMatching}
           >
-            {upload.isPending ? 'Parsing file…' : 'Proceed to Matching →'}
+            {upload.isPending ? 'Processing file…' : 'Proceed to Matching →'}
           </button>
         </>
       )}

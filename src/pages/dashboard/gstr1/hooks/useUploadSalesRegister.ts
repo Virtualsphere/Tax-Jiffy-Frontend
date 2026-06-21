@@ -1,10 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Gstr1UploadResult } from '@/pages/dashboard/gstr1/types/gstr1.types';
 import { parseGstr1Excel } from '@/pages/dashboard/gstr1/data/parseGstr1Excel';
-
-// TODO: Replace with useMutation(() => gstr1Api.upload(file))
-// when the backend endpoint POST /gstr1/upload is available.
-// The server should parse the Excel, validate columns, and return row count + errors.
+import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
+import { handleApiError } from '@/services/api';
 
 const ALLOWED_EXTENSIONS = ['.xlsx', '.xls'];
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
@@ -15,7 +13,7 @@ function isExcelFile(file: File): boolean {
 }
 
 type UseUploadSalesRegisterReturn = {
-  /** Process a selected file (client-side Excel parsing) */
+  /** Process a selected file — parses locally AND uploads to backend */
   mutate: (file: File) => void;
   /** Reset upload state */
   reset: () => void;
@@ -23,7 +21,7 @@ type UseUploadSalesRegisterReturn = {
   data: Gstr1UploadResult | null;
   /** Whether the upload is in progress */
   isPending: boolean;
-  /** Whether an error occurred (file type / size) */
+  /** Whether an error occurred */
   isError: boolean;
   /** Human-readable error message */
   error: string | null;
@@ -44,62 +42,71 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
     if (inputRef.current) inputRef.current.value = '';
   }, []);
 
-  const mutate = useCallback(
-    async (file: File) => {
-      // Reset previous state
-      setError(null);
-      setData(null);
+  const mutate = useCallback(async (file: File) => {
+    setError(null);
+    setData(null);
 
-      // Validate file type
-      if (!isExcelFile(file)) {
-        setError(
-          `"${file.name}" is not a supported file format. Please upload an Excel file (.xlsx or .xls).`,
+    // 1. Client-side file type validation
+    if (!isExcelFile(file)) {
+      setError(
+        `"${file.name}" is not a supported file format. Please upload an Excel file (.xlsx or .xls).`,
+      );
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+
+    // 2. Client-side file size validation
+    if (file.size > MAX_FILE_SIZE) {
+      setError(
+        `File size (${formatFileSize(file.size)}) exceeds the 25MB limit. Please upload a smaller file.`,
+      );
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+
+    setIsPending(true);
+    try {
+      // 3. Parse the Excel client-side — this powers the Step 2 draft preview tabs
+      const { draftData, rowCount } = await parseGstr1Excel(file);
+
+      const validationErrors: string[] = [];
+      const hasGstr1Sheets =
+        draftData.outwardData !== undefined || draftData.othersData !== undefined;
+      if (!hasGstr1Sheets) {
+        validationErrors.push(
+          'This workbook does not appear to be a GSTR-1 template. Expected sheets (b2b, hsn, docs, etc.) were not found.',
         );
-        if (inputRef.current) inputRef.current.value = '';
+      }
+
+      if (validationErrors.length > 0) {
+        setData({ fileName: file.name, fileSize: file.size, rows: rowCount, validationErrors, parsedDraftData: draftData });
         return;
       }
 
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        setError(
-          `File size (${formatFileSize(file.size)}) exceeds the 25MB limit. Please upload a smaller file.`,
-        );
-        if (inputRef.current) inputRef.current.value = '';
-        return;
-      }
+      // 4. Upload the file to the backend
+      // companyGstId is hardcoded to 1 until the Company context is implemented.
+      // financialYear & taxPeriod are derived from the parsed Excel data.
+      const financialYear = draftData.filingPeriodYear || '2023-24';
+      const taxPeriod = (draftData.filingPeriodMonth || 'October').toUpperCase();
 
-      // Parse the Excel file client-side
-      setIsPending(true);
-      try {
-        const { draftData, rowCount } = await parseGstr1Excel(file);
+      const uploadResponse = await gstr1Api.upload(file, 1, financialYear, taxPeriod);
 
-        // Basic validation: check that the workbook has the expected GSTR-1 sheets
-        const validationErrors: string[] = [];
-        const hasGstr1Sheets = draftData.outwardData !== undefined || draftData.othersData !== undefined;
-        if (!hasGstr1Sheets) {
-          validationErrors.push(
-            'This workbook does not appear to be a GSTR-1 template. Expected sheets (b2b, hsn, docs, etc.) were not found.',
-          );
-        }
-
-        setData({
-          fileName: file.name,
-          fileSize: file.size,
-          rows: rowCount,
-          validationErrors,
-          parsedDraftData: draftData,
-        });
-      } catch (err) {
-        setError(
-          `Failed to parse the Excel file: ${err instanceof Error ? err.message : 'Unknown error'}. Please ensure it is a valid GSTR-1 template.`,
-        );
-        if (inputRef.current) inputRef.current.value = '';
-      } finally {
-        setIsPending(false);
-      }
-    },
-    [],
-  );
+      setData({
+        fileName: file.name,
+        fileSize: file.size,
+        rows: uploadResponse.totalRowsImported,
+        validationErrors: [],
+        parsedDraftData: draftData,
+        filingId: uploadResponse.filingId,
+      });
+    } catch (err) {
+      const apiError = handleApiError(err);
+      setError(`Upload failed: ${apiError.message}. Please try again.`);
+      if (inputRef.current) inputRef.current.value = '';
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
 
   return {
     mutate,

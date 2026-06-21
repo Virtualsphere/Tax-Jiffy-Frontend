@@ -204,7 +204,7 @@ export function GSTR3BPage() {
       children: [
         { field: 'tdsIntegrated', headerName: 'INTEGRATED TAX', cellClass: 'ag-cell-right', headerClass: 'ag-header-cell-right' },
         { field: 'tdsCentral', headerName: 'CENTRAL TAX', cellClass: 'ag-cell-right', headerClass: 'ag-header-cell-right' },
-        { field: 'tdsState', headerName: 'STATE/UT TAX', cellClass: 'ag-header-cell-right', cellClass: 'ag-cell-right' },
+        { field: 'tdsState', headerName: 'STATE/UT TAX', headerClass: 'ag-header-cell-right', cellClass: 'ag-cell-right' },
       ]
     },
     {
