@@ -9,6 +9,8 @@ import styles from '@/layouts/DashboardLayout/DashboardLayout.module.css';
 /** Map route segments to human-readable page titles */
 const TITLE_MAP: Record<string, string> = {
   '': 'Dashboard',
+  users: 'User Management',
+  roles: 'Roles',
   'sale-register': 'Sale Register',
   'gstr-1': 'GSTR-1 Filing',
   'gstr-1a': 'GSTR-1A',

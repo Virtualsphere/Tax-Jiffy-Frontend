@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Gstr1UploadResult } from '@/pages/dashboard/gstr1/types/gstr1.types';
-import { parseGstr1Excel } from '@/pages/dashboard/gstr1/data/parseGstr1Excel';
 import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 import { handleApiError } from '@/services/api';
 
@@ -13,8 +12,8 @@ function isExcelFile(file: File): boolean {
 }
 
 type UseUploadSalesRegisterReturn = {
-  /** Process a selected file — parses locally AND uploads to backend */
-  mutate: (file: File) => void;
+  /** Process a selected file — uploads directly to backend */
+  mutate: (file: File, companyGstId: number, financialYear: string, taxPeriod: string) => void;
   /** Reset upload state */
   reset: () => void;
   /** The parsed upload result, or null if nothing uploaded */
@@ -42,7 +41,12 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
     if (inputRef.current) inputRef.current.value = '';
   }, []);
 
-  const mutate = useCallback(async (file: File) => {
+  const mutate = useCallback(async (
+    file: File,
+    companyGstId: number,
+    financialYear: string,
+    taxPeriod: string
+  ) => {
     setError(null);
     setData(null);
 
@@ -66,37 +70,19 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
 
     setIsPending(true);
     try {
-      // 3. Parse the Excel client-side — this powers the Step 2 draft preview tabs
-      const { draftData, rowCount } = await parseGstr1Excel(file);
-
-      const validationErrors: string[] = [];
-      const hasGstr1Sheets =
-        draftData.outwardData !== undefined || draftData.othersData !== undefined;
-      if (!hasGstr1Sheets) {
-        validationErrors.push(
-          'This workbook does not appear to be a GSTR-1 template. Expected sheets (b2b, hsn, docs, etc.) were not found.',
-        );
-      }
-
-      if (validationErrors.length > 0) {
-        setData({ fileName: file.name, fileSize: file.size, rows: rowCount, validationErrors, parsedDraftData: draftData });
-        return;
-      }
-
-      // 4. Upload the file to the backend
-      // companyGstId is hardcoded to 1 until the Company context is implemented.
-      // financialYear & taxPeriod are derived from the parsed Excel data.
-      const financialYear = draftData.filingPeriodYear || '2023-24';
-      const taxPeriod = (draftData.filingPeriodMonth || 'October').toUpperCase();
-
-      const uploadResponse = await gstr1Api.upload(file, 1, financialYear, taxPeriod);
+      // 3. Upload directly to the backend
+      const uploadResponse = await gstr1Api.upload(
+        file,
+        companyGstId,
+        financialYear,
+        taxPeriod.toUpperCase() // Spring Boot expects uppercase month (e.g. "JUNE")
+      );
 
       setData({
         fileName: file.name,
         fileSize: file.size,
         rows: uploadResponse.totalRowsImported,
         validationErrors: [],
-        parsedDraftData: draftData,
         filingId: uploadResponse.filingId,
       });
     } catch (err) {

@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LandingLayout } from '@/layouts/LandingLayout';
 import { SignupLayout } from '@/layouts/SignupLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
+import { UserDashboardLayout } from '@/layouts/UserDashboardLayout';
 import { ROUTES } from '@/config/routes';
 import { ErrorPage } from '@/pages/errors/ErrorPage';
 
@@ -35,6 +36,13 @@ const SignupPage = lazy(() =>
 );
 const ForgotPasswordPage = lazy(() =>
   import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
+);
+
+const UserDashboardPage = lazy(() =>
+  import('@/pages/dashboard/user/UserDashboardPage').then((m) => ({ default: m.UserDashboardPage })),
+);
+const UserManagementPage = lazy(() =>
+  import('@/pages/dashboard/users/UserManagementPage').then((m) => ({ default: m.UserManagementPage })),
 );
 
 const GSTR1Page = lazy(() =>
@@ -180,6 +188,21 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: ROUTES.dashboard.user,
+    element: <UserDashboardLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: (
+          <SuspenseWrapper>
+            <UserDashboardPage />
+          </SuspenseWrapper>
+        ),
+      },
+    ],
+  },
+  {
     path: ROUTES.dashboard.root,
     element: <DashboardLayout />,
     errorElement: <ErrorPage />,
@@ -187,6 +210,22 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Navigate to="gstr-1" replace />,
+      },
+      {
+        path: 'users',
+        element: (
+          <SuspenseWrapper>
+            <UserManagementPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'roles',
+        element: (
+          <SuspenseWrapper>
+            <ModulePlaceholderPage />
+          </SuspenseWrapper>
+        ),
       },
       {
         path: 'gstr-1',

@@ -1,26 +1,59 @@
-// TODO: Replace mock data with useQuery(() => entityApi.getCurrent())
-// when the backend endpoint GET /entity/current is available.
+import { useQuery } from '@tanstack/react-query';
+import { companyGSTApi } from '@/pages/dashboard/user/api/company-gst.api';
 
 export type CurrentEntity = {
+  id: number;
   companyName: string;
   gstin: string;
   location: string;
   period: string;
-};
-
-const MOCK_ENTITY: CurrentEntity = {
-  companyName: 'VOLLERT INDIA PVT LTD.',
-  gstin: '09AADCV5659C1Z5',
-  location: 'Uttar Pradesh',
-  period: "JUNE'2026",
+  isPaymentDone: boolean;
+  subscriptionPlanName: string;
 };
 
 export function useCurrentEntity() {
-  // TODO: swap with useQuery(['entity', 'current'], entityApi.getCurrent)
+  const activeIdStr = localStorage.getItem('active_company_gst_id');
+  const activeId = activeIdStr ? Number(activeIdStr) : null;
+
+  const query = useQuery({
+    queryKey: ['active-entity', activeId],
+    queryFn: async () => {
+      if (!activeId) return null;
+      const gst = await companyGSTApi.getById(activeId);
+      const stateCode = gst.gstNumber.substring(0, 2);
+      const stateName = stateCode === '27' ? 'Maharashtra' 
+                      : stateCode === '29' ? 'Karnataka' 
+                      : stateCode === '07' ? 'Delhi' 
+                      : stateCode === '19' ? 'West Bengal' 
+                      : 'State (Other)';
+
+      return {
+        id: gst.id,
+        companyName: gst.companyName,
+        gstin: gst.gstNumber,
+        location: stateName,
+        period: "FEB'2026",
+        isPaymentDone: gst.isPaymentDone,
+        subscriptionPlanName: gst.subscriptionPlanName,
+      };
+    },
+    enabled: !!activeId,
+  });
+
+  const defaultEntity: CurrentEntity = {
+    id: 0,
+    companyName: 'No Entity Selected',
+    gstin: 'N/A',
+    location: 'N/A',
+    period: 'N/A',
+    isPaymentDone: false,
+    subscriptionPlanName: '',
+  };
+
   return {
-    data: MOCK_ENTITY,
-    isLoading: false,
-    isError: false,
-    error: null,
+    data: query.data || defaultEntity,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
   } as const;
 }

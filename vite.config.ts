@@ -16,7 +16,9 @@ export default defineConfig({
       '/api': {
         target: 'https://api.taxjiffy.com',
         changeOrigin: true,
-        secure: true,
+        secure: false,
+        timeout: 600000,
+        proxyTimeout: 600000,
       },
     },
   },

@@ -23,11 +23,11 @@ export const gstr1Api = {
     formData.append('file', file);
 
     const { data } = await apiClient.post<ApiResponse<Gstr1UploadResponse>>(
-      `${BASE}/upload`,
+      `${BASE}/upload?companyGstId=${companyGstId}&financialYear=${financialYear}&taxPeriod=${taxPeriod}`,
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: { companyGstId, financialYear, taxPeriod },
+        headers: { 'Content-Type': undefined },
+        timeout: 0,
       },
     );
     return data.data;
