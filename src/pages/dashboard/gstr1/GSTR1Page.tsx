@@ -150,8 +150,8 @@ export function GSTR1Page() {
   // Hooks
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
-  // Pass Excel-extracted data to the draft hook so all tabs show real file data
-  const draft = useGstr1Draft(upload.data?.parsedDraftData);
+  // Pass filing ID to the draft hook so it fetches compiled report data from the backend
+  const draft = useGstr1Draft(upload.data?.filingId);
   const filing = useFileGstr1();
 
   const [activeTab, setActiveTab] = useState<string>('Basic');
@@ -317,7 +317,7 @@ export function GSTR1Page() {
         <div className={styles.dropzoneIcon}>⬆</div>
         <p className={styles.dropzoneTitle}>Drag and drop your Excel file here</p>
         <p className={styles.dropzoneHint}>
-          Supported formats: .xlsx, .xls (Max 25MB)
+          Supported formats: .xlsx, .xls (Max 100MB)
           <br />
           Ensure all sheets follow the template structure.
         </p>
@@ -490,48 +490,61 @@ export function GSTR1Page() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className={styles.draftTabs}>
-          {draft.data.tabs.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`${styles.draftTab} ${activeTab === tab ? styles.draftTabActive : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-              {draft.data.tabBadges[tab] != null && (
-                <span className={styles.draftTabBadge}>{draft.data.tabBadges[tab]}</span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Content Area */}
-        <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
-          <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0 } : {}}>
-            <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
-            <PeriodSelector
-              year={selectedYear.label}
-              month={selectedMonth}
-              onYearChange={(yLabel) => {
-                const fy = FY_YEARS.find(f => f.label === yLabel);
-                if (fy) setSelectedYear(fy);
-              }}
-              onMonthChange={setSelectedMonth}
-            />
-            <span className={styles.filingPeriodSync}>
-              <span className={styles.syncIcon}>ⓘ</span>
-              Data synced from GST Portal
-            </span>
+        {/* Tabs & Content Area */}
+        {draft.isLoading ? (
+          <div className={styles.parsingCard} style={{ margin: '2rem 0' }}>
+            <div className={styles.parsingSpinner} />
+            <div className={styles.parsingText}>
+              <p className={styles.parsingTitle}>Loading draft data…</p>
+              <p className={styles.parsingSubtitle}>Fetching compiled GSTR-1 report from server</p>
+            </div>
           </div>
+        ) : (
+          <>
+            {/* Tabs */}
+            <div className={styles.draftTabs}>
+              {draft.data.tabs.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`${styles.draftTab} ${activeTab === tab ? styles.draftTabActive : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                  {draft.data.tabBadges[tab] != null && (
+                    <span className={styles.draftTabBadge}>{draft.data.tabBadges[tab]}</span>
+                  )}
+                </button>
+              ))}
+            </div>
 
-          {activeTab === 'Basic' && <GSTR1BasicTab data={draft.data.rows} />}
-          {activeTab === 'Outward' && draft.data.outwardData && <GSTR1OutwardTab data={draft.data.outwardData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-          {activeTab === 'Amendments' && draft.data.amendmentsData && <GSTR1AmendmentsTab data={draft.data.amendmentsData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} selectedMonth={selectedMonth} selectedYear={selectedYear} />}
-          {activeTab === 'Advanced' && draft.data.advancedData && <GSTR1AdvancedTab data={draft.data.advancedData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-          {activeTab === 'Others' && draft.data.othersData && <GSTR1OthersTab data={draft.data.othersData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-        </div>
+            {/* Content Area */}
+            <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
+              <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0 } : {}}>
+                <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
+                <PeriodSelector
+                  year={selectedYear.label}
+                  month={selectedMonth}
+                  onYearChange={(yLabel) => {
+                    const fy = FY_YEARS.find(f => f.label === yLabel);
+                    if (fy) setSelectedYear(fy);
+                  }}
+                  onMonthChange={setSelectedMonth}
+                />
+                <span className={styles.filingPeriodSync}>
+                  <span className={styles.syncIcon}>ⓘ</span>
+                  Data synced from GST Portal
+                </span>
+              </div>
+
+              {activeTab === 'Basic' && <GSTR1BasicTab data={draft.data.rows} />}
+              {activeTab === 'Outward' && draft.data.outwardData && <GSTR1OutwardTab data={draft.data.outwardData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
+              {activeTab === 'Amendments' && draft.data.amendmentsData && <GSTR1AmendmentsTab data={draft.data.amendmentsData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} selectedMonth={selectedMonth} selectedYear={selectedYear} />}
+              {activeTab === 'Advanced' && draft.data.advancedData && <GSTR1AdvancedTab data={draft.data.advancedData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
+              {activeTab === 'Others' && draft.data.othersData && <GSTR1OthersTab data={draft.data.othersData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Footer */}

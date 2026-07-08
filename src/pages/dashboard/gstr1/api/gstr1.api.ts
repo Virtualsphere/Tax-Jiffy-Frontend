@@ -121,4 +121,12 @@ export const gstr1Api = {
     const { data } = await apiClient.get(`${BASE}/filings/${filingId}/exemp`);
     return data.data;
   },
+
+  /** Fetch the compiled GSTR-1 report from the backend */
+  getReport: async (filingId: number): Promise<any> => {
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      `${BASE}/filings/${filingId}/report`,
+    );
+    return data.data;
+  },
 };

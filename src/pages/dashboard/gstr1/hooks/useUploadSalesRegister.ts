@@ -4,7 +4,7 @@ import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 import { handleApiError } from '@/services/api';
 
 const ALLOWED_EXTENSIONS = ['.xlsx', '.xls'];
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 function isExcelFile(file: File): boolean {
   const name = file.name.toLowerCase();
@@ -62,7 +62,7 @@ export function useUploadSalesRegister(): UseUploadSalesRegisterReturn {
     // 2. Client-side file size validation
     if (file.size > MAX_FILE_SIZE) {
       setError(
-        `File size (${formatFileSize(file.size)}) exceeds the 25MB limit. Please upload a smaller file.`,
+        `File size (${formatFileSize(file.size)}) exceeds the 100MB limit. Please upload a smaller file.`,
       );
       if (inputRef.current) inputRef.current.value = '';
       return;
