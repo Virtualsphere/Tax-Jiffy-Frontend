@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   VITE_APP_NAME: z.string().default('Tax Jiffy'),
-  VITE_API_BASE_URL: z.string().url().default('http://localhost:3000/api'),
+  VITE_API_BASE_URL: z.string().default('/api'),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
