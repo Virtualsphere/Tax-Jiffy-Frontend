@@ -42,7 +42,7 @@ export function ConnectEntityModal({ onClose }: ConnectEntityModalProps) {
           <h2 className={styles.title}>Create Company</h2>
           <button 
             className={styles.closeBtn} 
-            onClick={onClose} 
+            onClick={() => onClose()} 
             aria-label="Close" 
             disabled={isSubmitting}
           >
@@ -91,7 +91,7 @@ export function ConnectEntityModal({ onClose }: ConnectEntityModalProps) {
             )}
           </div>
           <div className={styles.footer}>
-            <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={isSubmitting}>
+            <button type="button" className={styles.cancelBtn} onClick={() => onClose()} disabled={isSubmitting}>
               Cancel
             </button>
             <button type="submit" className={styles.submitBtn} disabled={!newCompanyName.trim() || isSubmitting}>

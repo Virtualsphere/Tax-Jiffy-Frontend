@@ -22,7 +22,7 @@ interface GSTMappingCardProps {
   filterCompanyId: number | null;
 }
 
-function GSTMappingCard({ mapping, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
+function GSTMappingCard({ mapping, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst: _onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
   const { data: rawGst, isLoading } = useCompanyGST(mapping.companyGstId);
 
   // Apply frontend-only mock if upgrade was simulated due to 403
