@@ -14,6 +14,7 @@ export const ROUTES = {
   },
   dashboard: {
     root: '/dashboard',
+    companies: '/dashboard/companies',
     user: '/dashboard/user',
     users: '/dashboard/users',
     roles: '/dashboard/roles',

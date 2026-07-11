@@ -38,6 +38,9 @@ const ForgotPasswordPage = lazy(() =>
   import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
 );
 
+const CompaniesDashboardPage = lazy(() =>
+  import('@/pages/dashboard/companies/CompaniesDashboardPage').then((m) => ({ default: m.CompaniesDashboardPage })),
+);
 const UserDashboardPage = lazy(() =>
   import('@/pages/dashboard/user/UserDashboardPage').then((m) => ({ default: m.UserDashboardPage })),
 );
@@ -182,6 +185,21 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <ForgotPasswordPage />
+          </SuspenseWrapper>
+        ),
+      },
+    ],
+  },
+  {
+    path: ROUTES.dashboard.companies,
+    element: <UserDashboardLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: (
+          <SuspenseWrapper>
+            <CompaniesDashboardPage />
           </SuspenseWrapper>
         ),
       },

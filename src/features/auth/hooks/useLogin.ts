@@ -27,7 +27,7 @@ export function useLogin() {
         userName: session.userName,
         email: session.email,
       });
-      void navigate(ROUTES.dashboard.root);
+      void navigate(ROUTES.dashboard.companies);
     },
     onError: (error) => {
       const apiError = handleApiError(error);

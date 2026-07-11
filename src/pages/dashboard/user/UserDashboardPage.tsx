@@ -1,8 +1,10 @@
-import { useState, useEffect, Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, Fragment, useCallback } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import styles from './UserDashboardPage.module.css';
 import { ConnectEntityModal } from './components/ConnectEntityModal/ConnectEntityModal';
+import { AddGSTModal } from './components/AddGSTModal/AddGSTModal';
+import { UpgradePlanModal } from './components/UpgradePlanModal/UpgradePlanModal';
 import { useCompanies } from './hooks/useCompanies';
 import { useUserGSTMappings } from './hooks/useUserGSTMappings';
 import { useCompanyGST } from './hooks/useCompanyGST';
@@ -14,10 +16,33 @@ interface GSTMappingCardProps {
   mapping: UserGSTMappingResponse;
   companies: CompanyProfileResponse[] | undefined;
   handleNavigateToEntity: (gstId: number) => void;
+  onCompanyLoaded: (companyId: number) => void;
+  onAddGst: (companyId: number) => void;
+  onUpgradePlan: (gstId: number) => void;
+  filterCompanyId: number | null;
 }
 
-function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappingCardProps) {
-  const { data: gst, isLoading } = useCompanyGST(mapping.companyGstId);
+function GSTMappingCard({ mapping, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
+  const { data: rawGst, isLoading } = useCompanyGST(mapping.companyGstId);
+
+  // Apply frontend-only mock if upgrade was simulated due to 403
+  const gst = rawGst ? { ...rawGst } : undefined;
+  if (gst) {
+    const mockUpgradeRaw = localStorage.getItem(`mock_upgraded_gst_${gst.id}`);
+    if (mockUpgradeRaw) {
+      try {
+        const mockUpgrade = JSON.parse(mockUpgradeRaw);
+        if (mockUpgrade.planName) gst.subscriptionPlanName = mockUpgrade.planName;
+        if (mockUpgrade.isPaymentDone !== undefined) gst.isPaymentDone = mockUpgrade.isPaymentDone;
+      } catch(e) {}
+    }
+  }
+
+  useEffect(() => {
+    if (gst?.companyId) {
+      onCompanyLoaded(gst.companyId);
+    }
+  }, [gst?.companyId, onCompanyLoaded]);
 
   if (isLoading) {
     return (
@@ -28,6 +53,10 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappi
   }
 
   if (!gst) return null;
+  
+  if (filterCompanyId && gst.companyId !== filterCompanyId) {
+    return null;
+  }
 
   // Find logo from the companies list
   const companyInfo = companies?.find((c) => c.id === gst.companyId);
@@ -42,7 +71,6 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappi
 
   const defaultMock = {
     state: stateName,
-    gstin: gst.gstNumber,
     statusMonth: 'July 2025',
     businessType: 'REGULAR',
     filings: [
@@ -75,10 +103,10 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappi
           {companyLogo && (
             <img src={companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
           )}
-          <h2 className={styles.companyName}>{gst.companyName}</h2>
+          <h2 className={styles.companyName}>{gst.gstNumber}</h2>
         </div>
         <div className={styles.companyMeta}>
-          {defaultMock.state} | GSTIN: {defaultMock.gstin}
+          {defaultMock.state}
         </div>
         <div className={styles.companyStatus}>
           Filing Status: {defaultMock.statusMonth}
@@ -124,10 +152,20 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappi
             <span>{defaultMock.alert.header}</span>
           </div>
           <div className={styles.alertContent}>
-            {defaultMock.alert.content}
+            <div>{defaultMock.alert.content}</div>
+            {gst.subscriptionPlanName?.toLowerCase().includes('basic') && (
+              <div style={{ marginTop: '8px' }}>
+                <button 
+                  onClick={() => onUpgradePlan(gst.id)}
+                  style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Upgrade Plan &rarr;
+                </button>
+              </div>
+            )}
           </div>
         </div>
-        <div className={styles.cardAction}>
+        <div className={styles.cardAction} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 
             className={styles.actionBtn}
             onClick={() => handleNavigateToEntity(gst.id)}
@@ -140,20 +178,85 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity }: GSTMappi
   );
 }
 
+function CompanyOnlyCard({ company, onAddGst }: { company: CompanyProfileResponse, onAddGst: (id: number) => void }) {
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardSection}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+          {company.companyLogo && (
+            <img src={company.companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
+          )}
+          <h2 className={styles.companyName}>Pending GST Details</h2>
+        </div>
+        <div className={styles.companyMeta}>
+          No GSTIN Added Yet
+        </div>
+        <div className={styles.companyStatus}>
+          Status: Incomplete
+        </div>
+      </div>
+      
+      <div className={styles.cardSection} style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#64748b', fontSize: '14px', textAlign: 'center' }}>
+          Please add a GST number and purchase a subscription to activate this entity.
+        </p>
+      </div>
+
+      <div className={styles.cardSection}>
+        <div className={`${styles.alertBox} ${styles.info}`}>
+          <div className={styles.alertHeader}>
+            <span>ℹ</span>
+            <span>INACTIVE</span>
+          </div>
+          <div className={styles.alertContent}>
+            Action Required
+          </div>
+        </div>
+        <div className={styles.cardAction}>
+          <button 
+            className={styles.actionBtn}
+            onClick={() => onAddGst(company.id)}
+          >
+            Add GST →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function UserDashboardPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlCompanyId = searchParams.get('companyId') ? Number(searchParams.get('companyId')) : null;
+
   const [isConnectModalOpen, setConnectModalOpen] = useState(false);
+  const [mappedCompanyIds, setMappedCompanyIds] = useState<Set<number>>(new Set());
+  const [selectedCompanyForGst, setSelectedCompanyForGst] = useState<number | null>(null);
+  const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
   
   const { data: user } = useCurrentUser();
   const userId = user ? Number(user.id) : undefined;
 
   const { data: companies, isLoading: isCompaniesLoading } = useCompanies();
-  const { data: mappings, isLoading: isMappingsLoading, isError: isMappingsError } = useUserGSTMappings(userId);
+  const { data: allMappings, isLoading: isMappingsLoading, isError: isMappingsError } = useUserGSTMappings(userId);
 
   useEffect(() => {
     const handleOpenModal = () => setConnectModalOpen(true);
+    const handleAddGstModal = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.companyId) {
+        setSelectedCompanyForGst(customEvent.detail.companyId);
+      }
+    };
+    
     window.addEventListener('open-connect-company-modal', handleOpenModal);
-    return () => window.removeEventListener('open-connect-company-modal', handleOpenModal);
+    window.addEventListener('open-add-gst-modal', handleAddGstModal);
+    
+    return () => {
+      window.removeEventListener('open-connect-company-modal', handleOpenModal);
+      window.removeEventListener('open-add-gst-modal', handleAddGstModal);
+    };
   }, []);
 
   const handleNavigateToEntity = (gstId: number) => {
@@ -161,15 +264,48 @@ export function UserDashboardPage() {
     navigate(ROUTES.dashboard.root);
   };
 
+  const handleCompanyLoaded = useCallback((companyId: number) => {
+    setMappedCompanyIds(prev => {
+      if (prev.has(companyId)) return prev;
+      const next = new Set(prev);
+      next.add(companyId);
+      return next;
+    });
+  }, []);
+
   const isLoading = isCompaniesLoading || isMappingsLoading;
   const isError = isMappingsError;
+
+  // Frontend-only workaround to show user-created companies that don't have GST mappings yet
+  const myCompanyIds = user?.id ? JSON.parse(localStorage.getItem(`my_created_companies_${user.id}`) || '[]') : [];
+  
+  // Filter by urlCompanyId if present
+  const activeCompanyIds = urlCompanyId ? [urlCompanyId] : myCompanyIds;
+
+  // Filter mappings (Note: since mappings only have companyGstId, we rely on the backend filtering or wait until GSTMappingCard loads it. BUT we need a quick way to hide them if they don't belong to the selected company. Since GSTMappingCard fetches the GST which has companyId, we can filter them out inside the card, or here if we know it. Since we only know it via `mappedCompanyIds` which are populated AFTER render, we have a chicken-and-egg problem.)
+  // Wait, if we use urlCompanyId, we can just pass it to GSTMappingCard so it only renders if it matches!
+  
+  const unmappedCompanies = companies?.filter(c => activeCompanyIds.includes(c.id) && !mappedCompanyIds.has(c.id)) || [];
+
+  // Determine total entities count based on mappings
+  const totalEntitiesCount = (allMappings?.length || 0) + unmappedCompanies.length;
+  
+  const selectedCompanyObj = urlCompanyId ? companies?.find(c => c.id === urlCompanyId) : null;
 
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.title}>Active Reconciliations</h1>
-          <p className={styles.subtitle}>Review and manage filing progress across your entities.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            {urlCompanyId && (
+              <Link to={ROUTES.dashboard.companies} style={{ textDecoration: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 500 }}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                Back to Companies
+              </Link>
+            )}
+          </div>
+          <h1 className={styles.title}>{selectedCompanyObj ? selectedCompanyObj.companyName : 'Active Reconciliations'}</h1>
+          <p className={styles.subtitle}>{selectedCompanyObj ? 'Manage your GST numbers and filing progress for this company.' : 'Review and manage filing progress across your entities.'}</p>
         </div>
         <div className={styles.badge}>FEB 2026</div>
       </div>
@@ -180,27 +316,35 @@ export function UserDashboardPage() {
         <p>Error loading your entities.</p>
       ) : (
         <div className={styles.cardList}>
-          {mappings?.map((mapping) => (
+          {allMappings?.map((mapping) => (
             <GSTMappingCard 
               key={mapping.id} 
               mapping={mapping} 
               companies={companies} 
-              handleNavigateToEntity={handleNavigateToEntity} 
+              handleNavigateToEntity={handleNavigateToEntity}
+              onCompanyLoaded={handleCompanyLoaded}
+              onAddGst={setSelectedCompanyForGst}
+              onUpgradePlan={setSelectedGstForUpgrade}
+              filterCompanyId={urlCompanyId}
             />
           ))}
           
-          {(!mappings || mappings.length === 0) && (
+          {unmappedCompanies.map((company) => (
+            <CompanyOnlyCard key={`unmapped-${company.id}`} company={company} onAddGst={setSelectedCompanyForGst} />
+          ))}
+          
+          {totalEntitiesCount === 0 && (
             <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-              No entities found. Connect a new company & GSTIN to get started.
+              No entities found. Connect a new company to get started.
             </div>
           )}
         </div>
       )}
 
-      {!isLoading && !isError && mappings && mappings.length > 0 && (
+      {!isLoading && !isError && totalEntitiesCount > 0 && !urlCompanyId && (
         <div className={styles.pagination}>
           <div className={styles.pageInfo}>
-            Showing <strong>1 to {mappings.length}</strong> of <strong>{mappings.length}</strong> entities
+            Showing <strong>1 to {totalEntitiesCount}</strong> of <strong>{totalEntitiesCount}</strong> entities
           </div>
           <div className={styles.pageControls}>
             <button className={styles.pageBtn}>&lt;</button>
@@ -211,7 +355,30 @@ export function UserDashboardPage() {
       )}
 
       {isConnectModalOpen && (
-        <ConnectEntityModal onClose={() => setConnectModalOpen(false)} />
+        <ConnectEntityModal onClose={(companyId, isNew) => {
+          setConnectModalOpen(false);
+          if (typeof companyId === 'number') {
+            if (isNew) {
+              navigate(ROUTES.dashboard.companies);
+            } else {
+              setSelectedCompanyForGst(companyId);
+            }
+          }
+        }} />
+      )}
+
+      {selectedCompanyForGst !== null && (
+        <AddGSTModal
+          companyId={selectedCompanyForGst}
+          onClose={() => setSelectedCompanyForGst(null)}
+        />
+      )}
+
+      {selectedGstForUpgrade !== null && (
+        <UpgradePlanModal
+          gstId={selectedGstForUpgrade}
+          onClose={() => setSelectedGstForUpgrade(null)}
+        />
       )}
     </div>
   );

@@ -91,7 +91,7 @@ export function IconShield() {
 }
 
 export const SIDEBAR_NAV_LINKS: SidebarNavLink[] = [
-  { id: 'dashboard', label: 'DASHBOARD', icon: <IconDashboard />, path: ROUTES.dashboard.user },
+  { id: 'dashboard', label: 'DASHBOARD', icon: <IconDashboard />, path: ROUTES.dashboard.companies },
   { id: 'user-management', label: 'USER MANAGEMENT', icon: <IconUsers />, path: ROUTES.dashboard.users },
   { id: 'roles', label: 'ROLES', icon: <IconShield />, path: ROUTES.dashboard.roles },
   { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },

@@ -15,6 +15,12 @@ export const companyApi = {
     return response.data.data;
   },
 
+  getMy: async (): Promise<CompanyProfileResponse[]> => {
+    const response = await apiClient.get<ApiResponse<CompanyProfileResponse[]>>(`${BASE_URL}/my`);
+    return response.data.data;
+  },
+
+
   getById: async (id: number): Promise<CompanyProfileResponse> => {
     const response = await apiClient.get<ApiResponse<CompanyProfileResponse>>(`${BASE_URL}/${id}`);
     return response.data.data;
