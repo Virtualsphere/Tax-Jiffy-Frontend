@@ -1,5 +1,6 @@
-import { useState, useEffect, Fragment, useCallback } from 'react';
+import { useState, useEffect, Fragment, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useQueries } from '@tanstack/react-query';
 import { ROUTES } from '@/config/routes';
 import styles from './UserDashboardPage.module.css';
 import { ConnectEntityModal } from './components/ConnectEntityModal/ConnectEntityModal';
@@ -11,19 +12,20 @@ import { useCompanyGST } from './hooks/useCompanyGST';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import type { CompanyProfileResponse } from './types/company.types';
 import type { UserGSTMappingResponse } from './types/user-gst-mapping.types';
+import { companyGSTApi } from './api/company-gst.api';
 
 interface GSTMappingCardProps {
-  mapping: UserGSTMappingResponse;
+  gstId: number;
   companies: CompanyProfileResponse[] | undefined;
   handleNavigateToEntity: (gstId: number) => void;
   onCompanyLoaded: (companyId: number) => void;
   onAddGst: (companyId: number) => void;
-  onUpgradePlan: (gstId: number) => void;
+  onUpgradePlan: (gstId: number, isNew?: boolean, companyId?: number) => void;
   filterCompanyId: number | null;
 }
 
-function GSTMappingCard({ mapping, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst: _onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
-  const { data: rawGst, isLoading } = useCompanyGST(mapping.companyGstId);
+function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst: _onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
+  const { data: rawGst, isLoading } = useCompanyGST(gstId);
 
   // Apply frontend-only mock if upgrade was simulated due to 403
   const gst = rawGst ? { ...rawGst } : undefined;
@@ -153,13 +155,23 @@ function GSTMappingCard({ mapping, companies, handleNavigateToEntity, onCompanyL
           </div>
           <div className={styles.alertContent}>
             <div>{defaultMock.alert.content}</div>
-            {gst.subscriptionPlanName?.toLowerCase().includes('basic') && (
+            {gst.subscriptionPlanName?.toLowerCase().includes('basic') && gst.isPaymentDone && (
               <div style={{ marginTop: '8px' }}>
                 <button 
-                  onClick={() => onUpgradePlan(gst.id)}
+                  onClick={() => onUpgradePlan(gst.id, false, gst.companyId)}
                   style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
                 >
                   Upgrade Plan &rarr;
+                </button>
+              </div>
+            )}
+            {!gst.isPaymentDone && (
+              <div style={{ marginTop: '8px' }}>
+                <button 
+                  onClick={() => onUpgradePlan(gst.id, true, gst.companyId)}
+                  style={{ color: '#16a34a', textDecoration: 'underline', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Buy Subscription &rarr;
                 </button>
               </div>
             )}
@@ -234,6 +246,7 @@ export function UserDashboardPage() {
   const [mappedCompanyIds, setMappedCompanyIds] = useState<Set<number>>(new Set());
   const [selectedCompanyForGst, setSelectedCompanyForGst] = useState<number | null>(null);
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
+  const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   
   const { data: user } = useCurrentUser();
   const userId = user ? Number(user.id) : undefined;
@@ -276,19 +289,28 @@ export function UserDashboardPage() {
   const isLoading = isCompaniesLoading || isMappingsLoading;
   const isError = isMappingsError;
 
-  // Frontend-only workaround to show user-created companies that don't have GST mappings yet
-  const myCompanyIds = user?.id ? JSON.parse(localStorage.getItem(`my_created_companies_${user.id}`) || '[]') : [];
-  
-  // Filter by urlCompanyId if present
-  const activeCompanyIds = urlCompanyId ? [urlCompanyId] : myCompanyIds;
+  // Filter by urlCompanyId if present, otherwise include all companies user has access to
+  const activeCompanyIds = urlCompanyId ? [urlCompanyId] : (companies?.map(c => c.id) || []);
 
-  // Filter mappings (Note: since mappings only have companyGstId, we rely on the backend filtering or wait until GSTMappingCard loads it. BUT we need a quick way to hide them if they don't belong to the selected company. Since GSTMappingCard fetches the GST which has companyId, we can filter them out inside the card, or here if we know it. Since we only know it via `mappedCompanyIds` which are populated AFTER render, we have a chicken-and-egg problem.)
-  // Wait, if we use urlCompanyId, we can just pass it to GSTMappingCard so it only renders if it matches!
-  
+  const companyGstQueries = useQueries({
+    queries: activeCompanyIds.map(companyId => ({
+      queryKey: ['company-gsts', companyId],
+      queryFn: () => companyGSTApi.getByCompany(companyId),
+    }))
+  });
+
+  const allCompanyGsts = useMemo(() => {
+    return companyGstQueries.flatMap(q => q.data || []);
+  }, [companyGstQueries]);
+
+  const mappedGstIds = allMappings?.map(m => m.companyGstId) || [];
+  const fetchedGstIds = allCompanyGsts.map(g => g.id);
+  const allGstIdsToRender = Array.from(new Set([...mappedGstIds, ...fetchedGstIds]));
+
   const unmappedCompanies = companies?.filter(c => activeCompanyIds.includes(c.id) && !mappedCompanyIds.has(c.id)) || [];
 
-  // Determine total entities count based on mappings
-  const totalEntitiesCount = (allMappings?.length || 0) + unmappedCompanies.length;
+  // Determine total entities count based on mappings and unmapped companies
+  const totalEntitiesCount = allGstIdsToRender.length + unmappedCompanies.length;
   
   const selectedCompanyObj = urlCompanyId ? companies?.find(c => c.id === urlCompanyId) : null;
 
@@ -316,15 +338,22 @@ export function UserDashboardPage() {
         <p>Error loading your entities.</p>
       ) : (
         <div className={styles.cardList}>
-          {allMappings?.map((mapping) => (
+          {allGstIdsToRender.map((gstId) => (
             <GSTMappingCard 
-              key={mapping.id} 
-              mapping={mapping} 
+              key={gstId} 
+              gstId={gstId} 
               companies={companies} 
               handleNavigateToEntity={handleNavigateToEntity}
               onCompanyLoaded={handleCompanyLoaded}
               onAddGst={setSelectedCompanyForGst}
-              onUpgradePlan={setSelectedGstForUpgrade}
+              onUpgradePlan={(gstId, isNew, companyId) => {
+                if (isNew) {
+                  navigate(`${ROUTES.pricing}?gstId=${gstId}&companyId=${companyId}`);
+                } else {
+                  setSelectedGstForUpgrade(gstId);
+                  setIsNewPurchaseMode(false);
+                }
+              }}
               filterCompanyId={urlCompanyId}
             />
           ))}
@@ -377,7 +406,11 @@ export function UserDashboardPage() {
       {selectedGstForUpgrade !== null && (
         <UpgradePlanModal
           gstId={selectedGstForUpgrade}
-          onClose={() => setSelectedGstForUpgrade(null)}
+          onClose={() => {
+            setSelectedGstForUpgrade(null);
+            setIsNewPurchaseMode(false);
+          }}
+          isNewPurchase={isNewPurchaseMode}
         />
       )}
     </div>

@@ -1,3 +1,8 @@
+export interface UserGSTMappingRequest {
+  userId: number;
+  companyGstId: number;
+}
+
 export interface UserGSTMappingResponse {
   id: number;
   userId: number;

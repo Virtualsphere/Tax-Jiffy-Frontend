@@ -8,9 +8,10 @@ import { useQueryClient } from '@tanstack/react-query';
 interface UpgradePlanModalProps {
   gstId: number;
   onClose: () => void;
+  isNewPurchase?: boolean;
 }
 
-export function UpgradePlanModal({ gstId, onClose }: UpgradePlanModalProps) {
+export function UpgradePlanModal({ gstId, onClose, isNewPurchase = false }: UpgradePlanModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedPlanId, setSelectedPlanId] = useState<number | ''>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,8 +83,8 @@ export function UpgradePlanModal({ gstId, onClose }: UpgradePlanModalProps) {
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            {step === 1 && 'Select New Subscription Plan'}
-            {step === 2 && 'Complete Upgrade'}
+            {step === 1 && (isNewPurchase ? 'Buy Subscription' : 'Select New Subscription Plan')}
+            {step === 2 && (isNewPurchase ? 'Complete Purchase' : 'Complete Upgrade')}
           </h2>
           <button 
             className={styles.closeBtn} 
@@ -111,11 +112,11 @@ export function UpgradePlanModal({ gstId, onClose }: UpgradePlanModalProps) {
                   onChange={(e) => setSelectedPlanId(Number(e.target.value))}
                   required
                 >
-                  <option value="" disabled>Select a plan to upgrade to</option>
+                  <option value="" disabled>{isNewPurchase ? 'Select a subscription plan' : 'Select a plan to upgrade to'}</option>
                   {isLoadingPlans ? (
                     <option disabled>Loading...</option>
                   ) : (
-                    plans?.filter(p => !p.name.toLowerCase().includes('basic'))?.map((p: SubscriptionPlanResponse) => (
+                    (isNewPurchase ? plans : plans?.filter(p => !p.name.toLowerCase().includes('basic')))?.map((p: SubscriptionPlanResponse) => (
                       <option key={p.id} value={p.id}>{p.name} - ₹{p.planAmount}</option>
                     ))
                   )}
@@ -135,7 +136,9 @@ export function UpgradePlanModal({ gstId, onClose }: UpgradePlanModalProps) {
           <form onSubmit={handleSubmitFinal}>
             <div className={styles.body}>
               <p style={{ fontSize: '14px', color: '#475569', marginBottom: '20px' }}>
-                You are about to upgrade your subscription. Please complete your payment to activate the new plan.
+                {isNewPurchase
+                  ? 'You have selected a subscription plan. Please complete your payment to activate this entity.'
+                  : 'You are about to upgrade your subscription. Please complete your payment to activate the new plan.'}
               </p>
               
               <div style={{ padding: '16px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '20px' }}>
@@ -168,7 +171,7 @@ export function UpgradePlanModal({ gstId, onClose }: UpgradePlanModalProps) {
                 className={styles.submitBtn}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Processing...' : 'Simulate Payment & Upgrade'}
+                {isSubmitting ? 'Processing...' : (isNewPurchase ? 'Simulate Payment & Activate' : 'Simulate Payment & Upgrade')}
               </button>
             </div>
           </form>
