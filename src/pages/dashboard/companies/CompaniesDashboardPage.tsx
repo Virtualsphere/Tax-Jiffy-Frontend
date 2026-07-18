@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import styles from './CompaniesDashboardPage.module.css';
-import { useCompanies } from '../user/hooks/useCompanies';
+import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ConnectEntityModal } from '../user/components/ConnectEntityModal/ConnectEntityModal';
 
@@ -90,11 +90,7 @@ export function CompaniesDashboardPage() {
   const [isConnectModalOpen, setConnectModalOpen] = useState(false);
   
   const { data: user } = useCurrentUser();
-  const { data: allCompanies, isLoading } = useCompanies();
-
-  // Frontend-only workaround to show user-created companies
-  const myCompanyIds = user?.id ? JSON.parse(localStorage.getItem(`my_created_companies_${user.id}`) || '[]') : [];
-  const companies = allCompanies?.filter(c => myCompanyIds.includes(c.id)) || [];
+  const { data: companies, isLoading } = useMyCompanies();
 
   useEffect(() => {
     const handleOpenModal = () => setConnectModalOpen(true);

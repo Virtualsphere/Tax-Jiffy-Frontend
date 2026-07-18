@@ -6,12 +6,9 @@ import styles from './UserDashboardPage.module.css';
 import { ConnectEntityModal } from './components/ConnectEntityModal/ConnectEntityModal';
 import { AddGSTModal } from './components/AddGSTModal/AddGSTModal';
 import { UpgradePlanModal } from './components/UpgradePlanModal/UpgradePlanModal';
-import { useCompanies } from './hooks/useCompanies';
-import { useUserGSTMappings } from './hooks/useUserGSTMappings';
+import { useMyCompanies } from './hooks/useMyCompanies';
 import { useCompanyGST } from './hooks/useCompanyGST';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import type { CompanyProfileResponse } from './types/company.types';
-import type { UserGSTMappingResponse } from './types/user-gst-mapping.types';
 import { companyGSTApi } from './api/company-gst.api';
 
 interface GSTMappingCardProps {
@@ -25,20 +22,7 @@ interface GSTMappingCardProps {
 }
 
 function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoaded, onAddGst: _onAddGst, onUpgradePlan, filterCompanyId }: GSTMappingCardProps) {
-  const { data: rawGst, isLoading } = useCompanyGST(gstId);
-
-  // Apply frontend-only mock if upgrade was simulated due to 403
-  const gst = rawGst ? { ...rawGst } : undefined;
-  if (gst) {
-    const mockUpgradeRaw = localStorage.getItem(`mock_upgraded_gst_${gst.id}`);
-    if (mockUpgradeRaw) {
-      try {
-        const mockUpgrade = JSON.parse(mockUpgradeRaw);
-        if (mockUpgrade.planName) gst.subscriptionPlanName = mockUpgrade.planName;
-        if (mockUpgrade.isPaymentDone !== undefined) gst.isPaymentDone = mockUpgrade.isPaymentDone;
-      } catch(e) {}
-    }
-  }
+  const { data: gst, isLoading } = useCompanyGST(gstId);
 
   useEffect(() => {
     if (gst?.companyId) {
@@ -248,11 +232,7 @@ export function UserDashboardPage() {
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   
-  const { data: user } = useCurrentUser();
-  const userId = user ? Number(user.id) : undefined;
-
-  const { data: companies, isLoading: isCompaniesLoading } = useCompanies();
-  const { data: allMappings, isLoading: isMappingsLoading, isError: isMappingsError } = useUserGSTMappings(userId);
+  const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
 
   useEffect(() => {
     const handleOpenModal = () => setConnectModalOpen(true);
@@ -262,10 +242,8 @@ export function UserDashboardPage() {
         setSelectedCompanyForGst(customEvent.detail.companyId);
       }
     };
-    
     window.addEventListener('open-connect-company-modal', handleOpenModal);
     window.addEventListener('open-add-gst-modal', handleAddGstModal);
-    
     return () => {
       window.removeEventListener('open-connect-company-modal', handleOpenModal);
       window.removeEventListener('open-add-gst-modal', handleAddGstModal);
@@ -286,9 +264,6 @@ export function UserDashboardPage() {
     });
   }, []);
 
-  const isLoading = isCompaniesLoading || isMappingsLoading;
-  const isError = isMappingsError;
-
   // Filter by urlCompanyId if present, otherwise include all companies user has access to
   const activeCompanyIds = urlCompanyId ? [urlCompanyId] : (companies?.map(c => c.id) || []);
 
@@ -303,15 +278,12 @@ export function UserDashboardPage() {
     return companyGstQueries.flatMap(q => q.data || []);
   }, [companyGstQueries]);
 
-  const mappedGstIds = allMappings?.map(m => m.companyGstId) || [];
-  const fetchedGstIds = allCompanyGsts.map(g => g.id);
-  const allGstIdsToRender = Array.from(new Set([...mappedGstIds, ...fetchedGstIds]));
+  const isLoading = isCompaniesLoading || companyGstQueries.some(q => q.isLoading);
+  const isError = companyGstQueries.some(q => q.isError);
 
+  const allGstIdsToRender = Array.from(new Set(allCompanyGsts.map(g => g.id)));
   const unmappedCompanies = companies?.filter(c => activeCompanyIds.includes(c.id) && !mappedCompanyIds.has(c.id)) || [];
-
-  // Determine total entities count based on mappings and unmapped companies
   const totalEntitiesCount = allGstIdsToRender.length + unmappedCompanies.length;
-  
   const selectedCompanyObj = urlCompanyId ? companies?.find(c => c.id === urlCompanyId) : null;
 
   return (
@@ -346,13 +318,9 @@ export function UserDashboardPage() {
               handleNavigateToEntity={handleNavigateToEntity}
               onCompanyLoaded={handleCompanyLoaded}
               onAddGst={setSelectedCompanyForGst}
-              onUpgradePlan={(gstId, isNew, companyId) => {
-                if (isNew) {
-                  navigate(`${ROUTES.pricing}?gstId=${gstId}&companyId=${companyId}`);
-                } else {
-                  setSelectedGstForUpgrade(gstId);
-                  setIsNewPurchaseMode(false);
-                }
+              onUpgradePlan={(gstId, isNew) => {
+                setSelectedGstForUpgrade(gstId);
+                setIsNewPurchaseMode(!!isNew);
               }}
               filterCompanyId={urlCompanyId}
             />

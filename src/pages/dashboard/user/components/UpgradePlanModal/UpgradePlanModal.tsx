@@ -56,23 +56,7 @@ export function UpgradePlanModal({ gstId, onClose, isNewPurchase = false }: Upgr
       onClose();
     } catch (err: any) {
       console.error(err);
-      if (err.response?.status === 403 || err.response?.status === 500) {
-        // Frontend-only workaround since the remote server is blocking/failing the real purchase
-        const selectedPlan = plans?.find((p: SubscriptionPlanResponse) => p.id === Number(selectedPlanId));
-        if (selectedPlan) {
-          localStorage.setItem(`mock_upgraded_gst_${gstId}`, JSON.stringify({
-            planName: selectedPlan.name,
-            isPaymentDone: true
-          }));
-        }
-        
-        // Force UI refresh
-        queryClient.invalidateQueries({ queryKey: ['user-gst-mappings'] });
-        queryClient.invalidateQueries({ queryKey: ['company-gst', gstId] });
-        onClose();
-      } else {
-        setErrorMessage(err.response?.data?.message || err.message || "An error occurred while upgrading the plan. The server returned a 403 Forbidden, which means you either don't have permission to modify this specific GST entity, or the backend doesn't support upgrading an active plan through this endpoint.");
-      }
+      setErrorMessage(err.response?.data?.message || err.message || 'An error occurred while processing the subscription. Please try again or contact support.');
     }
   };
 

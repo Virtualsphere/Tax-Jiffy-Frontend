@@ -68,6 +68,9 @@ const ModulePlaceholderPage = lazy(() =>
     default: m.ModulePlaceholderPage,
   })),
 );
+const RolesPage = lazy(() =>
+  import('@/pages/dashboard/roles/RolesPage').then((m) => ({ default: m.RolesPage })),
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/errors/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -241,7 +244,7 @@ export const router = createBrowserRouter([
         path: 'roles',
         element: (
           <SuspenseWrapper>
-            <ModulePlaceholderPage />
+            <RolesPage />
           </SuspenseWrapper>
         ),
       },

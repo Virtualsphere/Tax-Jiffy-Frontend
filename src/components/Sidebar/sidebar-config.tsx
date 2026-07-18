@@ -93,7 +93,7 @@ export function IconShield() {
 export const SIDEBAR_NAV_LINKS: SidebarNavLink[] = [
   { id: 'dashboard', label: 'DASHBOARD', icon: <IconDashboard />, path: ROUTES.dashboard.companies },
   { id: 'user-management', label: 'USER MANAGEMENT', icon: <IconUsers />, path: ROUTES.dashboard.users },
-  { id: 'roles', label: 'ROLES', icon: <IconShield />, path: ROUTES.dashboard.roles },
+  { id: 'roles', label: 'ROLE EDITOR', icon: <IconShield />, path: ROUTES.dashboard.roles },
   { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },
   { id: 'e-way-bill', label: 'E-WAY BILL', icon: <IconTruck />, path: ROUTES.dashboard.eWayBill },
   { id: 'gstr-3b', label: 'GSTR-3B', icon: <IconClipboardCheck />, path: ROUTES.dashboard.gstr3b },

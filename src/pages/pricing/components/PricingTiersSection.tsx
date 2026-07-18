@@ -41,7 +41,10 @@ export function PricingTiersSection({ isAnnual, gstId, companyId }: PricingTiers
 
     const searchTerm = planType === 'business' ? 'advance' : planType;
     const plan = plans?.find(p => p.name.toLowerCase().includes(searchTerm));
-    if (!plan) return;
+    if (!plan) {
+      setError(`Could not find a "${planType}" plan. Please refresh the page and try again.`);
+      return;
+    }
 
     setPurchasingPlan(planType);
     setError(null);
@@ -74,24 +77,29 @@ export function PricingTiersSection({ isAnnual, gstId, companyId }: PricingTiers
         navigate(ROUTES.dashboard.user);
       }
     } catch (err: any) {
-      if (err.response?.status === 403 || err.response?.status === 500) {
-        localStorage.setItem(`mock_upgraded_gst_${gstId}`, JSON.stringify({
-          planName: plan.name,
-          isPaymentDone: true
-        }));
-        
-        queryClient.invalidateQueries({ queryKey: ['user-gst-mappings'] });
-        queryClient.invalidateQueries({ queryKey: ['company-gst', gstId] });
-        
-        if (companyId) {
-          navigate(`${ROUTES.dashboard.user}?companyId=${companyId}`);
-        } else {
-          navigate(ROUTES.dashboard.user);
-        }
+      const status = err?.response?.status;
+      const serverMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        null;
+
+      let userMessage: string;
+      if (status === 403) {
+        userMessage =
+          serverMsg ||
+          'Access denied: This GST number may already have an active subscription, or you are not the company owner. Please contact support if this is unexpected.';
+      } else if (status === 404) {
+        userMessage = 'The selected subscription plan was not found. Please refresh and try again.';
+      } else if (status === 401) {
+        userMessage = 'Your session has expired. Please log in again and retry.';
+      } else if (!navigator.onLine) {
+        userMessage = 'No internet connection. Please check your network and try again.';
       } else {
-        setError(err.response?.data?.message || err.message || "An error occurred while upgrading the plan.");
-        setPurchasingPlan(null);
+        userMessage = serverMsg || err.message || 'An error occurred while processing the subscription. Please try again or contact support.';
       }
+
+      setError(userMessage);
+      setPurchasingPlan(null);
     }
   };
 

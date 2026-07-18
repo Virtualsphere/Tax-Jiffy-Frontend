@@ -1,0 +1,340 @@
+{
+  "gstr3b": {
+    "table_3_1_outward_and_reverse_charge_inward_supplies": {
+      "title": "3.1 Details of Outward Supplies and inward supplies liable to reverse charge",
+      "headers": [
+        "Nature of Supplies",
+        "Total Taxable Value",
+        "Integrated Tax",
+        "Central Tax",
+        "State/UT Tax",
+        "Cess"
+      ],
+      "rows": [
+        {
+          "id": "a",
+          "nature_of_supply": "(a) Outward taxable supplies (other than zero rated, nil rated and exempted)",
+          "taxable_value": 100000.00,
+          "integrated_tax": 18000.00,
+          "central_tax": 9000.00,
+          "state_ut_tax": 9000.00,
+          "cess": 0.00
+        },
+        {
+          "id": "b",
+          "nature_of_supply": "(b) Outward taxable supplies (zero rated)",
+          "taxable_value": 50000.00,
+          "integrated_tax": 0.00,
+          "central_tax": 0.00,
+          "state_ut_tax": 0.00,
+          "cess": 0.00
+        },
+        {
+          "id": "c",
+          "nature_of_supply": "(c) Other outward supplies (Nil rated, exempted)",
+          "taxable_value": 20000.00,
+          "integrated_tax": null,
+          "central_tax": null,
+          "state_ut_tax": null,
+          "cess": null
+        },
+        {
+          "id": "d",
+          "nature_of_supply": "(d) Inward supplies (liable to reverse charge)",
+          "taxable_value": 10000.00,
+          "integrated_tax": 900.00,
+          "central_tax": 450.00,
+          "state_ut_tax": 450.00,
+          "cess": 0.00
+        },
+        {
+          "id": "e",
+          "nature_of_supply": "(e) Non-GST outward supplies",
+          "taxable_value": 5000.00,
+          "integrated_tax": null,
+          "central_tax": null,
+          "state_ut_tax": null,
+          "cess": null
+        }
+      ],
+      "total": {
+        "taxable_value": 185000.00,
+        "integrated_tax": 18900.00,
+        "central_tax": 9450.00,
+        "state_ut_tax": 9450.00,
+        "cess": 0.00
+      }
+    },
+    "table_3_2_interstate_supplies": {
+      "title": "3.2 Of the supplies shown in 3.1 (a) above, details of inter-State supplies made to unregistered persons, composition taxable persons and UIN holders",
+      "headers": [
+        "Place of Supply (State/UT)",
+        "Total Taxable Value",
+        "Amount of Integrated Tax"
+      ],
+      "sections": [
+        {
+          "title": "Supplies made to Unregistered Persons",
+          "rows": [
+            {
+              "place_of_supply": "07-Delhi",
+              "taxable_value": 10000.00,
+              "integrated_tax": 1800.00
+            }
+          ]
+        },
+        {
+          "title": "Supplies made to Composition Taxable Persons",
+          "rows": [
+            {
+              "place_of_supply": "06-Haryana",
+              "taxable_value": 5000.00,
+              "integrated_tax": 900.00
+            }
+          ]
+        },
+        {
+          "title": "Supplies made to UIN holders",
+          "rows": [
+            {
+              "place_of_supply": "03-Punjab",
+              "taxable_value": 2000.00,
+              "integrated_tax": 360.00
+            }
+          ]
+        }
+      ]
+    },
+    "table_4_eligible_itc": {
+      "title": "4. Eligible ITC",
+      "headers": [
+        "Details",
+        "Integrated Tax",
+        "Central Tax",
+        "State/UT Tax",
+        "Cess"
+      ],
+      "sections": [
+        {
+          "id": "A",
+          "title": "(A) ITC Available (whether in full or part)",
+          "rows": [
+            {
+              "id": "1",
+              "detail": "(1) Import of goods",
+              "integrated_tax": 5000.00,
+              "central_tax": 0.00,
+              "state_ut_tax": 0.00,
+              "cess": 0.00
+            },
+            {
+              "id": "2",
+              "detail": "(2) Import of services",
+              "integrated_tax": 1000.00,
+              "central_tax": null,
+              "state_ut_tax": null,
+              "cess": 0.00
+            },
+            {
+              "id": "3",
+              "detail": "(3) Inward supplies liable to reverse charge (other than 1 & 2 above)",
+              "integrated_tax": 900.00,
+              "central_tax": 450.00,
+              "state_ut_tax": 450.00,
+              "cess": 0.00
+            },
+            {
+              "id": "4",
+              "detail": "(4) Inward supplies from ISD",
+              "integrated_tax": 0.00,
+              "central_tax": 100.00,
+              "state_ut_tax": 100.00,
+              "cess": 0.00
+            },
+            {
+              "id": "5",
+              "detail": "(5) All other ITC",
+              "integrated_tax": 10000.00,
+              "central_tax": 5000.00,
+              "state_ut_tax": 5000.00,
+              "cess": 0.00
+            }
+          ]
+        },
+        {
+          "id": "B",
+          "title": "(B) ITC Reversed",
+          "rows": [
+            {
+              "id": "1",
+              "detail": "(1) As per rules 38, 42 and 43 of CGST Rules and section 17(5)",
+              "integrated_tax": 200.00,
+              "central_tax": 100.00,
+              "state_ut_tax": 100.00,
+              "cess": 0.00
+            },
+            {
+              "id": "2",
+              "detail": "(2) Others",
+              "integrated_tax": 100.00,
+              "central_tax": 50.00,
+              "state_ut_tax": 50.00,
+              "cess": 0.00
+            }
+          ]
+        },
+        {
+          "id": "C",
+          "title": "(C) Net ITC Available (A) - (B)",
+          "rows": [
+            {
+              "id": "",
+              "detail": "Net ITC Available",
+              "integrated_tax": 16600.00,
+              "central_tax": 5400.00,
+              "state_ut_tax": 5400.00,
+              "cess": 0.00
+            }
+          ]
+        },
+        {
+          "id": "D",
+          "title": "(D) Other Details",
+          "rows": [
+            {
+              "id": "1",
+              "detail": "(1) ITC reclaimed which was reversed under Table 4(B)(2) in earlier tax period",
+              "integrated_tax": 0.00,
+              "central_tax": 0.00,
+              "state_ut_tax": 0.00,
+              "cess": 0.00
+            },
+            {
+              "id": "2",
+              "detail": "(2) Ineligible ITC under section 16(4) & ITC restricted due to PoS rules",
+              "integrated_tax": 500.00,
+              "central_tax": 250.00,
+              "state_ut_tax": 250.00,
+              "cess": 0.00
+            }
+          ]
+        }
+      ]
+    },
+    "table_5_exempt_nil_nongst_inward_supplies": {
+      "title": "5. Values of exempt, nil-rated and non-GST inward supplies",
+      "headers": [
+        "Nature of supplies",
+        "Inter-State supplies",
+        "Intra-State supplies"
+      ],
+      "rows": [
+        {
+          "id": "1",
+          "nature_of_supply": "From a supplier under composition scheme, Exempt and Nil rated supply",
+          "inter_state_supplies": 1000.00,
+          "intra_state_supplies": 500.00
+        },
+        {
+          "id": "2",
+          "nature_of_supply": "Non GST supply",
+          "inter_state_supplies": 2000.00,
+          "intra_state_supplies": 1000.00
+        }
+      ]
+    },
+    "table_5_1_interest_and_late_fee": {
+      "title": "5.1 Interest and Late Fee",
+      "headers": [
+        "Description",
+        "Integrated Tax",
+        "Central Tax",
+        "State/UT Tax",
+        "Cess"
+      ],
+      "rows": [
+        {
+          "id": "1",
+          "description": "Interest",
+          "integrated_tax": 100.00,
+          "central_tax": 50.00,
+          "state_ut_tax": 50.00,
+          "cess": 0.00
+        },
+        {
+          "id": "2",
+          "description": "Late Fee",
+          "integrated_tax": 0.00,
+          "central_tax": 50.00,
+          "state_ut_tax": 50.00,
+          "cess": 0.00
+        }
+      ]
+    },
+    "table_6_1_payment_of_tax": {
+      "title": "6.1 Payment of tax",
+      "headers": [
+        "Description",
+        "Tax Payable",
+        "Paid through ITC - Integrated Tax",
+        "Paid through ITC - Central Tax",
+        "Paid through ITC - State/UT Tax",
+        "Paid through ITC - Cess",
+        "Tax paid TDS/TCS",
+        "Tax/Cess paid in cash",
+        "Interest paid in cash",
+        "Late Fee paid in cash"
+      ],
+      "rows": [
+        {
+          "description": "Integrated Tax",
+          "tax_payable": 18900.00,
+          "paid_itc_integrated": 16600.00,
+          "paid_itc_central": 0.00,
+          "paid_itc_state_ut": 0.00,
+          "paid_itc_cess": 0.00,
+          "tax_paid_tds_tcs": 0.00,
+          "tax_paid_cash": 2300.00,
+          "interest_paid_cash": 100.00,
+          "late_fee_paid_cash": 0.00
+        },
+        {
+          "description": "Central Tax",
+          "tax_payable": 9450.00,
+          "paid_itc_integrated": 0.00,
+          "paid_itc_central": 5400.00,
+          "paid_itc_state_ut": 0.00,
+          "paid_itc_cess": 0.00,
+          "tax_paid_tds_tcs": 0.00,
+          "tax_paid_cash": 4050.00,
+          "interest_paid_cash": 50.00,
+          "late_fee_paid_cash": 50.00
+        },
+        {
+          "description": "State/UT Tax",
+          "tax_payable": 9450.00,
+          "paid_itc_integrated": 0.00,
+          "paid_itc_central": 0.00,
+          "paid_itc_state_ut": 5400.00,
+          "paid_itc_cess": 0.00,
+          "tax_paid_tds_tcs": 0.00,
+          "tax_paid_cash": 4050.00,
+          "interest_paid_cash": 50.00,
+          "late_fee_paid_cash": 50.00
+        },
+        {
+          "description": "Cess",
+          "tax_payable": 0.00,
+          "paid_itc_integrated": 0.00,
+          "paid_itc_central": 0.00,
+          "paid_itc_state_ut": 0.00,
+          "paid_itc_cess": 0.00,
+          "tax_paid_tds_tcs": 0.00,
+          "tax_paid_cash": 0.00,
+          "interest_paid_cash": 0.00,
+          "late_fee_paid_cash": 0.00
+        }
+      ]
+    }
+  }
+}

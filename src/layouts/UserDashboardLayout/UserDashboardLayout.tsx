@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useCompanies } from '@/pages/dashboard/user/hooks/useCompanies';
+import { useMyCompanies } from '@/pages/dashboard/user/hooks/useMyCompanies';
 import { authStorage } from '@/features/auth/lib/auth-storage';
 import styles from '@/layouts/UserDashboardLayout/UserDashboardLayout.module.css';
 
@@ -10,7 +10,7 @@ export function UserDashboardLayout() {
   const { data: user } = useCurrentUser();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { data: companies } = useCompanies();
+  const { data: companies } = useMyCompanies();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

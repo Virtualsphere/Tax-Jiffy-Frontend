@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import styles from './UserManagementPage.module.css';
-import { useCompanies } from '../user/hooks/useCompanies';
+import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
 import { useGSTUsers } from '../user/hooks/useGSTUsers';
 import { useCompanyUsers } from '../user/hooks/useCompanyUsers';
@@ -22,13 +22,16 @@ export function UserManagementPage() {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [searchParams] = useSearchParams();
+  const urlGstId = searchParams.get('gstId') ? Number(searchParams.get('gstId')) : null;
+
   // Queries
-  const { data: companies, isLoading: isCompaniesLoading } = useCompanies();
+  const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
   const { data: plans } = useSubscriptions();
 
-  // Active entity from localStorage (to initialize state if present)
-  const activeIdStr = localStorage.getItem('active_company_gst_id');
-  const activeGSTId = activeIdStr ? Number(activeIdStr) : null;
+  // Read active GST from URL param first, then fall back to localStorage navigation state
+  const storedGstIdStr = localStorage.getItem('active_company_gst_id');
+  const activeGSTId = urlGstId || (storedGstIdStr ? Number(storedGstIdStr) : null);
   const { data: activeGst } = useCompanyGST(activeGSTId || 0);
 
   // Initialize selected company and GST from active entity
@@ -51,7 +54,6 @@ export function UserManagementPage() {
       const hasActiveGST = gsts.some(g => g.id === selectedGSTId);
       if (!hasActiveGST) {
         setSelectedGSTId(gsts[0].id);
-        localStorage.setItem('active_company_gst_id', String(gsts[0].id));
       }
     } else {
       setSelectedGSTId(null);
@@ -84,7 +86,6 @@ export function UserManagementPage() {
   const handleGSTChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = Number(e.target.value);
     setSelectedGSTId(id);
-    localStorage.setItem('active_company_gst_id', String(id));
   };
 
   const handleDeleteUser = async (mappingId: number) => {
