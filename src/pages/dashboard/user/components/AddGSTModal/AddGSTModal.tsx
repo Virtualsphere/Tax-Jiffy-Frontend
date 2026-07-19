@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useCreateCompanyGST } from '../../hooks/useCreateCompanyGST';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import styles from '../ConnectEntityModal/ConnectEntityModal.module.css';
@@ -19,7 +19,7 @@ export function AddGSTModal({ companyId, onClose }: AddGSTModalProps) {
 
   // Queries
   const queryClient = useQueryClient();
-  const { data: user } = useCurrentUser();
+  useCurrentUser();
 
   // Mutations
   const createGst = useCreateCompanyGST();
@@ -36,7 +36,7 @@ export function AddGSTModal({ companyId, onClose }: AddGSTModalProps) {
     
     try {
       // Create GST record only ΓÇö no subscription purchase required
-      const newGst = await createGst.mutateAsync({
+      await createGst.mutateAsync({
         companyId,
         gstNumber: gstin.toUpperCase(),
       });

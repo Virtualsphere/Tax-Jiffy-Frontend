@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { roleMappingApi } from '../api/roleMapping.api';
-import type { RoleMappingRequest, RoleMappingResponse } from '../types/roleMapping.types';
+import type { RoleMappingRequest } from '../types/roleMapping.types';
 
 export const ROLE_MAPPING_KEYS = {
   all: ['roleMappings'] as const,

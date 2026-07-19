@@ -7,7 +7,6 @@ import {
   type Gstr3bInterestLateFeeRequest,
   type ImsCredentials,
   type TwoBCredentials,
-  type Gstr3bPreviewResponse,
 } from '@/pages/dashboard/gstr3b/api/gstr3bApi';
 import { handleApiError } from '@/services/api';
 

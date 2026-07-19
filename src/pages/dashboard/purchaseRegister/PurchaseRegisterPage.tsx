@@ -41,10 +41,6 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function fmt(v: number | null | undefined): string {
-  if (v == null) return '—';
-  return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
-}
 
 // ── Icons ─────────────────────────────────────────────────────────────────
 function CheckIcon() {

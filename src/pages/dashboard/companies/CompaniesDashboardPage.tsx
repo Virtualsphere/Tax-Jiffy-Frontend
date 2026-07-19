@@ -89,7 +89,7 @@ export function CompaniesDashboardPage() {
   const navigate = useNavigate();
   const [isConnectModalOpen, setConnectModalOpen] = useState(false);
   
-  const { data: user } = useCurrentUser();
+  useCurrentUser();
   const { data: companies, isLoading } = useMyCompanies();
 
   useEffect(() => {

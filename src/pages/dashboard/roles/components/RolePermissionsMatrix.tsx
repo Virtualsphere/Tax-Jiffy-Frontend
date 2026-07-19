@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import styles from './RolePermissionsMatrix.module.css';
 import { useRoles } from '../hooks/useRoles';
 import { useRoleMappings, useSaveRoleMapping } from '../hooks/useRoleMapping';
-import type { RoleMappingResponse, RoleMappingRequest } from '../types/roleMapping.types';
+import type { RoleMappingRequest } from '../types/roleMapping.types';
 import { useMyCompanies } from '../../user/hooks/useMyCompanies';
 import { useCompanyGSTs } from '../../user/hooks/useCompanyGSTs';
 
