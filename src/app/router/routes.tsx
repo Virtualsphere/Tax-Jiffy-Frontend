@@ -63,6 +63,9 @@ const GSTR2BPage = lazy(() =>
 const GSTR3BPage = lazy(() =>
   import('@/pages/dashboard/gstr3b/GSTR3BPage').then((m) => ({ default: m.GSTR3BPage })),
 );
+const PurchaseRegisterPage = lazy(() =>
+  import('@/pages/dashboard/purchaseRegister/PurchaseRegisterPage').then((m) => ({ default: m.PurchaseRegisterPage })),
+);
 const ModulePlaceholderPage = lazy(() =>
   import('@/pages/dashboard/ModulePlaceholderPage').then((m) => ({
     default: m.ModulePlaceholderPage,
@@ -277,6 +280,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <GSTR2BPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'purchase-register',
+        element: (
+          <SuspenseWrapper>
+            <PurchaseRegisterPage />
           </SuspenseWrapper>
         ),
       },

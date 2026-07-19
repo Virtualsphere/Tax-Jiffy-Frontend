@@ -126,7 +126,19 @@ export function CompaniesDashboardPage() {
         <p>Loading your companies...</p>
       ) : (
         <div className={styles.grid}>
-          {companies.map((company) => (
+          <TiltCard 
+            className={`${styles.tile} ${styles.addNewTile}`}
+            onClick={() => setConnectModalOpen(true)}
+          >
+            <div className={styles.addIcon}>
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <div className={styles.addNewText}>Add New Company</div>
+          </TiltCard>
+
+          {(companies || []).map((company) => (
             <TiltCard 
               key={company.id} 
               className={styles.tile}
@@ -154,18 +166,6 @@ export function CompaniesDashboardPage() {
               </div>
             </TiltCard>
           ))}
-
-          <TiltCard 
-            className={`${styles.tile} ${styles.addNewTile}`}
-            onClick={() => setConnectModalOpen(true)}
-          >
-            <div className={styles.addIcon}>
-              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <div className={styles.addNewText}>Add New Company</div>
-          </TiltCard>
         </div>
       )}
 
