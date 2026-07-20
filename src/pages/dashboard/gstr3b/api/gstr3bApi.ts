@@ -24,6 +24,9 @@ export interface Gstr3bFiling {
   lateFeeStateUtTax: number;
   isActive: boolean;
   createdDate: string;
+  acknowledgmentUrl?: string;
+  reportUrl?: string;
+  challanUrl?: string;
 }
 
 export interface Gstr3bFilingLinkRequest {
@@ -249,5 +252,26 @@ export const gstr3bApi = {
       `${BASE}/filings/${filingId}/preview`,
     );
     return data.data;
+  },
+
+  /** Generate Challan for payable tax (Mocked since backend doesn't support yet) */
+  generateChallan: async (_filingId: number): Promise<{ challanUrl: string }> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ challanUrl: 'https://gst.gov.in/mock-challan.pdf' });
+      }, 1500);
+    });
+  },
+
+  /** Submit the final GSTR-3B return (Mocked since backend doesn't support yet) */
+  submitFiling: async (_filingId: number): Promise<{ acknowledgmentUrl: string; reportUrl: string }> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ 
+          acknowledgmentUrl: 'https://gst.gov.in/mock-ack.pdf',
+          reportUrl: 'https://gst.gov.in/mock-report.pdf' 
+        });
+      }, 2000);
+    });
   },
 };

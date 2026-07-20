@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   purchaseRegisterApi,
   type PurchaseRegisterUploadResponse,
@@ -36,6 +37,7 @@ export function useUploadPurchaseRegister(): UseUploadPurchaseRegisterReturn {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   const reset = useCallback(() => {
     setData(null);
@@ -83,6 +85,9 @@ export function useUploadPurchaseRegister(): UseUploadPurchaseRegisterReturn {
           filingId: response.filingId,
           validationErrors: [],
         });
+
+        // Invalidate the cache so the GSTR-3B page will fetch the latest filings
+        queryClient.invalidateQueries({ queryKey: ['pr-filings'] });
       } catch (err) {
         const apiError = handleApiError(err);
         const msg = apiError.message ?? '';
@@ -111,7 +116,7 @@ export function useUploadPurchaseRegister(): UseUploadPurchaseRegisterReturn {
         setIsPending(false);
       }
     },
-    [],
+    [queryClient],
   );
 
   return { mutate, reset, data, isPending, isError: error !== null, error, inputRef };

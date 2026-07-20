@@ -46,4 +46,8 @@ export const companyApi = {
     );
     return results;
   },
+
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`${BASE_URL}/${id}`);
+  },
 };

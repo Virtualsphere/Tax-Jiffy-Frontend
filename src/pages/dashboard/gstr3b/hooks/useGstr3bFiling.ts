@@ -121,3 +121,17 @@ export function useUpdateInterestLateFee() {
     }) => gstr3bApi.updateInterestLateFee(filingId, req),
   });
 }
+
+/** Generate Challan */
+export function useGenerateChallan() {
+  return useMutation({
+    mutationFn: (filingId: number) => gstr3bApi.generateChallan(filingId),
+  });
+}
+
+/** Submit GSTR-3B Return */
+export function useSubmitFiling() {
+  return useMutation({
+    mutationFn: (filingId: number) => gstr3bApi.submitFiling(filingId),
+  });
+}

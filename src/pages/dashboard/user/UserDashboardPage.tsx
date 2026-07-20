@@ -7,6 +7,7 @@ import { ConnectEntityModal } from './components/ConnectEntityModal/ConnectEntit
 import { AddGSTModal } from './components/AddGSTModal/AddGSTModal';
 import { UpgradePlanModal } from './components/UpgradePlanModal/UpgradePlanModal';
 import { useMyCompanies } from './hooks/useMyCompanies';
+import { useDeleteCompany } from './hooks/useDeleteCompany';
 import { useCompanyGST } from './hooks/useCompanyGST';
 import type { CompanyProfileResponse } from './types/company.types';
 import { companyGSTApi } from './api/company-gst.api';
@@ -139,26 +140,6 @@ function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoa
           </div>
           <div className={styles.alertContent}>
             <div>{defaultMock.alert.content}</div>
-            {gst.subscriptionPlanName?.toLowerCase().includes('basic') && gst.isPaymentDone && (
-              <div style={{ marginTop: '8px' }}>
-                <button 
-                  onClick={() => onUpgradePlan(gst.id, false, gst.companyId)}
-                  style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
-                >
-                  Upgrade Plan &rarr;
-                </button>
-              </div>
-            )}
-            {!gst.isPaymentDone && (
-              <div style={{ marginTop: '8px' }}>
-                <button 
-                  onClick={() => onUpgradePlan(gst.id, true, gst.companyId)}
-                  style={{ color: '#16a34a', textDecoration: 'underline', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
-                >
-                  Buy Subscription &rarr;
-                </button>
-              </div>
-            )}
           </div>
         </div>
         <div className={styles.cardAction} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -166,8 +147,24 @@ function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoa
             className={styles.actionBtn}
             onClick={() => handleNavigateToEntity(gst.id)}
           >
-            {defaultMock.actionLabel}
+            Reconciliation Data &rarr;
           </button>
+          {gst.subscriptionPlanName?.toLowerCase().includes('basic') && gst.isPaymentDone && (
+            <button 
+              className={styles.buySubscriptionBtn}
+              onClick={() => onUpgradePlan(gst.id, false, gst.companyId)}
+            >
+              Buy Subscription &rarr;
+            </button>
+          )}
+          {!gst.isPaymentDone && (
+            <button 
+              className={styles.buySubscriptionBtn}
+              onClick={() => onUpgradePlan(gst.id, true, gst.companyId)}
+            >
+              Buy Subscription &rarr;
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -233,6 +230,7 @@ export function UserDashboardPage() {
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   
   const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
+  const deleteCompanyMutation = useDeleteCompany();
 
   useEffect(() => {
     const handleOpenModal = () => setConnectModalOpen(true);
@@ -286,22 +284,52 @@ export function UserDashboardPage() {
   const totalEntitiesCount = allGstIdsToRender.length + unmappedCompanies.length;
   const selectedCompanyObj = urlCompanyId ? companies?.find(c => c.id === urlCompanyId) : null;
 
+  const handleDeleteCompany = async (companyId: number) => {
+    if (window.confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+      try {
+        await deleteCompanyMutation.mutateAsync(companyId);
+        navigate(ROUTES.dashboard.companies);
+      } catch (error) {
+        console.error('Failed to delete company:', error);
+        alert('Failed to delete company. Please try again.');
+      }
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            {urlCompanyId && (
-              <Link to={ROUTES.dashboard.companies} style={{ textDecoration: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 500 }}>
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                Back to Companies
-              </Link>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', minWidth: '300px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {urlCompanyId && (
+                <Link to={ROUTES.dashboard.companies} style={{ textDecoration: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 500 }}>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                  Back to Companies
+                </Link>
+              )}
+            </div>
           </div>
-          <h1 className={styles.title}>{selectedCompanyObj ? selectedCompanyObj.companyName : 'Active Reconciliations'}</h1>
+          <h1 className={styles.title} style={{ display: 'flex', alignItems: 'center' }}>
+            {selectedCompanyObj ? selectedCompanyObj.companyName : 'Active Reconciliations'}
+            {urlCompanyId && selectedCompanyObj && (
+              <button
+                onClick={() => handleDeleteCompany(selectedCompanyObj.id)}
+                disabled={deleteCompanyMutation.isPending}
+                className={styles.deleteCompanyBtn}
+                title="Delete Company"
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+          </h1>
           <p className={styles.subtitle}>{selectedCompanyObj ? 'Manage your GST numbers and filing progress for this company.' : 'Review and manage filing progress across your entities.'}</p>
         </div>
-        <div className={styles.badge}>FEB 2026</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className={styles.badge}>FEB 2026</div>
+        </div>
       </div>
 
       {isLoading ? (

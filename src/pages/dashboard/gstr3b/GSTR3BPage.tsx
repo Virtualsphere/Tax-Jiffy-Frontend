@@ -9,8 +9,11 @@ import {
   useSyncIms,
   useSync2b,
   useUpdateInterestLateFee,
+  useGenerateChallan,
+  useSubmitFiling,
 } from './hooks/useGstr3bFiling';
 import { usePurchaseRegisterFilings } from '@/pages/dashboard/purchaseRegister/hooks/usePurchaseRegisterSheets';
+import * as XLSX from 'xlsx';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -206,6 +209,8 @@ export function GSTR3BPage() {
   const imsSync = useSyncIms();
   const twoBSync = useSync2b();
   const interestMutation = useUpdateInterestLateFee();
+  const generateChallan = useGenerateChallan();
+  const submitFiling = useSubmitFiling();
 
   // Purchase Register filings available to link
   const { data: prFilings = [] } = usePurchaseRegisterFilings(
@@ -268,6 +273,79 @@ export function GSTR3BPage() {
     await interestMutation.mutateAsync({ filingId: filing.id, req: interestForm });
     setSyncMessage('Interest & late fee saved successfully.');
   }, [filing, interestForm, interestMutation]);
+
+  // ── Preview data helpers ─────────────────────────────────────────────────
+  const p = preview.data?.gstr3b;
+
+  // Flatten table 4 sections into flat rows for AG Grid
+  const table4Rows = useMemo(() => {
+    if (!p?.table_4_eligible_itc) return [];
+    const rows: any[] = [];
+    for (const section of p.table_4_eligible_itc.sections) {
+      rows.push({ detail: section.title, isSectionHeader: true });
+      for (const row of section.rows) rows.push(row);
+    }
+    return rows;
+  }, [p]);
+
+  // Flatten table 3.2 sections
+  const table32Rows = useMemo(() => {
+    if (!p?.table_3_2_interstate_supplies) return [];
+    const rows: any[] = [];
+    for (const section of p.table_3_2_interstate_supplies.sections) {
+      rows.push({ place_of_supply: section.title, isSectionHeader: true });
+      for (const row of section.rows) rows.push(row);
+    }
+    return rows;
+  }, [p]);
+
+  const handleExportExcel = useCallback(() => {
+    if (!p) return;
+    const wb = XLSX.utils.book_new();
+
+    const appendSheet = (title: string, data: any[]) => {
+      if (data && data.length > 0) {
+        const ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, title.substring(0, 31));
+      }
+    };
+
+    appendSheet('3.1 Outward', p.table_3_1_outward_and_reverse_charge_inward_supplies?.rows ?? []);
+    appendSheet('3.2 Interstate', table32Rows);
+    appendSheet('4 Eligible ITC', table4Rows);
+    appendSheet('5 Exempt Inward', p.table_5_exempt_nil_nongst_inward_supplies?.rows ?? []);
+    appendSheet('5.1 Interest & Late Fee', p.table_5_1_interest_and_late_fee?.rows ?? []);
+    appendSheet('6.1 Payment', p.table_6_1_payment_of_tax?.rows ?? []);
+
+    XLSX.writeFile(wb, `GSTR3B_Draft_${selectedMonth}_${selectedYear.label}.xlsx`);
+  }, [p, table32Rows, table4Rows, selectedMonth, selectedYear]);
+
+  const handlePrintPDF = useCallback(() => {
+    window.print();
+  }, []);
+
+  const handleGenerateChallan = useCallback(async () => {
+    if (!filing) return;
+    try {
+      const result = await generateChallan.mutateAsync(filing.id);
+      setSyncMessage('Challan generated successfully!');
+      setFiling(prev => prev ? { ...prev, challanUrl: result.challanUrl } : prev);
+      if (result.challanUrl) window.open(result.challanUrl, '_blank');
+    } catch (e: any) {
+      setSyncMessage(`Error generating challan: ${e.message}`);
+    }
+  }, [filing, generateChallan, setFiling]);
+
+  const handleConfirmFiling = useCallback(async () => {
+    if (!filing) return;
+    try {
+      const result = await submitFiling.mutateAsync(filing.id);
+      setIsFiled(true);
+      setFiling(prev => prev ? { ...prev, filingStatus: 'FILED', acknowledgmentUrl: result.acknowledgmentUrl, reportUrl: result.reportUrl } : prev);
+    } catch (e: any) {
+      setSyncMessage(`Error submitting return: ${e.message}`);
+    }
+  }, [filing, submitFiling, setFiling]);
 
   // ── ColDefs ──────────────────────────────────────────────────────────────
   const defaultColDef = useMemo<ColDef>(
@@ -336,30 +414,6 @@ export function GSTR3BPage() {
     'ag-row-total': (p: any) => p.data?.isTotal === true,
   }), []);
 
-  // ── Preview data helpers ─────────────────────────────────────────────────
-  const p = preview.data?.gstr3b;
-
-  // Flatten table 4 sections into flat rows for AG Grid
-  const table4Rows = useMemo(() => {
-    if (!p?.table_4_eligible_itc) return [];
-    const rows: any[] = [];
-    for (const section of p.table_4_eligible_itc.sections) {
-      rows.push({ detail: section.title, isSectionHeader: true });
-      for (const row of section.rows) rows.push(row);
-    }
-    return rows;
-  }, [p]);
-
-  // Flatten table 3.2 sections
-  const table32Rows = useMemo(() => {
-    if (!p?.table_3_2_interstate_supplies) return [];
-    const rows: any[] = [];
-    for (const section of p.table_3_2_interstate_supplies.sections) {
-      rows.push({ place_of_supply: section.title, isSectionHeader: true });
-      for (const row of section.rows) rows.push(row);
-    }
-    return rows;
-  }, [p]);
 
   // ── Success screen ────────────────────────────────────────────────────────
   if (isFiled) {
@@ -438,14 +492,26 @@ export function GSTR3BPage() {
           </div>
         </div>
 
-        <button
-          type="button"
-          className={styles.createFilingBtn}
-          onClick={handleCreateFiling}
-          disabled={isCreating || !companyGstId || companyGstId === 0}
-        >
-          {isCreating ? 'Creating…' : filing ? `Filing #${filing.id} ✓` : 'Create / Load Filing'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {filing && p && (
+            <>
+              <button type="button" className={styles.syncBtn} onClick={handleExportExcel}>
+                Export Excel
+              </button>
+              <button type="button" className={styles.syncBtn} onClick={handlePrintPDF}>
+                Print PDF
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            className={styles.createFilingBtn}
+            onClick={handleCreateFiling}
+            disabled={isCreating || !companyGstId || companyGstId === 0}
+          >
+            {isCreating ? 'Creating…' : filing ? `Filing #${filing.id} ✓` : 'Create / Load Filing'}
+          </button>
+        </div>
       </div>
 
       {/* ── Error / info banner ── */}
@@ -560,6 +626,16 @@ export function GSTR3BPage() {
                     <span className={`${styles.prevFilingStatus} ${f.filingStatus === 'DRAFT' ? styles.prevFilingStatusDraft : styles.prevFilingStatusFiled}`}>
                       {f.filingStatus}
                     </span>
+                    {(f.acknowledgmentUrl || f.reportUrl) && (
+                      <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                        {f.acknowledgmentUrl && (
+                          <a href={f.acknowledgmentUrl} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#5A6ACF', textDecoration: 'underline' }} onClick={(e) => e.stopPropagation()}>ACK</a>
+                        )}
+                        {f.reportUrl && (
+                          <a href={f.reportUrl} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#5A6ACF', textDecoration: 'underline' }} onClick={(e) => e.stopPropagation()}>Report</a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -749,6 +825,30 @@ export function GSTR3BPage() {
                   <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers ag-theme-spreadsheet-borders`}>
                     <AgGridReact theme="legacy" rowData={p?.table_6_1_payment_of_tax?.rows ?? []} columnDefs={colDefs61} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                   </div>
+                  {(() => {
+                    const totalCashPayable = p?.table_6_1_payment_of_tax?.rows?.reduce((acc: number, row: any) => 
+                      acc + (row.tax_paid_cash || 0) + (row.interest_paid_cash || 0) + (row.late_fee_paid_cash || 0), 0) || 0;
+                    
+                    if (totalCashPayable > 0 && filing?.filingStatus !== 'FILED') {
+                      return (
+                        <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F8FAFC', padding: 16, borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                          <div>
+                            <span style={{ display: 'block', fontWeight: 600, color: '#1E293B' }}>Challan Required</span>
+                            <span style={{ fontSize: 14, color: '#64748B' }}>Total payable in cash: ₹{fmt(totalCashPayable)}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className={styles.syncBtn}
+                            onClick={handleGenerateChallan}
+                            disabled={generateChallan.isPending}
+                          >
+                            {generateChallan.isPending ? 'Generating…' : filing.challanUrl ? 'Regenerate Challan' : 'Generate Challan'}
+                          </button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               )}
             </div>
@@ -757,13 +857,20 @@ export function GSTR3BPage() {
       )}
 
       {/* ── Footer ── */}
-      {filing && (
+      {filing && filing.filingStatus !== 'FILED' && (
         <div className={styles.footer}>
-          <button type="button" className={styles.confirmBtn} onClick={() => setIsFiled(true)}>
-            Confirm Filing
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <button 
+            type="button" 
+            className={styles.confirmBtn} 
+            onClick={handleConfirmFiling}
+            disabled={submitFiling.isPending}
+          >
+            {submitFiling.isPending ? 'Submitting…' : 'Confirm Filing'}
+            {!submitFiling.isPending && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </button>
         </div>
       )}
