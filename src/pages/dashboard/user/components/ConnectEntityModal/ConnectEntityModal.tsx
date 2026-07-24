@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCreateCompany } from '../../hooks/useCreateCompany';
+import { filesApi } from '@/lib/files.api';
 import styles from './ConnectEntityModal.module.css';
 
 interface ConnectEntityModalProps {
@@ -8,7 +9,8 @@ interface ConnectEntityModalProps {
 
 export function ConnectEntityModal({ onClose }: ConnectEntityModalProps) {
   const [newCompanyName, setNewCompanyName] = useState('');
-  const [newCompanyLogo, setNewCompanyLogo] = useState('');
+  const [newCompanyLogoFile, setNewCompanyLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const createCompany = useCreateCompany();
@@ -22,14 +24,35 @@ export function ConnectEntityModal({ onClose }: ConnectEntityModalProps) {
         setErrorMessage("Please enter a company name.");
         return;
       }
+
+      let uploadedLogoUrl = '';
+      if (newCompanyLogoFile) {
+        try {
+          const uploadRes = await filesApi.upload(newCompanyLogoFile);
+          uploadedLogoUrl = uploadRes.url;
+        } catch (uploadErr) {
+          console.error('Logo upload error:', uploadErr);
+          setErrorMessage("Failed to upload company logo.");
+          return;
+        }
+      }
+
       const res = await createCompany.mutateAsync({
         companyName: newCompanyName,
-        companyLogo: newCompanyLogo || 'https://placehold.co/100',
+        companyLogo: uploadedLogoUrl,
       });
       onClose(res.id, true);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.response?.data?.message || err.message || "An error occurred while creating the company.");
+    }
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewCompanyLogoFile(file);
+      setLogoPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -71,16 +94,20 @@ export function ConnectEntityModal({ onClose }: ConnectEntityModalProps) {
               </div>
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="newCompanyLogo">
-                  COMPANY LOGO URL
+                  COMPANY LOGO (OPTIONAL)
                 </label>
                 <input
                   id="newCompanyLogo"
-                  type="url"
+                  type="file"
+                  accept="image/*"
                   className={styles.input}
-                  placeholder="e.g. https://logo.clearbit.com/acme.com"
-                  value={newCompanyLogo}
-                  onChange={(e) => setNewCompanyLogo(e.target.value)}
+                  onChange={handleLogoChange}
                 />
+                {logoPreviewUrl && (
+                  <div style={{ marginTop: '12px' }}>
+                    <img src={logoPreviewUrl} alt="Logo Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                  </div>
+                )}
               </div>
             </div>
 

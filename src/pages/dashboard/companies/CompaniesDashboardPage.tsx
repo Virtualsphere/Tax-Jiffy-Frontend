@@ -5,6 +5,8 @@ import styles from './CompaniesDashboardPage.module.css';
 import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ConnectEntityModal } from '../user/components/ConnectEntityModal/ConnectEntityModal';
+import { resolveImageUrl } from '@/lib/files.api';
+import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 interface TiltState {
   rotateX: number;
@@ -146,7 +148,11 @@ export function CompaniesDashboardPage() {
             >
               {company.companyLogo && (
                 <>
-                  <img src={company.companyLogo} alt="" className={styles.tileBackground} />
+                  <AuthenticatedImage
+                    src={company.companyLogo}
+                    alt=""
+                    className={styles.tileBackground}
+                  />
                   <div className={styles.tileOverlay} />
                 </>
               )}

@@ -11,6 +11,8 @@ import { useDeleteCompany } from './hooks/useDeleteCompany';
 import { useCompanyGST } from './hooks/useCompanyGST';
 import type { CompanyProfileResponse } from './types/company.types';
 import { companyGSTApi } from './api/company-gst.api';
+import { resolveImageUrl } from '@/lib/files.api';
+import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 interface GSTMappingCardProps {
   gstId: number;
@@ -88,7 +90,7 @@ function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoa
       <div className={styles.cardSection}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
           {companyLogo && (
-            <img src={companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
+            <AuthenticatedImage src={companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
           )}
           <h2 className={styles.companyName}>{gst.gstNumber}</h2>
         </div>
@@ -177,7 +179,7 @@ function CompanyOnlyCard({ company, onAddGst }: { company: CompanyProfileRespons
       <div className={styles.cardSection}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
           {company.companyLogo && (
-            <img src={company.companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
+            <AuthenticatedImage src={company.companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
           )}
           <h2 className={styles.companyName}>Pending GST Details</h2>
         </div>

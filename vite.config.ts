@@ -20,6 +20,11 @@ export default defineConfig({
         timeout: 600000,
         proxyTimeout: 600000,
       },
+      '/uploads': {
+        target: 'https://api.taxjiffy.com',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {
