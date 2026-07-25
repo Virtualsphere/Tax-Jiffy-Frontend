@@ -90,10 +90,20 @@ export function IconShield() {
   );
 }
 
+export function IconCreditCard() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16 }}>
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  );
+}
+
 export const SIDEBAR_NAV_LINKS: SidebarNavLink[] = [
   { id: 'dashboard', label: 'DASHBOARD', icon: <IconDashboard />, path: ROUTES.dashboard.companies },
   { id: 'user-management', label: 'USER MANAGEMENT', icon: <IconUsers />, path: ROUTES.dashboard.users },
   { id: 'roles', label: 'ROLE EDITOR', icon: <IconShield />, path: ROUTES.dashboard.roles },
+  { id: 'subscription-plans', label: 'SUBSCRIPTION PLANS', icon: <IconCreditCard />, path: ROUTES.dashboard.subscriptionPlans },
   { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },
   { id: 'e-way-bill', label: 'E-WAY BILL', icon: <IconTruck />, path: ROUTES.dashboard.eWayBill },
   { id: 'gstr-3b', label: 'GSTR-3B', icon: <IconClipboardCheck />, path: ROUTES.dashboard.gstr3b },

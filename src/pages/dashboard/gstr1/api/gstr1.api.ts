@@ -4,6 +4,9 @@ import type {
   Gstr1FilingRecord,
   Gstr1SyncResponse,
   Gstr1UploadResponse,
+  Gstr1SubmitRequest,
+  Gstr1SubmitPayloadResponse,
+  Gstr1SubmitResult,
 } from '@/pages/dashboard/gstr1/types/gstr1-api.types';
 
 const BASE = '/gstr1';
@@ -126,6 +129,34 @@ export const gstr1Api = {
   getReport: async (filingId: number): Promise<any> => {
     const { data } = await apiClient.get<ApiResponse<any>>(
       `${BASE}/filings/${filingId}/report`,
+    );
+    return data.data;
+  },
+
+  /**
+   * Preview the final GSTR-1 payload that will be sent to the GST system.
+   * Call this before submit so the user can review what will be submitted.
+   */
+  getSubmitPayload: async (
+    filingId: number,
+    grossTurnover = 0,
+    currentGrossTurnover = 0,
+  ): Promise<Gstr1SubmitPayloadResponse> => {
+    const { data } = await apiClient.get<Gstr1SubmitPayloadResponse>(
+      `${BASE}/filings/${filingId}/submit-payload`,
+      { params: { grossTurnover, currentGrossTurnover } },
+    );
+    return data;
+  },
+
+  /**
+   * Submit the final GSTR-1 payload to the GST system.
+   * Returns the ARN on success.
+   */
+  submit: async (filingId: number, body: Gstr1SubmitRequest): Promise<Gstr1SubmitResult> => {
+    const { data } = await apiClient.post<{ success: boolean; message: string; data: Gstr1SubmitResult }>(
+      `${BASE}/filings/${filingId}/submit`,
+      body,
     );
     return data.data;
   },

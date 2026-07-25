@@ -138,6 +138,11 @@
   line-height: 1.3;
 }
 
+/* Fix: Remove white hover background on blue headers so text stays readable */
+.ag-theme-blue-headers .ag-header-cell:hover {
+  background-color: var(--ag-header-background-color) !important;
+}
+
 .ag-theme-blue-group-headers .ag-header-group-cell {
   background-color: #5c73e8;
   color: #ffffff;

@@ -74,6 +74,9 @@ const ModulePlaceholderPage = lazy(() =>
 const RolesPage = lazy(() =>
   import('@/pages/dashboard/roles/RolesPage').then((m) => ({ default: m.RolesPage })),
 );
+const SubscriptionPlansPage = lazy(() =>
+  import('@/pages/dashboard/subscriptionPlans/SubscriptionPlansPage').then((m) => ({ default: m.SubscriptionPlansPage })),
+);
 const NotFoundPage = lazy(() =>
   import('@/pages/errors/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -248,6 +251,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <RolesPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'subscription-plans',
+        element: (
+          <SuspenseWrapper>
+            <SubscriptionPlansPage />
           </SuspenseWrapper>
         ),
       },
