@@ -190,7 +190,26 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+.sidebar:hover .nav {
   scrollbar-width: thin;
+}
+
+.sidebar:hover .nav::-webkit-scrollbar {
+  display: block;
+  width: 5px;
+}
+
+.sidebar:hover .nav::-webkit-scrollbar-thumb {
+  background-color: var(--sidebar-divider);
+  border-radius: 4px;
 }
 
 .navList {
