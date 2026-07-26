@@ -5,7 +5,6 @@ import styles from './CompaniesDashboardPage.module.css';
 import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ConnectEntityModal } from '../user/components/ConnectEntityModal/ConnectEntityModal';
-import { resolveImageUrl } from '@/lib/files.api';
 import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 interface TiltState {

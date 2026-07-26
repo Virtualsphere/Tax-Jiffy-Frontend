@@ -36,7 +36,7 @@ export function RolePermissionsMatrix() {
   const { data: gsts, isLoading: isGstsLoading } = useCompanyGSTs(
     selectedCompanyId ? Number(selectedCompanyId) : 0
   );
-  const { data: roles, isLoading: isRolesLoading } = useRoles();
+  const { data: roles, isLoading: isRolesLoading } = useRoles(selectedCompanyId, selectedGSTId);
 
   const { data: roleMappings, isLoading: isMappingsLoading } = useRoleMappings(
     selectedRoleId,

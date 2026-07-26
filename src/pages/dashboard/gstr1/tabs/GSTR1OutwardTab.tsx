@@ -57,7 +57,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
   const colDefs4 = useMemo<ColDef[]>(() => [
     { field: 'gstin',        headerName: 'GSTIN/UIN',         minWidth: 160, maxWidth: 180,
       colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1,
-      cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF', whiteSpace: 'nowrap' } : { whiteSpace: 'nowrap' } },
+      cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF', whiteSpace: 'nowrap' } as any : { whiteSpace: 'nowrap' } as any },
     { field: 'invoiceNo',    headerName: 'INVOICE NO',         minWidth: 110 },
     { field: 'invoiceDate',  headerName: 'INVOICE DATE',       minWidth: 100, ...{ cellClass: styles.centered, headerClass: styles.centered } },
     { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)', ...VAL_COL },

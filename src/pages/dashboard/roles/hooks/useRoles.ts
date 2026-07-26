@@ -4,10 +4,13 @@ import type { RolesRequest } from '../types/roles.types';
 
 const QUERY_KEY = 'roles';
 
-export function useRoles() {
+export function useRoles(companyId?: number | '', companyGstId?: number | '') {
   return useQuery({
-    queryKey: [QUERY_KEY],
-    queryFn: rolesApi.getAll,
+    queryKey: [QUERY_KEY, companyId, companyGstId],
+    queryFn: () => rolesApi.getAll(
+      companyId ? Number(companyId) : undefined, 
+      companyGstId ? Number(companyGstId) : undefined
+    ),
   });
 }
 

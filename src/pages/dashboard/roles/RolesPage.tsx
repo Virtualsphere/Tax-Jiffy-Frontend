@@ -16,10 +16,12 @@ function formatRoleId(id: number): string {
 /* ── Add Role Modal ───────────────────────────────────── */
 interface AddRoleModalProps {
   nextRoleId: number;
+  companyId: number | '';
+  companyGstId: number | '';
   onClose: () => void;
 }
 
-function AddRoleModal({ nextRoleId, onClose }: AddRoleModalProps) {
+function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleModalProps) {
   const [roleName, setRoleName] = useState('');
   const [error, setError] = useState('');
   const createRole = useCreateRole();
@@ -31,8 +33,16 @@ function AddRoleModal({ nextRoleId, onClose }: AddRoleModalProps) {
       setError('Role name is required.');
       return;
     }
+    if (!companyId || !companyGstId) {
+      setError('Please select a Company and GSTIN from the top dropdowns.');
+      return;
+    }
     try {
-      await createRole.mutateAsync({ roleName: roleName.trim() });
+      await createRole.mutateAsync({ 
+        roleName: roleName.trim(),
+        companyId: Number(companyId),
+        companyGstId: Number(companyGstId),
+      });
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to create role.');
@@ -96,10 +106,12 @@ function AddRoleModal({ nextRoleId, onClose }: AddRoleModalProps) {
 /* ── Edit Role Modal ──────────────────────────────────── */
 interface EditRoleModalProps {
   role: RolesResponse;
+  companyId: number | '';
+  companyGstId: number | '';
   onClose: () => void;
 }
 
-function EditRoleModal({ role, onClose }: EditRoleModalProps) {
+function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModalProps) {
   const [roleName, setRoleName] = useState(role.roleName);
   const [error, setError] = useState('');
   const updateRole = useUpdateRole();
@@ -111,8 +123,19 @@ function EditRoleModal({ role, onClose }: EditRoleModalProps) {
       setError('Role name is required.');
       return;
     }
+    if (!companyId || !companyGstId) {
+      setError('Please select a Company and GSTIN from the top dropdowns.');
+      return;
+    }
     try {
-      await updateRole.mutateAsync({ id: role.id, data: { roleName: roleName.trim() } });
+      await updateRole.mutateAsync({ 
+        id: role.id, 
+        data: { 
+          roleName: roleName.trim(),
+          companyId: Number(companyId),
+          companyGstId: Number(companyGstId),
+        } 
+      });
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to update role.');
@@ -224,7 +247,7 @@ export function RolesPage() {
   const { data: gsts, isLoading: isGstsLoading } = useCompanyGSTs(
     selectedCompanyId ? Number(selectedCompanyId) : 0
   );
-  const { data: roles, isLoading: isRolesLoading } = useRoles();
+  const { data: roles, isLoading: isRolesLoading } = useRoles(selectedCompanyId, selectedGSTId);
 
   // Filtered + paginated roles
   const filteredRoles = useMemo(() => {
@@ -501,6 +524,8 @@ export function RolesPage() {
       {isAddModalOpen && (
         <AddRoleModal
           nextRoleId={nextRoleId}
+          companyId={selectedCompanyId}
+          companyGstId={selectedGSTId}
           onClose={() => setIsAddModalOpen(false)}
         />
       )}
@@ -508,6 +533,8 @@ export function RolesPage() {
       {editingRole && (
         <EditRoleModal
           role={editingRole}
+          companyId={selectedCompanyId}
+          companyGstId={selectedGSTId}
           onClose={() => setEditingRole(null)}
         />
       )}

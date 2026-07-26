@@ -11,7 +11,6 @@ import { useDeleteCompany } from './hooks/useDeleteCompany';
 import { useCompanyGST } from './hooks/useCompanyGST';
 import type { CompanyProfileResponse } from './types/company.types';
 import { companyGSTApi } from './api/company-gst.api';
-import { resolveImageUrl } from '@/lib/files.api';
 import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 interface GSTMappingCardProps {

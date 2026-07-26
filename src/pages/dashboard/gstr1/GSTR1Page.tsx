@@ -4,7 +4,6 @@ import { ROUTES } from '@/config/routes';
 import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { usePeriod, FY_YEARS, MONTHS } from '@/context/PeriodContext';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
