@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSubscriptions } from '@/pages/dashboard/user/hooks/useSubscriptions';
 import { usePurchaseSubscription } from '@/pages/dashboard/user/hooks/usePurchaseSubscription';
 import { ROUTES } from '@/config/routes';
+import { authStorage } from '@/features/auth/lib/auth-storage';
 import styles from '@/pages/pricing/components/PricingTiersSection.module.css';
 
 interface PricingTiersSectionProps {
@@ -29,7 +30,17 @@ export function PricingTiersSection({ isAnnual, gstId, companyId }: PricingTiers
   const [purchasingPlan, setPurchasingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePurchase = async (planType: 'basic' | 'business') => {
+  const handlePurchase = async (planType: 'free' | 'basic' | 'business') => {
+    if (!authStorage.getToken()) {
+      navigate(ROUTES.auth.signup);
+      return;
+    }
+
+    if (planType === 'free') {
+      navigate(ROUTES.dashboard.user);
+      return;
+    }
+
     if (!gstId) {
       if (companyId) {
         navigate(`${ROUTES.dashboard.user}?companyId=${companyId}`);
@@ -129,7 +140,12 @@ export function PricingTiersSection({ isAnnual, gstId, companyId }: PricingTiers
           <li><CheckCircleIcon /> <span>IMS</span></li>
         </ul>
         <div className={styles.buttonContainer}>
-          <button className={styles.primaryButton}>Get Started</button>
+          <button 
+            className={styles.primaryButton}
+            onClick={() => handlePurchase('free')}
+          >
+            Get Started
+          </button>
         </div>
       </div>
 
