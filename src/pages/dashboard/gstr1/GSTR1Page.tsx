@@ -695,9 +695,12 @@ export function GSTR1Page() {
             <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
               <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0 } : {}}>
                 <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
-                <span className={styles.filingPeriodYear}>FY {uploadYear}</span>
+                <span className={styles.filingPeriodYear}>
+                  {uploadYear.split('-')[0]}
+                  <br />-{uploadYear.split('-')[1]}
+                </span>
                 <span className={styles.filingPeriodMonth}>
-                  {uploadDay} {uploadMonth} {getCalendarYear(uploadMonth, uploadYear)}
+                  {uploadMonth}
                 </span>
                 <span className={styles.filingPeriodSync}>
                   <span className={styles.syncIcon}>ⓘ</span>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -9,50 +9,96 @@ interface GSTR1OthersTabProps {
   setExpandedAccordion: (val: string | null) => void;
 }
 
+/** Sizes to content; only scrolls for large datasets */
+const DynamicAgGrid = (props: any) => {
+  const [cw, setCw] = useState<string>('100%');
+  const updateWidth = useCallback((params: any) => {
+    requestAnimationFrame(() => {
+      if (!params.api) return;
+      const colState: any[] = params.api.getColumnState?.() ?? [];
+      const total = colState
+        .filter((c: any) => !c.hide)
+        .reduce((sum: number, c: any) => sum + (c.width ?? 0), 0);
+      if (total > 0) setCw(`${total + 2}px`);
+    });
+  }, []);
+  const maxRows = 10;
+  const isLarge = props.rowData && props.rowData.length > maxRows;
+  const innerStyle = {
+    width: cw,
+    maxWidth: '100%',
+    height: isLarge ? '380px' : 'auto',
+    marginBottom: props.marginBottom || '0',
+  };
+  return (
+    <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={innerStyle}>
+        <AgGridReact
+          {...props}
+          domLayout={isLarge ? 'normal' : 'autoHeight'}
+          rowHeight={32}
+          autoSizeStrategy={{ type: 'fitCellContents' }}
+          onGridReady={updateWidth}
+          onFirstDataRendered={updateWidth}
+          onColumnResized={updateWidth}
+        />
+      </div>
+    </div>
+  );
+};
+
 export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OthersTabProps) {
+
+  const defaultColDef = useMemo<ColDef>(() => ({
+    wrapHeaderText: true,
+    autoHeaderHeight: true,
+    minWidth: 70,
+    resizable: true,
+    suppressSizeToFit: true,
+  }), []);
 
   const colDefs12 = useMemo<(ColDef | ColGroupDef)[]>(() => [
     {
       headerName: 'Items',
       children: [
-        { field: 'srNo', headerName: 'Sr. No.', valueGetter: 'node.rowIndex + 1', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'hsn', headerName: 'HSN', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'description', headerName: 'Description', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'uqc', headerName: 'UQC', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'srNo',        headerName: 'Sr.',         valueGetter: 'node.rowIndex + 1', minWidth: 50, maxWidth: 60,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'hsn',         headerName: 'HSN',         minWidth: 70, maxWidth: 100,                cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'description', headerName: 'Description', minWidth: 160 },
+        { field: 'uqc',         headerName: 'UQC',         minWidth: 60,  maxWidth: 80,                   cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
     {
-      headerName: 'Quantity & Value',
+      headerName: 'Qty & Value',
       children: [
-        { field: 'totalQuantity', headerName: 'Total Quantity', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'totalValue', headerName: 'Total Value', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'totalQuantity', headerName: 'Qty',   minWidth: 80,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'totalValue',    headerName: 'Value', minWidth: 100, maxWidth: 140 },
       ]
     },
     {
       headerName: 'Tax Details',
       children: [
-        { field: 'taxableValue', headerName: 'Taxable Value', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'integratedTax', headerName: 'Integrated Tax', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'centralTax', headerName: 'Central Tax', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'stateTax', headerName: 'State/UT Tax', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'cess', headerName: 'Cess', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'taxableValue',  headerName: 'Taxable Value', minWidth: 110 },
+        { field: 'integratedTax', headerName: 'IGST',          minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'centralTax',    headerName: 'CGST',          minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'stateTax',      headerName: 'SGST/UT',       minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'cess',          headerName: 'Cess',          minWidth: 80,  maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
 
   const colDefs13 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'srNo', headerName: 'Sr. No.', valueGetter: 'node.rowIndex + 1', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'natureOfDocument', headerName: 'Nature of document', cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'srNo',             headerName: 'Sr.',              valueGetter: 'node.rowIndex + 1', minWidth: 50, maxWidth: 60,  cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'natureOfDocument', headerName: 'Nature of Document', minWidth: 200 },
     {
-      headerName: 'Sr. No.',
+      headerName: 'Sr. No. Range',
       children: [
-        { field: 'from', headerName: 'From', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'to', headerName: 'To', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'from', headerName: 'From', minWidth: 70, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'to',   headerName: 'To',   minWidth: 70, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
-    { field: 'totalNumber', headerName: 'Total number', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'cancelled', headerName: 'Cancelled', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'netIssued', headerName: 'Net issued', cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'totalNumber', headerName: 'Total',     minWidth: 75, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'cancelled',   headerName: 'Cancelled', minWidth: 85, maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'netIssued',   headerName: 'Net Issued', minWidth: 90, maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
   const AccordionIcon = ({ expanded }: { expanded: boolean }) => (
@@ -76,26 +122,23 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
         </div>
         {expandedAccordion === 'table12' && (
           <div className={styles.accordionContent}>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" 
-                rowData={data.table12.records} 
-                columnDefs={colDefs12} 
-                
-                suppressMenuHide={true}
-                pinnedBottomRowData={[
-                  {
-                    hsn: 'Total',
-                    totalQuantity: data.table12.total.totalQuantity,
-                    totalValue: data.table12.total.totalValue,
-                    taxableValue: data.table12.total.taxableValue,
-                    integratedTax: data.table12.total.integratedTax,
-                    centralTax: data.table12.total.centralTax,
-                    stateTax: data.table12.total.stateTax,
-                    cess: data.table12.total.cess
-                  }
-                ]}
-              />
-            </div>
+            <DynamicAgGrid
+              defaultColDef={defaultColDef}
+              rowData={data.table12.records}
+              columnDefs={colDefs12}
+              suppressMenuHide={true}
+              theme="legacy"
+              pinnedBottomRowData={[{
+                hsn: 'Total',
+                totalQuantity: data.table12.total.totalQuantity,
+                totalValue:    data.table12.total.totalValue,
+                taxableValue:  data.table12.total.taxableValue,
+                integratedTax: data.table12.total.integratedTax,
+                centralTax:    data.table12.total.centralTax,
+                stateTax:      data.table12.total.stateTax,
+                cess:          data.table12.total.cess,
+              }]}
+            />
           </div>
         )}
       </div>
@@ -111,14 +154,13 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
         </div>
         {expandedAccordion === 'table13' && (
           <div className={styles.accordionContent}>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" 
-                rowData={data.table13.records} 
-                columnDefs={colDefs13} 
-                
-                suppressMenuHide={true}
-              />
-            </div>
+            <DynamicAgGrid
+              defaultColDef={defaultColDef}
+              rowData={data.table13.records}
+              columnDefs={colDefs13}
+              suppressMenuHide={true}
+              theme="legacy"
+            />
           </div>
         )}
       </div>

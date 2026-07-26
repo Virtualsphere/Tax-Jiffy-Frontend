@@ -44,6 +44,35 @@ function SyncStatusBadge({ status, at }: { status: string | null; at: string | n
   );
 }
 
+// ── Dynamic Grid ────────────────────────────────────────────────────────
+const DynamicAgGrid = (props: any) => {
+  const [cw, setCw] = useState<string>('100%');
+  const updateWidth = useCallback((params: any) => {
+    requestAnimationFrame(() => {
+      if (!params.api) return;
+      const colState: any[] = params.api.getColumnState?.() ?? [];
+      const total = colState
+        .filter((c: any) => !c.hide)
+        .reduce((sum: number, c: any) => sum + (c.width ?? 0), 0);
+      if (total > 0) setCw(`${total + 2}px`);
+    });
+  }, []);
+  
+  return (
+    <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div className={props.wrapperClassName} style={{ width: cw, maxWidth: '100%', marginBottom: props.marginBottom || 0 }}>
+        <AgGridReact
+          {...props}
+          autoSizeStrategy={{ type: 'fitCellContents' }}
+          onGridReady={updateWidth}
+          onFirstDataRendered={updateWidth}
+          onColumnResized={updateWidth}
+        />
+      </div>
+    </div>
+  );
+};
+
 // ── Credential Modal ──────────────────────────────────────────────────────
 function ImsCredentialModal({
   gstin,
@@ -349,7 +378,7 @@ export function GSTR3BPage() {
 
   // ── ColDefs ──────────────────────────────────────────────────────────────
   const defaultColDef = useMemo<ColDef>(
-    () => ({ resizable: true, wrapHeaderText: true, autoHeaderHeight: true }),
+    () => ({ resizable: true, wrapHeaderText: true, autoHeaderHeight: true, suppressSizeToFit: true }),
     [],
   );
 
@@ -357,56 +386,56 @@ export function GSTR3BPage() {
   const L = { cellClass: 'ag-cell-left',  headerClass: 'ag-header-cell-left'  } as const;
 
   const colDefs31 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'nature_of_supply', headerName: 'Nature of Supplies', flex: 2, ...L },
-    { field: 'taxable_value',    headerName: 'Taxable Value (₹)',  flex: 1, ...R },
+    { field: 'nature_of_supply', headerName: 'Nature of Supplies', minWidth: 200, ...L },
+    { field: 'taxable_value',    headerName: 'Taxable Value (₹)',  minWidth: 120, ...R },
     { headerName: 'Amount (₹)', children: [
-      { field: 'integrated_tax', headerName: 'IGST', ...R },
-      { field: 'central_tax',    headerName: 'CGST', ...R },
-      { field: 'state_ut_tax',   headerName: 'SGST', ...R },
-      { field: 'cess',           headerName: 'CESS', ...R },
+      { field: 'integrated_tax', headerName: 'IGST', minWidth: 100, ...R },
+      { field: 'central_tax',    headerName: 'CGST', minWidth: 100, ...R },
+      { field: 'state_ut_tax',   headerName: 'SGST', minWidth: 100, ...R },
+      { field: 'cess',           headerName: 'CESS', minWidth: 100, ...R },
     ]},
   ], []);
 
   const colDefs32 = useMemo<ColDef[]>(() => [
-    { field: 'place_of_supply', headerName: 'Place of Supply', flex: 2, ...L },
-    { field: 'taxable_value',   headerName: 'Taxable Value (₹)', flex: 1, ...R },
-    { field: 'integrated_tax',  headerName: 'IGST (₹)', flex: 1, ...R },
+    { field: 'place_of_supply', headerName: 'Place of Supply', minWidth: 200, ...L },
+    { field: 'taxable_value',   headerName: 'Taxable Value (₹)', minWidth: 120, ...R },
+    { field: 'integrated_tax',  headerName: 'IGST (₹)', minWidth: 120, ...R },
   ], []);
 
   const colDefs4 = useMemo<ColDef[]>(() => [
-    { field: 'detail',        headerName: 'Details', flex: 2, ...L },
-    { field: 'integrated_tax',headerName: 'IGST (₹)', flex: 1, ...R },
-    { field: 'central_tax',   headerName: 'CGST (₹)', flex: 1, ...R },
-    { field: 'state_ut_tax',  headerName: 'SGST (₹)', flex: 1, ...R },
-    { field: 'cess',          headerName: 'CESS (₹)', flex: 1, ...R },
+    { field: 'detail',        headerName: 'Details', minWidth: 200, ...L },
+    { field: 'integrated_tax',headerName: 'IGST (₹)', minWidth: 100, ...R },
+    { field: 'central_tax',   headerName: 'CGST (₹)', minWidth: 100, ...R },
+    { field: 'state_ut_tax',  headerName: 'SGST (₹)', minWidth: 100, ...R },
+    { field: 'cess',          headerName: 'CESS (₹)', minWidth: 100, ...R },
   ], []);
 
   const colDefs5 = useMemo<ColDef[]>(() => [
-    { field: 'nature_of_supply',      headerName: 'Nature of Supply',  flex: 2, ...L },
-    { field: 'inter_state_supplies',  headerName: 'Inter-State (₹)',   flex: 1, ...R },
-    { field: 'intra_state_supplies',  headerName: 'Intra-State (₹)',   flex: 1, ...R },
+    { field: 'nature_of_supply',      headerName: 'Nature of Supply',  minWidth: 200, ...L },
+    { field: 'inter_state_supplies',  headerName: 'Inter-State (₹)',   minWidth: 120, ...R },
+    { field: 'intra_state_supplies',  headerName: 'Intra-State (₹)',   minWidth: 120, ...R },
   ], []);
 
   const colDefs51 = useMemo<ColDef[]>(() => [
-    { field: 'description',   headerName: 'Description', flex: 2, ...L },
-    { field: 'integrated_tax',headerName: 'IGST (₹)', flex: 1, ...R },
-    { field: 'central_tax',   headerName: 'CGST (₹)', flex: 1, ...R },
-    { field: 'state_ut_tax',  headerName: 'SGST (₹)', flex: 1, ...R },
-    { field: 'cess',          headerName: 'CESS (₹)', flex: 1, ...R },
+    { field: 'description',   headerName: 'Description', minWidth: 200, ...L },
+    { field: 'integrated_tax',headerName: 'IGST (₹)', minWidth: 100, ...R },
+    { field: 'central_tax',   headerName: 'CGST (₹)', minWidth: 100, ...R },
+    { field: 'state_ut_tax',  headerName: 'SGST (₹)', minWidth: 100, ...R },
+    { field: 'cess',          headerName: 'CESS (₹)', minWidth: 100, ...R },
   ], []);
 
   const colDefs61 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'description',     headerName: 'Description', flex: 1.5, ...L },
-    { field: 'tax_payable',     headerName: 'Tax Payable', flex: 1,   ...R },
+    { field: 'description',     headerName: 'Description', minWidth: 150, ...L },
+    { field: 'tax_payable',     headerName: 'Tax Payable', minWidth: 120,   ...R },
     { headerName: 'Paid through ITC', children: [
-      { field: 'paid_itc_integrated', headerName: 'IGST', ...R },
-      { field: 'paid_itc_central',    headerName: 'CGST', ...R },
-      { field: 'paid_itc_state_ut',   headerName: 'SGST', ...R },
-      { field: 'paid_itc_cess',       headerName: 'CESS', ...R },
+      { field: 'paid_itc_integrated', headerName: 'IGST', minWidth: 100, ...R },
+      { field: 'paid_itc_central',    headerName: 'CGST', minWidth: 100, ...R },
+      { field: 'paid_itc_state_ut',   headerName: 'SGST', minWidth: 100, ...R },
+      { field: 'paid_itc_cess',       headerName: 'CESS', minWidth: 100, ...R },
     ]},
-    { field: 'tax_paid_cash',       headerName: 'Cash', flex: 1,   ...R },
-    { field: 'interest_paid_cash',  headerName: 'Interest', flex: 1, ...R },
-    { field: 'late_fee_paid_cash',  headerName: 'Late Fee', flex: 1, ...R },
+    { field: 'tax_paid_cash',       headerName: 'Cash', minWidth: 100,   ...R },
+    { field: 'interest_paid_cash',  headerName: 'Interest', minWidth: 100, ...R },
+    { field: 'late_fee_paid_cash',  headerName: 'Late Fee', minWidth: 100, ...R },
   ], []);
 
   const rowClassRules = useMemo(() => ({
@@ -664,9 +693,7 @@ export function GSTR3BPage() {
                 </div>
                 {expandedAccordion === '3.1' && (
                   <div className={styles.accordionContent}>
-                    <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers`}>
-                      <AgGridReact theme="legacy" rowData={p?.table_3_1_outward_and_reverse_charge_inward_supplies?.rows ?? []} columnDefs={colDefs31} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
-                    </div>
+                    <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers`} theme="legacy" rowData={p?.table_3_1_outward_and_reverse_charge_inward_supplies?.rows ?? []} columnDefs={colDefs31} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                     {p?.table_3_1_outward_and_reverse_charge_inward_supplies?.total && (
                       <div className={styles.totalRow}>
                         <span>Total:</span>
@@ -691,9 +718,7 @@ export function GSTR3BPage() {
                 </div>
                 {expandedAccordion === '3.2' && (
                   <div className={styles.accordionContent}>
-                    <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`}>
-                      <AgGridReact theme="legacy" rowData={table32Rows} columnDefs={colDefs32} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
-                    </div>
+                    <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={table32Rows} columnDefs={colDefs32} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
                   </div>
                 )}
               </div>
@@ -722,9 +747,7 @@ export function GSTR3BPage() {
                 </div>
                 {expandedAccordion === 'table4' && (
                   <div className={styles.accordionContent}>
-                    <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`}>
-                      <AgGridReact theme="legacy" rowData={table4Rows} columnDefs={colDefs4} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
-                    </div>
+                    <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={table4Rows} columnDefs={colDefs4} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
                   </div>
                 )}
               </div>
@@ -740,9 +763,7 @@ export function GSTR3BPage() {
                 </div>
                 {expandedAccordion === 'table5' && (
                   <div className={styles.accordionContent}>
-                    <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`}>
-                      <AgGridReact theme="legacy" rowData={p?.table_5_exempt_nil_nongst_inward_supplies?.rows ?? []} columnDefs={colDefs5} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
-                    </div>
+                    <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={p?.table_5_exempt_nil_nongst_inward_supplies?.rows ?? []} columnDefs={colDefs5} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                   </div>
                 )}
               </div>
@@ -759,9 +780,7 @@ export function GSTR3BPage() {
                 {expandedAccordion === 'table5_1' && (
                   <div className={styles.accordionContent}>
                     {/* Preview table */}
-                    <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} style={{ marginBottom: 24 }}>
-                      <AgGridReact theme="legacy" rowData={p?.table_5_1_interest_and_late_fee?.rows ?? []} columnDefs={colDefs51} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
-                    </div>
+                      <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} marginBottom={24} theme="legacy" rowData={p?.table_5_1_interest_and_late_fee?.rows ?? []} columnDefs={colDefs51} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                     {/* Manual entry form */}
                     <div className={styles.interestForm}>
                       <h4 className={styles.interestFormTitle}>Manual Entry — Interest & Late Fee</h4>
@@ -822,9 +841,7 @@ export function GSTR3BPage() {
               </div>
               {expandedAccordion === '6.1' && (
                 <div className={styles.accordionContent}>
-                  <div className={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers ag-theme-spreadsheet-borders`}>
-                    <AgGridReact theme="legacy" rowData={p?.table_6_1_payment_of_tax?.rows ?? []} columnDefs={colDefs61} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
-                  </div>
+                  <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers ag-theme-spreadsheet-borders`} theme="legacy" rowData={p?.table_6_1_payment_of_tax?.rows ?? []} columnDefs={colDefs61} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                   {(() => {
                     const totalCashPayable = p?.table_6_1_payment_of_tax?.rows?.reduce((acc: number, row: any) => 
                       acc + (row.tax_paid_cash || 0) + (row.interest_paid_cash || 0) + (row.late_fee_paid_cash || 0), 0) || 0;

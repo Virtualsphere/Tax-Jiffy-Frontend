@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -9,95 +9,140 @@ interface GSTR1OutwardTabProps {
   setExpandedAccordion: (val: string | null) => void;
 }
 
+const DynamicAgGrid = (props: any) => {
+  const [cw, setCw] = useState<string>('100%');
+  const updateWidth = useCallback((params: any) => {
+    requestAnimationFrame(() => {
+      if (!params.api) return;
+      const colState: any[] = params.api.getColumnState?.() ?? [];
+      const total = colState
+        .filter((c: any) => !c.hide)
+        .reduce((sum: number, c: any) => sum + (c.width ?? 0), 0);
+      if (total > 0) setCw(`${total + 2}px`);
+    });
+  }, []);
+  const isLarge = props.rowData && props.rowData.length > 12;
+  const innerStyle = { width: cw, maxWidth: '100%', height: isLarge ? '420px' : 'auto', marginBottom: props.marginBottom || '0' };
+  return (
+    <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div className="ag-theme-tax-jiffy ag-theme-blue-headers" style={innerStyle}>
+        <AgGridReact
+          {...props}
+          domLayout={isLarge ? 'normal' : 'autoHeight'}
+          rowHeight={32}
+          autoSizeStrategy={{ type: 'fitCellContents' }}
+          onGridReady={updateWidth}
+          onFirstDataRendered={updateWidth}
+          onColumnResized={updateWidth}
+        />
+      </div>
+    </div>
+  );
+};
+
 export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OutwardTabProps) {
   const defaultColDef = useMemo<ColDef>(() => ({
     wrapHeaderText: true,
     autoHeaderHeight: true,
-    minWidth: 100,
+    minWidth: 80,
     resizable: true,
+    suppressSizeToFit: true,
   }), []);
 
+  /* ── Narrow numeric widths shared across tables ── */
+  const TAX_COL = { minWidth: 90, maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered };
+  const VAL_COL = { minWidth: 110, maxWidth: 160 };
+
+  /* ─── Table 4 cols ─── */
   const colDefs4 = useMemo<ColDef[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN/UIN', colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1, cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF' } : null },
-    { field: 'invoiceNo', headerName: 'INVOICE NO' },
-    { field: 'invoiceDate', headerName: 'INVOICE DATE' },
-    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)' },
-    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)' },
-    { field: 'igst', headerName: 'IGST (₹)', cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : '' },
-    { field: 'cgst', headerName: 'CGST (₹)', cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : '' },
-    { field: 'sgst', headerName: 'SGST/UTGST (₹)', cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : '' },
-    { field: 'cess', headerName: 'CESS (₹)' },
-    { field: 'pos', headerName: 'PLACE OF SUPPLY' }
+    { field: 'gstin',        headerName: 'GSTIN/UIN',         minWidth: 160, maxWidth: 180,
+      colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1,
+      cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF', whiteSpace: 'nowrap' } : { whiteSpace: 'nowrap' } },
+    { field: 'invoiceNo',    headerName: 'INVOICE NO',         minWidth: 110 },
+    { field: 'invoiceDate',  headerName: 'INVOICE DATE',       minWidth: 100, ...{ cellClass: styles.centered, headerClass: styles.centered } },
+    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)', ...VAL_COL },
+    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)', ...VAL_COL },
+    { field: 'igst',  headerName: 'IGST (₹)',      ...TAX_COL, cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : styles.centered },
+    { field: 'cgst',  headerName: 'CGST (₹)',      ...TAX_COL, cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : styles.centered },
+    { field: 'sgst',  headerName: 'SGST/UTGST (₹)',...TAX_COL, cellClass: (p: any) => p.value !== '0.00' ? styles.textBlue : styles.centered },
+    { field: 'cess',  headerName: 'CESS (₹)',       ...TAX_COL },
+    { field: 'pos',   headerName: 'PLACE OF SUPPLY', minWidth: 130 },
   ], []);
 
+  /* ─── Table 5A cols ─── */
   const colDefs5 = useMemo<ColDef[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN/UIN', hide: true }, // Used in 5B but hidden in 5A
-    { field: 'pos', headerName: 'PLACE OF SUPPLY' },
-    { field: 'invoiceNo', headerName: 'INVOICE NO', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'invoiceDate', headerName: 'INVOICE DATE', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)' },
-    { field: 'rate', headerName: 'RATE (%)', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)' },
-    { field: 'igst', headerName: 'IGST (₹)', cellClass: styles.textBlue },
+    { field: 'gstin',        headerName: 'GSTIN/UIN',          minWidth: 160, hide: true },
+    { field: 'pos',          headerName: 'PLACE OF SUPPLY',    minWidth: 130 },
+    { field: 'invoiceNo',    headerName: 'INVOICE NO',          minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'invoiceDate',  headerName: 'INVOICE DATE',        minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)',  ...VAL_COL },
+    { field: 'rate',         headerName: 'RATE (%)',            ...TAX_COL },
+    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)',  ...VAL_COL },
+    { field: 'igst',         headerName: 'IGST (₹)',            ...TAX_COL, cellClass: styles.textBlue },
   ], []);
 
+  /* ─── Table 5B cols ─── */
   const colDefs5B = useMemo<ColDef[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN/UIN', colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 4 : 1, cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF' } : null },
-    { field: 'pos', headerName: 'PLACE OF SUPPLY' },
-    { field: 'invoiceNo', headerName: 'INVOICE NO', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'invoiceDate', headerName: 'INVOICE DATE', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)' },
-    { field: 'rate', headerName: 'RATE (%)', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)' },
-    { field: 'igst', headerName: 'IGST (₹)', cellClass: styles.textBlue },
+    { field: 'pos',          headerName: 'PLACE OF SUPPLY',    minWidth: 130,
+      colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1,
+      cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF', whiteSpace: 'nowrap' } : undefined },
+    { field: 'invoiceNo',    headerName: 'INVOICE NO',          minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'invoiceDate',  headerName: 'INVOICE DATE',        minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'invoiceValue', headerName: 'INVOICE VALUE (₹)',  ...VAL_COL },
+    { field: 'rate',         headerName: 'RATE (%)',            ...TAX_COL },
+    { field: 'taxableValue', headerName: 'TAXABLE VALUE (₹)',  ...VAL_COL },
+    { field: 'igst',         headerName: 'IGST (₹)',            ...TAX_COL, cellClass: styles.textBlue },
   ], []);
 
+  /* ─── Table 6 cols (grouped) ─── */
   const colDefs6 = useMemo<any[]>(() => [
-    { field: 'gstin', headerName: 'GSTIN OF RECIPIENT' },
+    { field: 'gstin', headerName: 'GSTIN OF RECIPIENT', minWidth: 160 },
     {
       headerName: 'INVOICE DETAILS',
       children: [
-        { field: 'invoiceNo', headerName: 'NO.', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'invoiceDate', headerName: 'DATE', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'invoiceValue', headerName: 'VALUE' },
+        { field: 'invoiceNo',    headerName: 'NO.',    minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'invoiceDate',  headerName: 'DATE',   minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'invoiceValue', headerName: 'VALUE',  minWidth: 100 },
       ]
     },
     {
-      headerName: 'SHIPPING BILL/ BILL OF EXPORT',
+      headerName: 'SHIPPING BILL / BILL OF EXPORT',
       children: [
-        { field: 'sbNo', headerName: 'NO.', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'sbDate', headerName: 'DATE', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbNo',   headerName: 'NO.',  minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbDate', headerName: 'DATE', minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
     {
       headerName: 'INTEGRATED TAX',
       children: [
-        { field: 'rate', headerName: 'RATE', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'taxableValue', headerName: 'TAXABLE VALUE' },
-        { field: 'amt', headerName: 'AMT.', cellClass: styles.textBlue },
+        { field: 'rate',         headerName: 'RATE (%)',      width: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'taxableValue', headerName: 'TAXABLE VALUE', minWidth: 110 },
+        { field: 'amt',          headerName: 'AMT.',          width: 90, maxWidth: 120, cellClass: styles.textBlue },
       ]
     }
   ], []);
 
+  /* ─── Table 7 cols (grouped) ─── */
   const colDefs7 = useMemo<any[]>(() => [
-    { field: 'rate', headerName: 'RATE OF TAX', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'stateName', headerName: 'PLACE OF SUPPLY', hide: true }, // Show dynamically if needed
-    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE (₹)', cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',      headerName: 'RATE OF TAX',           width: 90,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'stateName', headerName: 'PLACE OF SUPPLY',       minWidth: 130, hide: true },
+    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE (₹)', minWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
     {
       headerName: 'AMOUNT (₹)',
       children: [
-        { field: 'integrated', headerName: 'INTEGRATED', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'central', headerName: 'CENTRAL', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'state', headerName: 'STATE TAX/UT TAX', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integrated', headerName: 'INTEGRATED', width: 100, maxWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'central',    headerName: 'CENTRAL',    width: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'state',      headerName: 'STATE/UT',   width: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
 
+  /* ─── Table 8 cols ─── */
   const colDefs8 = useMemo<ColDef[]>(() => [
-    { field: 'label', headerName: 'DESCRIPTION', flex: 2, cellStyle: { textAlign: 'left' }, headerClass: styles.centered },
-    { field: 'nilRated', headerName: 'NIL RATED SUPPLIES (₹)', cellClass: styles.centered, headerClass: styles.centered, flex: 1 },
-    { field: 'exempted', headerName: 'EXEMPTED (OTHER THAN NIL RATED/NON-GST SUPPLY) (₹)', cellClass: styles.centered, headerClass: styles.centered, flex: 1 },
-    { field: 'nonGst', headerName: 'NON-GST SUPPLIES (₹)', cellClass: styles.centered, headerClass: styles.centered, flex: 1 },
+    { field: 'label',     headerName: 'DESCRIPTION',                                          minWidth: 220, cellStyle: { textAlign: 'left' }, headerClass: styles.centered },
+    { field: 'nilRated',  headerName: 'NIL RATED SUPPLIES (₹)',                               minWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'exempted',  headerName: 'EXEMPTED (OTHER THAN NIL RATED/NON-GST SUPPLY) (₹)',  minWidth: 200, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'nonGst',    headerName: 'NON-GST SUPPLIES (₹)',                                 minWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
   const AccordionIcon = ({ expanded }: { expanded: boolean }) => (
@@ -108,15 +153,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
     </div>
   );
 
-  const DynamicAgGrid = (props: any) => {
-    const isLarge = props.rowData && props.rowData.length > 8;
-    const style = { width: '100%', height: isLarge ? '500px' : 'auto', marginBottom: props.marginBottom || '0' };
-    return (
-      <div className="ag-theme-tax-jiffy ag-theme-blue-headers" style={style}>
-        <AgGridReact {...props} domLayout={isLarge ? 'normal' : 'autoHeight'} />
-      </div>
-    );
-  };
+
 
   return (
     <div className={styles.outwardTabContent}>
@@ -131,7 +168,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         {expandedAccordion === 'table4' && (
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle}>4A. SUPPLIES OTHER THAN REVERSE CHARGE & E-COMMERCE</div>
+            <div className={styles.outwardSectionTitle}>4A. SUPPLIES OTHER THAN REVERSE CHARGE &amp; E-COMMERCE</div>
             <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitle}>4B. SUPPLIES ATTRACTING REVERSE CHARGE</div>
@@ -139,22 +176,20 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
 
             <div className={styles.outwardEcommerceGSTIN}>E-COMMERCE OPERATOR GSTIN: {data.table4.section4C_ecommerceGstin}</div>
             <div className={styles.outwardSectionTitle}>4C. SUPPLIES THROUGH E-COMMERCE (TCS)</div>
-            <DynamicAgGrid theme="legacy" 
+            <DynamicAgGrid theme="legacy"
               defaultColDef={defaultColDef}
-              rowData={data.table4.section4C} 
-              columnDefs={colDefs4} 
+              rowData={data.table4.section4C}
+              columnDefs={colDefs4}
               suppressMenuHide={true}
-              pinnedBottomRowData={[
-                { 
-                  gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 4', 
-                  invoiceValue: data.table4.total.invoiceValue,
-                  taxableValue: data.table4.total.taxableValue,
-                  igst: data.table4.total.igst,
-                  cgst: data.table4.total.cgst,
-                  sgst: data.table4.total.sgst,
-                  cess: data.table4.total.cess
-                }
-              ]}
+              pinnedBottomRowData={[{
+                gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 4',
+                invoiceValue: data.table4.total.invoiceValue,
+                taxableValue: data.table4.total.taxableValue,
+                igst: data.table4.total.igst,
+                cgst: data.table4.total.cgst,
+                sgst: data.table4.total.sgst,
+                cess: data.table4.total.cess
+              }]}
             />
           </div>
         )}
@@ -173,23 +208,21 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>5A. OUTWARD SUPPLIES (OTHER THAN E-COMMERCE OPERATOR, RATE-WISE)</div>
             <div className={styles.outwardSectionTitleSub}>Inter-state supplies to unregistered persons (aggregated by rate)</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table5.section5A} columnDefs={colDefs5.filter(c => !c.hide)} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table5.section5A} columnDefs={colDefs5.filter((c: any) => !c.hide)} suppressMenuHide={true} />
 
             <div className={styles.outwardEcommerceGSTIN}>GSTIN OF E-COMMERCE OPERATOR <span style={{ background: '#f1f3f9', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px' }}>{data.table5.section5B_ecommerceGstin}</span></div>
             <div className={styles.outwardSectionTitle}>5B. SUPPLIES MADE THROUGH E-COMMERCE OPERATOR (TCS APPLICABLE, RATE-WISE)</div>
-            <DynamicAgGrid theme="legacy" 
+            <DynamicAgGrid theme="legacy"
               defaultColDef={defaultColDef}
-              rowData={data.table5.section5B} 
-              columnDefs={colDefs5B} 
+              rowData={data.table5.section5B}
+              columnDefs={colDefs5B}
               suppressMenuHide={true}
-              pinnedBottomRowData={[
-                { 
-                  gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 5', 
-                  invoiceValue: data.table5.total.invoiceValue,
-                  taxableValue: data.table5.total.taxableValue,
-                  igst: data.table5.total.igst,
-                }
-              ]}
+              pinnedBottomRowData={[{
+                pos: 'TOTAL SUMMARIZED RECORDS FOR TABLE 5',
+                invoiceValue: data.table5.total.invoiceValue,
+                taxableValue: data.table5.total.taxableValue,
+                igst: data.table5.total.igst,
+              }]}
             />
           </div>
         )}
@@ -238,7 +271,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
 
             <div className={styles.outwardSectionTitle}>7B. Inter-State Supplies where invoice value is upto Rs 2.5 Lakh [Rate wise]</div>
             <div className={styles.outwardSectionTitleSub}>7B (1). Place of Supply (Name of State): {data.table7.section7B1_pos}</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY' }]} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY', minWidth: 130 }]} suppressMenuHide={true} />
 
             <div className={styles.outwardSectionTitleSub}>7B (2). Out of the supplies mentioned in 7B (1), the supplies made through e-Commerce Operators (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7B2_ecommerceGstin}</div>
@@ -258,19 +291,17 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         {expandedAccordion === 'table8' && (
           <div className={styles.accordionContent}>
-            <DynamicAgGrid theme="legacy" 
+            <DynamicAgGrid theme="legacy"
               defaultColDef={defaultColDef}
-              rowData={[data.table8.section8A, data.table8.section8B, data.table8.section8C, data.table8.section8D]} 
-              columnDefs={colDefs8} 
+              rowData={[data.table8.section8A, data.table8.section8B, data.table8.section8C, data.table8.section8D]}
+              columnDefs={colDefs8}
               suppressMenuHide={true}
-              pinnedBottomRowData={[
-                {
-                  label: data.table8.total.label,
-                  nilRated: data.table8.total.nilRated,
-                  exempted: data.table8.total.exempted,
-                  nonGst: data.table8.total.nonGst
-                }
-              ]}
+              pinnedBottomRowData={[{
+                label: data.table8.total.label,
+                nilRated: data.table8.total.nilRated,
+                exempted: data.table8.total.exempted,
+                nonGst: data.table8.total.nonGst
+              }]}
             />
           </div>
         )}

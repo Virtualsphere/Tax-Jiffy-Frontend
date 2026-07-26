@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -11,42 +11,91 @@ interface GSTR1AmendmentsTabProps {
   selectedYear: any;
 }
 
+/** Module-level so React never unmounts/remounts it on parent re-renders */
+const DynamicAgGrid = (props: any) => {
+  const [cw, setCw] = useState<string>('100%');
+
+  const updateWidth = useCallback((params: any) => {
+    requestAnimationFrame(() => {
+      if (!params.api) return;
+      const colState: any[] = params.api.getColumnState?.() ?? [];
+      const total = colState
+        .filter((c: any) => !c.hide)
+        .reduce((sum: number, c: any) => sum + (c.width ?? 0), 0);
+      if (total > 0) setCw(`${total + 2}px`);
+    });
+  }, []);
+
+  const maxRows = 10;
+  const isLarge = props.rowData && props.rowData.length > maxRows;
+  const innerStyle = {
+    width: cw,
+    maxWidth: '100%',
+    height: isLarge ? '380px' : 'auto',
+    marginBottom: props.marginBottom || '0',
+  };
+  return (
+    <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={innerStyle}>
+        <AgGridReact
+          {...props}
+          domLayout={isLarge ? 'normal' : 'autoHeight'}
+          rowHeight={32}
+          autoSizeStrategy={{ type: 'fitCellContents' }}
+          onGridReady={updateWidth}
+          onFirstDataRendered={updateWidth}
+          onColumnResized={updateWidth}
+        />
+      </div>
+    </div>
+  );
+};
+
 export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordion, selectedMonth, selectedYear }: GSTR1AmendmentsTabProps) {
+
+  const defaultColDef = useMemo<ColDef>(() => ({
+    wrapHeaderText: true,
+    autoHeaderHeight: true,
+    minWidth: 70,
+    resizable: true,
+    suppressSizeToFit: true,
+  }), []);
 
   const colDefs9 = useMemo<(ColDef | ColGroupDef)[]>(() => [
     {
       headerName: 'DETAILS OF ORIGINAL DOCUMENT',
       children: [
-        { field: 'originalGstin', headerName: 'GSTIN', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'originalInvNo', headerName: 'INV. NO.', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'originalInvDate', headerName: 'INV. DATE', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalGstin',   headerName: 'GSTIN',     minWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalInvNo',   headerName: 'INV. NO.',  minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalInvDate', headerName: 'INV. DATE', minWidth: 85,  cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
     {
-      headerName: 'REVISED DETAILS OF DOCUMENT OR DETAILS OF ORIGINAL DEBIT/CREDIT NOTES OR REFUND VOUCHERS',
+      headerName: 'REVISED DETAILS / DEBIT NOTE / CREDIT NOTE / REFUND VOUCHER',
       children: [
-        { field: 'revisedGstin', headerName: 'GSTIN', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'revisedInvNo', headerName: 'INVOICE NO', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'revisedInvDate', headerName: 'INVOICE DATE', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'sbNo', headerName: 'SHIPPING BILL NO.', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'sbDate', headerName: 'SHIPPING BILL DATE', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedGstin',   headerName: 'GSTIN',    minWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedInvNo',   headerName: 'INV NO',   minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedInvDate', headerName: 'INV DATE', minWidth: 85,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbNo',           headerName: 'SB NO.',   minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbDate',         headerName: 'SB DATE',  minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
-    { field: 'value', headerName: 'VALUE', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'rate', headerName: 'RATE (%)', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue', headerName: 'TAXABLE VALUE', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'integratedTax', headerName: 'INTEGRATED TAX', cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'value',         headerName: 'VALUE',         minWidth: 75,  maxWidth: 105, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',          headerName: 'RATE (%)',       minWidth: 70,  maxWidth: 95,  cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'taxableValue',  headerName: 'TAXABLE VALUE',  minWidth: 95,  maxWidth: 125, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'integratedTax', headerName: 'IGST',           minWidth: 75,  maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
+  // colDefs10: use minWidth (not width) so autoSizeStrategy won't shrink below readable size
   const colDefs10 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'rate', headerName: 'RATE OF TAX (%)', cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE', cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',         headerName: 'RATE (%)',            minWidth: 75,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE', minWidth: 110, maxWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
     {
       headerName: 'AMOUNT',
       children: [
-        { field: 'integrated', headerName: 'INTEGRATED TAX', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'central', headerName: 'CENTRAL TAX', cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'state', headerName: 'STATE/UT TAX', cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integrated', headerName: 'INTEGRATED', minWidth: 85,  maxWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'central',    headerName: 'CENTRAL',    minWidth: 70,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'state',      headerName: 'STATE/UT',   minWidth: 70,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
@@ -73,19 +122,13 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
         {expandedAccordion === 'table9' && (
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9A. If the invoice/Shipping bill details furnished earlier were incorrect</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9B. Debit Notes/Credit Notes/Refund voucher [original]</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9B} columnDefs={colDefs9} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9B} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
 
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9C. Debit Notes/Credit Notes/Refund voucher [amendments thereof]</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
           </div>
         )}
       </div>
@@ -102,29 +145,21 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
         {expandedAccordion === 'table10' && (
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitleSub}>Tax period for which the details are being revised: {selectedMonth} {selectedYear.startYear}</div>
-            
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A. Intra-State Supplies [including supplies made through e-commerce operator attracting TCS] [Rate wise]</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10A} columnDefs={colDefs10} suppressMenuHide={true} />
-            </div>
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A (1). Out of supplies mentioned at 10A, value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
+            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A. Intra-State Supplies [Rate wise]</div>
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
+
+            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10A1_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10A1} columnDefs={colDefs10} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B. Inter-State Supplies [including supplies made through e-commerce operator attracting TCS] [Rate wise]</div>
+            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B. Inter-State Supplies [Rate wise]</div>
             <div className={styles.outwardSectionTitleSub}>Place of Supply (Name of State): {data.table10.section10B_pos}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px', marginBottom: '20px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10B} columnDefs={colDefs10} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10B} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B (1). Out of supplies mentioned at 10B, value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
+            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10B1_ecommerceGstin}</div>
-            <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={{ width: '100%', height: '400px' }}>
-              <AgGridReact theme="legacy" rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} />
-            </div>
+            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
           </div>
         )}
       </div>
