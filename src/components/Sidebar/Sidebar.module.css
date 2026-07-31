@@ -424,3 +424,79 @@
 .collapsed .navLinkLabel {
   display: none;
 }
+
+/* ─── Responsive: ≤ 768px — Sidebar as overlay ─── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: min(280px, 85vw);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    overflow-y: auto;
+  }
+
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Force expanded state on mobile — don't allow collapsed mode */
+  .sidebar.collapsed {
+    width: min(280px, 85vw);
+    padding-inline: var(--space-3);
+  }
+
+  .sidebar.collapsed .brandName,
+  .sidebar.collapsed .sectionLabel,
+  .sidebar.collapsed .sectionChevron,
+  .sidebar.collapsed .navLinkLabel,
+  .sidebar.collapsed .subLabel {
+    display: unset;
+    opacity: 1;
+    width: auto;
+    overflow: visible;
+  }
+
+  .sidebar.collapsed .entityCard {
+    opacity: 1;
+    height: auto;
+    margin-bottom: var(--space-5);
+    padding: 12px;
+    pointer-events: auto;
+  }
+
+  .sidebar.collapsed .header {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .sidebar.collapsed .brand {
+    justify-content: flex-start;
+  }
+
+  .sidebar.collapsed .sectionToggle {
+    justify-content: flex-start;
+    padding-inline: var(--space-2);
+  }
+
+  .sidebar.collapsed .navLink {
+    justify-content: flex-start;
+    padding-inline: var(--space-2);
+  }
+
+  .sidebar.collapsed .subList:not(.subListFlyout) .subLabel {
+    display: unset;
+  }
+
+  /* Hide the collapse toggle on mobile since it's not needed */
+  .collapseBtn {
+    display: none;
+  }
+}
+

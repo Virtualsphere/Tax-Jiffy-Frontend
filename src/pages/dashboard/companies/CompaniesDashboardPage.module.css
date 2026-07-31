@@ -165,3 +165,32 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ─── Responsive: ≤ 768px ─── */
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 16px;
+  }
+  
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .addCompanyBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

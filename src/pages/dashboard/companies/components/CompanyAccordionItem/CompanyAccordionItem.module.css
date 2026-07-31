@@ -173,3 +173,35 @@
   gap: 16px;
 }
 
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .accordionHeader {
+    padding: 16px;
+  }
+  .accordionContent {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .accordionHeader {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .headerLeft {
+    gap: 12px;
+  }
+
+  .btnText {
+    display: none;
+  }
+  
+  .addGstBtn {
+    padding: 8px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+  }
+}
+

@@ -259,3 +259,29 @@
 .ag-theme-spreadsheet-borders .ag-header-group-cell {
   border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
+
+/* ─── Responsive: ≤ 768px ─── */
+@media (max-width: 768px) {
+  .ag-theme-tax-jiffy,
+  .ag-theme-tax-jiffy-data,
+  .ag-theme-blue-headers {
+    --ag-font-size: 11px;
+    --ag-row-height: 28px;
+    --ag-header-height: 30px;
+  }
+  
+  .ag-theme-tax-jiffy .ag-header-cell,
+  .ag-theme-tax-jiffy .ag-cell,
+  .ag-theme-tax-jiffy-data .ag-header-cell,
+  .ag-theme-tax-jiffy-data .ag-cell,
+  .ag-theme-blue-headers .ag-header-cell,
+  .ag-theme-blue-headers .ag-cell {
+    padding: 0 6px;
+  }
+  
+  .ag-theme-tax-jiffy .ag-header-cell,
+  .ag-theme-tax-jiffy-data .ag-header-cell,
+  .ag-theme-blue-headers .ag-header-cell {
+    font-size: 9px;
+  }
+}

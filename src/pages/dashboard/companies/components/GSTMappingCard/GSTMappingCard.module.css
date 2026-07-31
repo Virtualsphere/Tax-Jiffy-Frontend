@@ -263,3 +263,36 @@
   background-color: #5a6acf;
   color: white;
 }
+
+/* ─── Responsive: ≤ 1024px ─── */
+@media (max-width: 1024px) {
+  .card {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ─── Responsive: ≤ 768px ─── */
+@media (max-width: 768px) {
+  .card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 20px;
+  }
+}
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+  
+  .filingGrid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  
+  .filingBadge {
+    display: block;
+    width: 100%;
+  }
+}

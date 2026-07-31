@@ -25,17 +25,28 @@
   flex-shrink: 0;
 }
 
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
 .topbarTitle {
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbarActions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .avatar {
@@ -50,10 +61,89 @@
   font-weight: 700;
   color: #fff;
   letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 .content {
   flex: 1;
   padding: var(--space-6);
   overflow-y: auto;
+}
+
+/* Mobile menu button — hidden on desktop */
+.mobileMenuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileMenuBtn:hover {
+  background: var(--color-bg-muted);
+}
+
+/* Mobile backdrop */
+.backdrop {
+  display: none;
+}
+
+/* ─── Responsive: ≤ 768px ─── */
+@media (max-width: 768px) {
+  .topbar {
+    height: 52px;
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .topbarTitle {
+    font-size: var(--text-sm);
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    background: rgba(15, 23, 42, 0.4);
+    animation: fadeIn 0.25s ease forwards;
+  }
+}
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .topbar {
+    height: 48px;
+    padding: 0 var(--space-3);
+  }
+
+  .content {
+    padding: var(--space-3);
+  }
+
+  .logoutButton {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

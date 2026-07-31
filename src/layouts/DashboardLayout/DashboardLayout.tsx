@@ -1,3 +1,4 @@
+import { useState, useCallback, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
@@ -40,6 +41,25 @@ export function DashboardLayout() {
   const { data: entity } = useCurrentEntity();
   const { data: user } = useCurrentUser();
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+
+  // Close sidebar on route change
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileSidebarOpen]);
+
   const handleLogout = () => {
     authStorage.clearToken();
     navigate(ROUTES.home);
@@ -47,11 +67,30 @@ export function DashboardLayout() {
 
   return (
     <div className={styles.shell}>
-      <Sidebar entity={entity} />
+      {/* Mobile backdrop */}
+      {mobileSidebarOpen && (
+        <div className={styles.backdrop} onClick={closeMobileSidebar} aria-hidden />
+      )}
+
+      <Sidebar entity={entity} mobileOpen={mobileSidebarOpen} onMobileClose={closeMobileSidebar} />
 
       <div className={styles.main}>
         <header className={styles.topbar}>
-          <h1 className={styles.topbarTitle}>{title}</h1>
+          <div className={styles.topbarLeft}>
+            <button
+              type="button"
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileSidebarOpen((prev) => !prev)}
+              aria-label={mobileSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <h1 className={styles.topbarTitle}>{title}</h1>
+          </div>
           <div className={styles.topbarActions}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div className={styles.avatar} aria-label="User avatar" title={user.name}>{user.initials}</div>

@@ -27,23 +27,23 @@ type Props = {
 };
 
 export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Props) {
-  const [open, setOpen] = useState(false);
+  const [openTarget, setOpenTarget] = useState<'year' | 'month' | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click / Escape
   useEffect(() => {
-    if (!open) return;
+    if (!openTarget) return;
     const handlePointerDown = (e: PointerEvent) => {
-      if (!wrapperRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrapperRef.current?.contains(e.target as Node)) setOpenTarget(null);
     };
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenTarget(null); };
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [open]);
+  }, [openTarget]);
 
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
@@ -51,13 +51,13 @@ export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Pro
       <button
         type="button"
         className={styles.yearBadge}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpenTarget((o) => o === 'year' ? null : 'year')}
         aria-haspopup="dialog"
-        aria-expanded={open}
+        aria-expanded={openTarget !== null}
         title="Change financial year"
       >
         {year}
-        <svg className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <svg className={`${styles.chevron} ${openTarget === 'year' ? styles.chevronOpen : ''}`} width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
@@ -65,19 +65,19 @@ export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Pro
       <button
         type="button"
         className={styles.monthBadge}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpenTarget((o) => o === 'month' ? null : 'month')}
         aria-haspopup="dialog"
-        aria-expanded={open}
+        aria-expanded={openTarget !== null}
         title="Change month"
       >
         {month}
-        <svg className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <svg className={`${styles.chevron} ${openTarget === 'month' ? styles.chevronOpen : ''}`} width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
       {/* Popover */}
-      {open && (
+      {openTarget !== null && (
         <div className={styles.popover} role="dialog" aria-label="Select filing period">
           <p className={styles.popoverTitle}>Select Filing Period</p>
 
@@ -109,7 +109,7 @@ export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Pro
                   key={m}
                   type="button"
                   className={`${styles.optionBtn} ${month === m ? styles.optionBtnActive : ''}`}
-                  onClick={() => { onMonthChange(m); setOpen(false); }}
+                  onClick={() => { onMonthChange(m); setOpenTarget(null); }}
                 >
                   {m.slice(0, 3)}
                 </button>

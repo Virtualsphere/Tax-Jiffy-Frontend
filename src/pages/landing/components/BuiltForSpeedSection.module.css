@@ -259,3 +259,18 @@
     align-self: flex-end;
   }
 }
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .container {
+    gap: 2rem;
+  }
+  
+  .windowBody {
+    padding: 16px;
+  }
+}

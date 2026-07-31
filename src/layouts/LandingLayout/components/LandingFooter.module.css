@@ -67,7 +67,7 @@
   gap: 60px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .linksSection {
     gap: 160px;
   }
@@ -104,4 +104,11 @@
 
 .link:hover {
   color: #0f172a;
+}
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .footer {
+    padding: 40px 20px 20px;
+  }
 }

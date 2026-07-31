@@ -23,6 +23,8 @@ export type SidebarEntity = {
 export type SidebarProps = {
   entity?: SidebarEntity;
   defaultCollapsed?: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 };
 
 const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_NAV_SECTIONS.map((section) => section.id);
@@ -30,6 +32,8 @@ const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_NAV_SECTIONS.map((section) => section.
 export function Sidebar({
   entity = DEFAULT_SIDEBAR_ENTITY,
   defaultCollapsed = false,
+  mobileOpen = false,
+  onMobileClose,
 }: SidebarProps) {
   const navId = useId();
   const sidebarRef = useRef<HTMLElement>(null);
@@ -97,7 +101,7 @@ export function Sidebar({
   return (
     <aside
       ref={sidebarRef}
-      className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}
+      className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}
       aria-label="Application navigation"
     >
       <div className={styles.header}>
@@ -164,6 +168,7 @@ export function Sidebar({
                           className={subItemClass}
                           onClick={() => {
                             if (collapsed) setOpenFlyoutSectionId(null);
+                            onMobileClose?.();
                           }}
                           title={collapsed ? child.label : undefined}
                           end
@@ -185,6 +190,7 @@ export function Sidebar({
                 to={link.path}
                 className={navLinkClass}
                 title={collapsed ? link.label : undefined}
+                onClick={() => onMobileClose?.()}
                 end
               >
                 <span className={styles.navLinkIcon}>{link.icon}</span>

@@ -85,3 +85,14 @@
   line-height: 1.6;
   margin: 0;
 }
+
+/* ─── Responsive: ≤ 480px ─── */
+@media (max-width: 480px) {
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .content {
+    padding: 1.5rem 1rem;
+  }
+}
