@@ -1,16 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Outlet, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useMyCompanies } from '@/pages/dashboard/user/hooks/useMyCompanies';
 import { authStorage } from '@/features/auth/lib/auth-storage';
 import styles from '@/layouts/UserDashboardLayout/UserDashboardLayout.module.css';
 
 export function UserDashboardLayout() {
   const { data: user } = useCurrentUser();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const { data: companies } = useMyCompanies();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -29,11 +25,6 @@ export function UserDashboardLayout() {
     authStorage.clearToken();
     navigate(ROUTES.home);
   };
-
-  const isGstPage = location.pathname === ROUTES.dashboard.user;
-  const companyIdParam = searchParams.get('companyId');
-  const activeCompanyId = companyIdParam ? Number(companyIdParam) : null;
-  const activeCompany = activeCompanyId ? companies?.find(c => c.id === activeCompanyId) : null;
 
   return (
     <div className={styles.layout}>
@@ -68,19 +59,6 @@ export function UserDashboardLayout() {
         </div>
 
         <div className={styles.actions}>
-          {isGstPage && activeCompanyId ? (
-            <button className={styles.connectBtn} onClick={() => {
-              window.dispatchEvent(new CustomEvent('open-add-gst-modal', { detail: { companyId: activeCompanyId } }));
-            }}>
-              + Add GST for {activeCompany?.companyName || 'Company'}
-            </button>
-          ) : (
-            <button className={styles.connectBtn} onClick={() => {
-              window.dispatchEvent(new CustomEvent('open-connect-company-modal'));
-            }}>
-              Connect New Company
-            </button>
-          )}
           <div 
             ref={dropdownRef}
             style={{ position: 'relative' }}

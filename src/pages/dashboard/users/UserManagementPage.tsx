@@ -141,24 +141,6 @@ export function UserManagementPage() {
 
   return (
     <div className={styles.container}>
-      {/* Back to Dashboard Link */}
-      <div style={{ marginBottom: '-8px' }}>
-        <Link 
-          to="/dashboard/user" 
-          style={{ 
-            fontSize: '13px', 
-            color: '#3f51b5', 
-            textDecoration: 'none', 
-            fontWeight: 600, 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '6px' 
-          }}
-        >
-          <span>←</span> Back to Active Reconciliations
-        </Link>
-      </div>
-
       {/* Top Header Row with dropdown selectors and Add button */}
       <div className={styles.headerRow}>
         <div className={styles.controls}>

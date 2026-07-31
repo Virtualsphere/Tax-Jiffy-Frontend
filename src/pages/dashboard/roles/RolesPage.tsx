@@ -5,6 +5,7 @@ import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
 import type { RolesResponse } from './types/roles.types';
 import { RolePermissionsMatrix } from './components/RolePermissionsMatrix';
+import { UserManagementPage } from '../users/UserManagementPage';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -231,7 +232,7 @@ function DeleteRoleModal({ role, onClose }: DeleteRoleModalProps) {
 
 /* ── Main Page ────────────────────────────────────────── */
 export function RolesPage() {
-  const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles');
+  const [activeTab, setActiveTab] = useState<'roles' | 'permissions' | 'users'>('roles');
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | ''>('');
   const [selectedGSTId, setSelectedGSTId] = useState<number | ''>('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -300,9 +301,17 @@ export function RolesPage() {
         >
           Role Permissions Matrix
         </button>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          Manage Users
+        </button>
       </div>
 
-      {activeTab === 'permissions' ? (
+      {activeTab === 'users' ? (
+        <UserManagementPage />
+      ) : activeTab === 'permissions' ? (
         <RolePermissionsMatrix />
       ) : (
         <>

@@ -101,7 +101,6 @@ export function IconCreditCard() {
 
 export const SIDEBAR_NAV_LINKS: SidebarNavLink[] = [
   { id: 'dashboard', label: 'DASHBOARD', icon: <IconDashboard />, path: ROUTES.dashboard.companies },
-  { id: 'user-management', label: 'USER MANAGEMENT', icon: <IconUsers />, path: ROUTES.dashboard.users },
   { id: 'roles', label: 'ROLE EDITOR', icon: <IconShield />, path: ROUTES.dashboard.roles },
   { id: 'subscription-plans', label: 'SUBSCRIPTION PLANS', icon: <IconCreditCard />, path: ROUTES.dashboard.subscriptionPlans },
   { id: 'e-invoice', label: 'E-INVOICE', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },
