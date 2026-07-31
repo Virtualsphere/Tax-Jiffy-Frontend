@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -166,7 +167,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
             <p className={styles.accordionSubtitle}>B2B supplies, Reverse Charge and E-commerce supplies</p>
           </div>
         </div>
-        {expandedAccordion === 'table4' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table4'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>4A. SUPPLIES OTHER THAN REVERSE CHARGE &amp; E-COMMERCE</div>
             <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true} />
@@ -192,7 +193,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
               }]}
             />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
 
       {/* Table 5 */}
@@ -204,7 +205,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
             <p className={styles.accordionSubtitle}>Taxable inter-State supplies to un-registered persons {'>'} 2.5 lakh</p>
           </div>
         </div>
-        {expandedAccordion === 'table5' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table5'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>5A. OUTWARD SUPPLIES (OTHER THAN E-COMMERCE OPERATOR, RATE-WISE)</div>
             <div className={styles.outwardSectionTitleSub}>Inter-state supplies to unregistered persons (aggregated by rate)</div>
@@ -225,7 +226,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
               }]}
             />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
 
       {/* Table 6 */}
@@ -237,7 +238,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
             <p className={styles.accordionSubtitle}>Exports, SEZ supplies, Deemed exports</p>
           </div>
         </div>
-        {expandedAccordion === 'table6' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table6'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle}>6A. EXPORTS</div>
             <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6A} columnDefs={colDefs6} suppressMenuHide={true} />
@@ -248,7 +249,7 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
             <div className={styles.outwardSectionTitle}>6C. DEEMED EXPORTS</div>
             <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6C} columnDefs={colDefs6} suppressMenuHide={true} />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
 
       {/* Table 7 */}

@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -100,7 +101,7 @@ export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion
             <p className={styles.accordionSubtitle}>Details of nil rated, exempted and non-GST outward supplies made during the tax period</p>
           </div>
         </div>
-        {expandedAccordion === 'table11' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table11'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitleSub} style={{ color: '#111827', fontWeight: 600 }}>I. Information for the current tax period</div>
 
@@ -123,7 +124,7 @@ export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion
             <div className={styles.outwardSectionTitleSub} style={{ color: '#111827', fontWeight: 600 }}>II Amendment of information furnished in Table No. 11(1) in GSTR-1 statement for earlier tax periods [Furnish revised information]</div>
             <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table11.amendments} columnDefs={colDefs11Amendments} suppressMenuHide={true} theme="legacy" />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
     </div>
   );

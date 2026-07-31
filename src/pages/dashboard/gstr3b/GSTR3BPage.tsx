@@ -17,6 +17,7 @@ import * as XLSX from 'xlsx';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import type {
   Gstr3bFiling,
   ImsCredentials,
@@ -691,7 +692,7 @@ export function GSTR3BPage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
-                {expandedAccordion === '3.1' && (
+                <AnimatedExpandable isExpanded={expandedAccordion === '3.1'}>
                   <div className={styles.accordionContent}>
                     <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers ag-theme-blue-group-headers`} theme="legacy" rowData={p?.table_3_1_outward_and_reverse_charge_inward_supplies?.rows ?? []} columnDefs={colDefs31} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                     {p?.table_3_1_outward_and_reverse_charge_inward_supplies?.total && (
@@ -704,7 +705,7 @@ export function GSTR3BPage() {
                       </div>
                     )}
                   </div>
-                )}
+                </AnimatedExpandable>
               </div>
 
               {/* Accordion 3.2 */}
@@ -716,11 +717,11 @@ export function GSTR3BPage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
-                {expandedAccordion === '3.2' && (
+                <AnimatedExpandable isExpanded={expandedAccordion === '3.2'}>
                   <div className={styles.accordionContent}>
                     <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={table32Rows} columnDefs={colDefs32} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
                   </div>
-                )}
+                </AnimatedExpandable>
               </div>
             </>
           )}
@@ -745,11 +746,11 @@ export function GSTR3BPage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
-                {expandedAccordion === 'table4' && (
+                <AnimatedExpandable isExpanded={expandedAccordion === 'table4'}>
                   <div className={styles.accordionContent}>
                     <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={table4Rows} columnDefs={colDefs4} defaultColDef={defaultColDef} rowClassRules={rowClassRules} domLayout="autoHeight" suppressMenuHide />
                   </div>
-                )}
+                </AnimatedExpandable>
               </div>
 
               {/* Accordion 5 */}
@@ -761,11 +762,11 @@ export function GSTR3BPage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
-                {expandedAccordion === 'table5' && (
+                <AnimatedExpandable isExpanded={expandedAccordion === 'table5'}>
                   <div className={styles.accordionContent}>
                     <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} theme="legacy" rowData={p?.table_5_exempt_nil_nongst_inward_supplies?.rows ?? []} columnDefs={colDefs5} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
                   </div>
-                )}
+                </AnimatedExpandable>
               </div>
 
               {/* Interest & Late Fee (5.1) */}
@@ -777,7 +778,7 @@ export function GSTR3BPage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
-                {expandedAccordion === 'table5_1' && (
+                <AnimatedExpandable isExpanded={expandedAccordion === 'table5_1'}>
                   <div className={styles.accordionContent}>
                     {/* Preview table */}
                       <DynamicAgGrid wrapperClassName={`${styles.gstr3bGrid} ag-theme-tax-jiffy ag-theme-blue-headers`} marginBottom={24} theme="legacy" rowData={p?.table_5_1_interest_and_late_fee?.rows ?? []} columnDefs={colDefs51} defaultColDef={defaultColDef} domLayout="autoHeight" suppressMenuHide />
@@ -816,7 +817,7 @@ export function GSTR3BPage() {
                       </button>
                     </div>
                   </div>
-                )}
+                </AnimatedExpandable>
               </div>
             </>
           )}

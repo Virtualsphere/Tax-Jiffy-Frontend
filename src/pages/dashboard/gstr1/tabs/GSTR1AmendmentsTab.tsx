@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -119,7 +120,7 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
             <p className={styles.accordionSubtitle}>Amendments to taxable outward supply details furnished in returns for earlier tax periods in Table 4, 5 and 6</p>
           </div>
         </div>
-        {expandedAccordion === 'table9' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table9'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9A. If the invoice/Shipping bill details furnished earlier were incorrect</div>
             <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
@@ -130,7 +131,7 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
             <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9C. Debit Notes/Credit Notes/Refund voucher [amendments thereof]</div>
             <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
 
       {/* Table 10 */}
@@ -142,7 +143,7 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
             <p className={styles.accordionSubtitle}>Amendments to taxable outward supplies to unregistered persons furnished in returns for earlier tax periods in Table 7</p>
           </div>
         </div>
-        {expandedAccordion === 'table10' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table10'}>
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitleSub}>Tax period for which the details are being revised: {selectedMonth} {selectedYear.startYear}</div>
 
@@ -161,7 +162,7 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
             <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10B1_ecommerceGstin}</div>
             <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
     </div>
   );

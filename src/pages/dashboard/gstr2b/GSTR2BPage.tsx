@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
+
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import styles from './GSTR2BPage.module.css';
 import { useGstr2bData } from './hooks/useGstr2bData';
 
@@ -215,7 +217,7 @@ export function GSTR2BPage() {
               </div>
             </div>
             
-            {isAccordionAExpanded && (
+            <AnimatedExpandable isExpanded={isAccordionAExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
                 <AgGridReact theme="legacy"
                   rowData={data?.itcAvailable.creditMayBeClaimed || []}
@@ -223,7 +225,7 @@ export function GSTR2BPage() {
                   domLayout="autoHeight"
                 />
               </div>
-            )}
+            </AnimatedExpandable>
           </div>
 
           <div className={styles.accordion}>
@@ -238,7 +240,7 @@ export function GSTR2BPage() {
               </div>
             </div>
             
-            {isAccordionBExpanded && (
+            <AnimatedExpandable isExpanded={isAccordionBExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
                 <AgGridReact theme="legacy"
                   rowData={data?.itcAvailable.creditShallBeReversed || []}
@@ -246,7 +248,7 @@ export function GSTR2BPage() {
                   domLayout="autoHeight"
                 />
               </div>
-            )}
+            </AnimatedExpandable>
           </div>
 
           <div className={styles.confirmContainer}>
@@ -268,7 +270,7 @@ export function GSTR2BPage() {
               </div>
             </div>
             
-            {isUnavailableAExpanded && (
+            <AnimatedExpandable isExpanded={isUnavailableAExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
                 <AgGridReact theme="legacy"
                   rowData={data?.itcUnavailable.itcNotAvailable || []}
@@ -276,7 +278,7 @@ export function GSTR2BPage() {
                   domLayout="autoHeight"
                 />
               </div>
-            )}
+            </AnimatedExpandable>
           </div>
 
           <div className={styles.accordion}>
@@ -291,7 +293,7 @@ export function GSTR2BPage() {
               </div>
             </div>
             
-            {isUnavailableBExpanded && (
+            <AnimatedExpandable isExpanded={isUnavailableBExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
                 <AgGridReact theme="legacy"
                   rowData={data?.itcUnavailable.itcReversal || []}
@@ -299,7 +301,7 @@ export function GSTR2BPage() {
                   domLayout="autoHeight"
                 />
               </div>
-            )}
+            </AnimatedExpandable>
           </div>
 
           <div className={styles.confirmContainer}>

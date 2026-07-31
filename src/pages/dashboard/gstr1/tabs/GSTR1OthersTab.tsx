@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
@@ -120,7 +121,7 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
             <p className={styles.accordionSubtitle}>Summary of outward supplies of goods and/or services based on HSN</p>
           </div>
         </div>
-        {expandedAccordion === 'table12' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table12'}>
           <div className={styles.accordionContent}>
             <DynamicAgGrid
               defaultColDef={defaultColDef}
@@ -140,7 +141,7 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
               }]}
             />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
 
       {/* Table 13 */}
@@ -152,7 +153,7 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
             <p className={styles.accordionSubtitle}>Details of documents like invoices, debit notes, credit notes, etc. issued</p>
           </div>
         </div>
-        {expandedAccordion === 'table13' && (
+        <AnimatedExpandable isExpanded={expandedAccordion === 'table13'}>
           <div className={styles.accordionContent}>
             <DynamicAgGrid
               defaultColDef={defaultColDef}
@@ -162,7 +163,7 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
               theme="legacy"
             />
           </div>
-        )}
+        </AnimatedExpandable>
       </div>
     </div>
   );

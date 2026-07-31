@@ -1,7 +1,7 @@
 
-import { useRef, useEffect, useState } from 'react';
 import styles from './CompanyAccordionItem.module.css';
 import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
+import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import type { CompanyProfileResponse } from '../../../user/types/company.types';
 
 interface CompanyAccordionItemProps {
@@ -16,23 +16,6 @@ interface CompanyAccordionItemProps {
 }
 
 export function CompanyAccordionItem({ company, isExpanded = false, onToggle, onDelete, onAddGst, isDeleting, children }: CompanyAccordionItemProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      // Use ResizeObserver for dynamic content changes
-      const observer = new ResizeObserver(() => {
-        if (contentRef.current) {
-          setContentHeight(contentRef.current.scrollHeight);
-        }
-      });
-      observer.observe(contentRef.current);
-      // Set initial height
-      setContentHeight(contentRef.current.scrollHeight);
-      return () => observer.disconnect();
-    }
-  }, [children]);
 
   return (
     <div className={`${styles.accordionItem} ${isExpanded ? styles.expanded : ''}`}>
@@ -97,14 +80,11 @@ export function CompanyAccordionItem({ company, isExpanded = false, onToggle, on
         )}
       </div>
       
-      <div 
-        className={styles.accordionContentWrapper}
-        style={{ maxHeight: isExpanded ? `${contentHeight}px` : '0px' }}
-      >
-        <div ref={contentRef} className={styles.accordionContent}>
+      <AnimatedExpandable isExpanded={isExpanded}>
+        <div className={styles.accordionContent}>
           {children}
         </div>
-      </div>
+      </AnimatedExpandable>
     </div>
   );
 }
