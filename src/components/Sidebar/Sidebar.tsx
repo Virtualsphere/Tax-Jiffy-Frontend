@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import Hamburger from 'hamburger-react';
 import logo from '@/assets/logo-icon.png';
 import {
   DEFAULT_SIDEBAR_ENTITY,
@@ -8,8 +9,6 @@ import {
 } from '@/components/Sidebar/sidebar-config';
 import {
   IconChevronDown,
-  IconChevronLeft,
-  IconChevronRight,
 } from '@/components/Sidebar/SidebarIcons';
 
 import styles from '@/components/Sidebar/Sidebar.module.css';
@@ -106,19 +105,13 @@ export function Sidebar({
           <img src={logo} alt="" className={styles.logo} width={36} height={36} />
           <span className={styles.brandName}>TAXJIFFY</span>
         </div>
-        <button
-          type="button"
-          className={styles.collapseBtn}
-          onClick={toggleCollapsed}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!collapsed}
-        >
-          {collapsed ? (
-            <IconChevronRight className={styles.collapseIcon} />
-          ) : (
-            <IconChevronLeft className={styles.collapseIcon} />
-          )}
-        </button>
+        <div className={styles.collapseBtn}>
+          <Hamburger
+            toggled={!collapsed}
+            toggle={toggleCollapsed}
+            size={20}
+          />
+        </div>
       </div>
 
       <div className={styles.entityCard}>

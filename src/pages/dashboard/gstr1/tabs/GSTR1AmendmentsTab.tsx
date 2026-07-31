@@ -56,7 +56,7 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
   const defaultColDef = useMemo<ColDef>(() => ({
     wrapHeaderText: true,
     autoHeaderHeight: true,
-    minWidth: 70,
+    minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
   }), []);

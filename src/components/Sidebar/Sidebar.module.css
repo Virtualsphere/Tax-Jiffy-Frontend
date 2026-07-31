@@ -77,8 +77,6 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
@@ -89,7 +87,6 @@
 }
 
 .collapseBtn:hover {
-  background: var(--sidebar-accent-hover-strong);
   color: var(--sidebar-accent);
 }
 
@@ -115,8 +112,8 @@
 
 /* ── Entity card ── */
 .entityCard {
-  width: 211px;
-  height: 158px;
+  width: 100%;
+  height: auto;
   margin-bottom: var(--space-5);
   padding: 12px;
   border-radius: 8px;

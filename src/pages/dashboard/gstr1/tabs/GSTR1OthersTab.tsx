@@ -52,7 +52,7 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
   const defaultColDef = useMemo<ColDef>(() => ({
     wrapHeaderText: true,
     autoHeaderHeight: true,
-    minWidth: 70,
+    minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
   }), []);

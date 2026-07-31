@@ -379,7 +379,7 @@ export function GSTR3BPage() {
   // ── ColDefs ──────────────────────────────────────────────────────────────
   const defaultColDef = useMemo<ColDef>(
     () => ({ resizable: true, wrapHeaderText: true, autoHeaderHeight: true, suppressSizeToFit: true }),
-    [],
+    []
   );
 
   const R = { cellClass: 'ag-cell-right', headerClass: 'ag-header-cell-right' } as const;
