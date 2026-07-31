@@ -280,7 +280,6 @@ export function PurchaseRegisterPage() {
     [upload, activeGstId, selectedYear, selectedMonth, upload.isPending],
   );
 
-  const handleProceed = useCallback(() => setStep(2), []);
   const handleReset = useCallback(() => {
     setStep(1);
     upload.reset();
