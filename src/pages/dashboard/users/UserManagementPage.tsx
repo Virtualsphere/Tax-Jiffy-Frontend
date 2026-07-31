@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import styles from './UserManagementPage.module.css';
 import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
