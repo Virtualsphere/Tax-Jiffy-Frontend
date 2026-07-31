@@ -152,6 +152,18 @@
   cursor: not-allowed;
 }
 
+.accordionContentWrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+  opacity: 0;
+}
+
+.expanded .accordionContentWrapper {
+  opacity: 1;
+}
+
 .accordionContent {
   padding: 24px;
   background-color: #f8fafc;
@@ -160,3 +172,4 @@
   flex-direction: column;
   gap: 16px;
 }
+

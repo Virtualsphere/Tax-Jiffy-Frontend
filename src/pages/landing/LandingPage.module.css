@@ -2,7 +2,6 @@
   min-height: calc(100vh - 72px);
   padding: 0 40px;
   background: #ffffff;
-  overflow-x: hidden;
 }
 
 .reveal {

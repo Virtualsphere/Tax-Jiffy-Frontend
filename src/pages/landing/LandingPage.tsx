@@ -1,3 +1,4 @@
+import React from 'react';
 import { HeroSection } from '@/pages/landing/components/HeroSection';
 import { PowerfulStatementSection } from '@/pages/landing/components/PowerfulStatementSection';
 import { FeaturesSection } from '@/pages/landing/components/FeaturesSection';

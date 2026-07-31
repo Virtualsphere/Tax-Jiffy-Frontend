@@ -26,6 +26,7 @@ export function CompaniesDashboardPage() {
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   const [deletingCompanyId, setDeletingCompanyId] = useState<number | null>(null);
+  const [expandedCompanyId, setExpandedCompanyId] = useState<number | null>(urlCompanyId);
 
   useCurrentUser();
   const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
@@ -125,7 +126,8 @@ export function CompaniesDashboardPage() {
               <CompanyAccordionItem 
                 key={company.id} 
                 company={company}
-                defaultExpanded={urlCompanyId === company.id}
+                isExpanded={expandedCompanyId === company.id}
+                onToggle={() => setExpandedCompanyId(expandedCompanyId === company.id ? null : company.id)}
                 onDelete={handleDeleteCompany}
                 onAddGst={setSelectedCompanyForGst}
                 isDeleting={deleteCompanyMutation.isPending}

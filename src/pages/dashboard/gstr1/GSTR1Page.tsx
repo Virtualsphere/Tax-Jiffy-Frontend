@@ -235,18 +235,20 @@ export function GSTR1Page() {
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
+      if (upload.isPending) return;
       const f = e.dataTransfer.files[0];
       if (f) upload.mutate(f, activeGstId, uploadYear, uploadMonth);
     },
-    [upload, activeGstId, uploadYear, uploadMonth],
+    [upload, activeGstId, uploadYear, uploadMonth, upload.isPending],
   );
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (upload.isPending) return;
       const f = e.target.files?.[0];
       if (f) upload.mutate(f, activeGstId, uploadYear, uploadMonth);
     },
-    [upload, activeGstId, uploadYear, uploadMonth],
+    [upload, activeGstId, uploadYear, uploadMonth, upload.isPending],
   );
 
   /* ── Drag state (UI-only, no data) ── */
@@ -469,22 +471,27 @@ export function GSTR1Page() {
       </div>
 
       <div
-        className={`${styles.dropzone} ${dragOver ? styles.dropzoneDragOver : ''}`}
+        className={`${styles.dropzone} ${dragOver && !upload.isPending ? styles.dropzoneDragOver : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
-          setDragOver(true);
+          if (!upload.isPending) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           setDragOver(false);
-          onDrop(e);
+          if (!upload.isPending) onDrop(e);
         }}
-        onClick={() => upload.inputRef.current?.click()}
+        onClick={() => {
+          if (!upload.isPending) upload.inputRef.current?.click();
+        }}
         role="button"
-        tabIndex={0}
+        tabIndex={upload.isPending ? -1 : 0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') upload.inputRef.current?.click();
+          if (!upload.isPending && (e.key === 'Enter' || e.key === ' ')) {
+            upload.inputRef.current?.click();
+          }
         }}
+        style={upload.isPending ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
       >
         <div className={styles.dropzoneIcon}>⬆</div>
         <p className={styles.dropzoneTitle}>Drag and drop your Excel file here</p>
@@ -498,8 +505,10 @@ export function GSTR1Page() {
           className={styles.uploadBtn}
           onClick={(e) => {
             e.stopPropagation();
-            upload.inputRef.current?.click();
+            if (!upload.isPending) upload.inputRef.current?.click();
           }}
+          disabled={upload.isPending}
+          style={upload.isPending ? { cursor: 'not-allowed' } : {}}
         >
           Click to Upload
         </button>
@@ -509,6 +518,7 @@ export function GSTR1Page() {
           accept=".xlsx,.xls"
           className={styles.hiddenInput}
           onChange={onFileChange}
+          disabled={upload.isPending}
         />
       </div>
 
@@ -525,13 +535,13 @@ export function GSTR1Page() {
         </div>
       )}
 
-      {/* Parsing / Uploading spinner */}
+      {/* Parsing / Uploading overlay */}
       {upload.isPending && (
-        <div className={styles.parsingCard}>
+        <div className={styles.uploadOverlay}>
           <div className={styles.parsingSpinner} />
-          <div className={styles.parsingText}>
-            <p className={styles.parsingTitle}>Processing file…</p>
-            <p className={styles.parsingSubtitle}>Parsing and uploading GSTR-1 data to server</p>
+          <div className={styles.uploadOverlayText}>
+            <p className={styles.uploadOverlayTitle}>Processing file…</p>
+            <p className={styles.uploadOverlaySubtitle}>Parsing and uploading GSTR-1 data to server</p>
           </div>
         </div>
       )}

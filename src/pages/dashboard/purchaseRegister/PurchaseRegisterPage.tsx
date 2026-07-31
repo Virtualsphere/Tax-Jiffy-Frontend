@@ -264,18 +264,20 @@ export function PurchaseRegisterPage() {
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
+      if (upload.isPending) return;
       const f = e.dataTransfer.files[0];
       if (f) upload.mutate(f, activeGstId, selectedYear.label, selectedMonth);
     },
-    [upload, activeGstId, selectedYear, selectedMonth],
+    [upload, activeGstId, selectedYear, selectedMonth, upload.isPending],
   );
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (upload.isPending) return;
       const f = e.target.files?.[0];
       if (f) upload.mutate(f, activeGstId, selectedYear.label, selectedMonth);
     },
-    [upload, activeGstId, selectedYear, selectedMonth],
+    [upload, activeGstId, selectedYear, selectedMonth, upload.isPending],
   );
 
   const handleProceed = useCallback(() => setStep(2), []);
@@ -324,22 +326,44 @@ export function PurchaseRegisterPage() {
       </div>
 
       <div
-        className={`${styles.dropzone} ${dragOver ? styles.dropzoneDragOver : ''}`}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        className={`${styles.dropzone} ${dragOver && !upload.isPending ? styles.dropzoneDragOver : ''}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!upload.isPending) setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { setDragOver(false); onDrop(e); }}
-        onClick={() => upload.inputRef.current?.click()}
+        onDrop={(e) => {
+          setDragOver(false);
+          if (!upload.isPending) onDrop(e);
+        }}
+        onClick={() => {
+          if (!upload.isPending) upload.inputRef.current?.click();
+        }}
         role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') upload.inputRef.current?.click(); }}
+        tabIndex={upload.isPending ? -1 : 0}
+        onKeyDown={(e) => {
+          if (!upload.isPending && (e.key === 'Enter' || e.key === ' ')) {
+            upload.inputRef.current?.click();
+          }
+        }}
+        style={upload.isPending ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
       >
         <div className={styles.dropzoneIcon}><UploadIcon /></div>
         <p className={styles.dropzoneTitle}>Drag and drop your GSTR-2 Excel file here</p>
         <p className={styles.dropzoneHint}>Supported formats: .xlsx, .xls · Max 100 MB</p>
-        <button type="button" className={styles.uploadBtn} onClick={(e) => { e.stopPropagation(); upload.inputRef.current?.click(); }}>
+        <button
+          type="button"
+          className={styles.uploadBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!upload.isPending) upload.inputRef.current?.click();
+          }}
+          disabled={upload.isPending}
+          style={upload.isPending ? { cursor: 'not-allowed' } : {}}
+        >
           Click to Upload
         </button>
-        <input ref={upload.inputRef} type="file" accept=".xlsx,.xls" className={styles.hiddenInput} onChange={onFileChange} />
+        <input ref={upload.inputRef} type="file" accept=".xlsx,.xls" className={styles.hiddenInput} onChange={onFileChange} disabled={upload.isPending} />
       </div>
 
       {/* Error */}
@@ -350,13 +374,13 @@ export function PurchaseRegisterPage() {
         </div>
       )}
 
-      {/* Uploading spinner */}
+      {/* Uploading overlay */}
       {upload.isPending && (
-        <div className={styles.parsingCard}>
+        <div className={styles.uploadOverlay}>
           <div className={styles.parsingSpinner} />
-          <div className={styles.parsingText}>
-            <p className={styles.parsingTitle}>Processing file…</p>
-            <p className={styles.parsingSubtitle}>Parsing all sheets and uploading to server</p>
+          <div className={styles.uploadOverlayText}>
+            <p className={styles.uploadOverlayTitle}>Processing file…</p>
+            <p className={styles.uploadOverlaySubtitle}>Parsing all sheets and uploading to server</p>
           </div>
         </div>
       )}
@@ -528,14 +552,6 @@ export function PurchaseRegisterPage() {
       {step === 1 && (
         <>
           {renderUpload()}
-          <button
-            type="button"
-            className={styles.proceedBtn}
-            disabled={!upload.data || upload.isPending}
-            onClick={handleProceed}
-          >
-            {upload.isPending ? 'Processing…' : 'Review Parsed Sheets →'}
-          </button>
         </>
       )}
 

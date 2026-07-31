@@ -71,6 +71,12 @@ const ModulePlaceholderPage = lazy(() =>
     default: m.ModulePlaceholderPage,
   })),
 );
+const SaleRegisterPage = lazy(() =>
+  import('@/pages/dashboard/saleRegister/SaleRegisterPage').then((m) => ({ default: m.SaleRegisterPage })),
+);
+const IMSPage = lazy(() =>
+  import('@/pages/dashboard/ims/IMSPage').then((m) => ({ default: m.IMSPage })),
+);
 const RolesPage = lazy(() =>
   import('@/pages/dashboard/roles/RolesPage').then((m) => ({ default: m.RolesPage })),
 );
@@ -307,6 +313,22 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <GSTR3BPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'sale-register',
+        element: (
+          <SuspenseWrapper>
+            <SaleRegisterPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'ims',
+        element: (
+          <SuspenseWrapper>
+            <IMSPage />
           </SuspenseWrapper>
         ),
       },

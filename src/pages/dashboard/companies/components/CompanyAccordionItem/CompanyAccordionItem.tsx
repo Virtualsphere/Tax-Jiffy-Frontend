@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useRef, useEffect, useState } from 'react';
 import styles from './CompanyAccordionItem.module.css';
 import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 import type { CompanyProfileResponse } from '../../../user/types/company.types';
@@ -9,17 +10,35 @@ interface CompanyAccordionItemProps {
   onDelete?: (companyId: number) => void;
   onAddGst?: (companyId: number) => void;
   isDeleting?: boolean;
+  isExpanded?: boolean;
+  onToggle?: () => void;
   children: React.ReactNode;
 }
 
-export function CompanyAccordionItem({ company, defaultExpanded = false, onDelete, onAddGst, isDeleting, children }: CompanyAccordionItemProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+export function CompanyAccordionItem({ company, isExpanded = false, onToggle, onDelete, onAddGst, isDeleting, children }: CompanyAccordionItemProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      // Use ResizeObserver for dynamic content changes
+      const observer = new ResizeObserver(() => {
+        if (contentRef.current) {
+          setContentHeight(contentRef.current.scrollHeight);
+        }
+      });
+      observer.observe(contentRef.current);
+      // Set initial height
+      setContentHeight(contentRef.current.scrollHeight);
+      return () => observer.disconnect();
+    }
+  }, [children]);
 
   return (
     <div className={`${styles.accordionItem} ${isExpanded ? styles.expanded : ''}`}>
       <div 
         className={styles.accordionHeader} 
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={onToggle}
       >
         <div className={styles.headerLeft}>
           <div className={styles.iconWrapper}>
@@ -39,9 +58,6 @@ export function CompanyAccordionItem({ company, defaultExpanded = false, onDelet
           
           <div className={styles.companyInfo}>
             <h2 className={styles.companyName}>{company.companyName}</h2>
-            <span className={`${styles.statusBadge} ${company.isActive ? styles.active : styles.inactive}`}>
-              {company.isActive ? 'Active' : 'Inactive'}
-            </span>
           </div>
         </div>
 
@@ -81,11 +97,14 @@ export function CompanyAccordionItem({ company, defaultExpanded = false, onDelet
         )}
       </div>
       
-      {isExpanded && (
-        <div className={styles.accordionContent}>
+      <div 
+        className={styles.accordionContentWrapper}
+        style={{ maxHeight: isExpanded ? `${contentHeight}px` : '0px' }}
+      >
+        <div ref={contentRef} className={styles.accordionContent}>
           {children}
         </div>
-      )}
+      </div>
     </div>
   );
 }

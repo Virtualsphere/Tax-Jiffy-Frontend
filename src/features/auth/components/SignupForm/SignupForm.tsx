@@ -143,7 +143,7 @@ export function SignupForm() {
               name="phone"
               type="tel"
               className={styles.input}
-              placeholder="+1 (555) 000-0000"
+              placeholder="+91 98765 43210"
               autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
