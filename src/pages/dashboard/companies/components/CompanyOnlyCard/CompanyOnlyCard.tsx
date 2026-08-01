@@ -1,49 +1,28 @@
 import styles from '../GSTMappingCard/GSTMappingCard.module.css';
 import type { CompanyProfileResponse } from '../../../user/types/company.types';
-import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 export function CompanyOnlyCard({ company, onAddGst }: { company: CompanyProfileResponse, onAddGst: (id: number) => void }) {
   return (
-    <div className={styles.card}>
-      <div className={styles.cardSection}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-          {company.companyLogo && (
-            <AuthenticatedImage src={company.companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
-          )}
-          <h2 className={styles.companyName}>Pending GST Details</h2>
-        </div>
-        <div className={styles.companyMeta}>
-          No GSTIN Added Yet
-        </div>
-        <div className={styles.companyStatus}>
-          Status: Incomplete
-        </div>
-      </div>
-      
-      <div className={styles.cardSection} style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748b', fontSize: '14px', textAlign: 'center' }}>
-          Please add a GST number and purchase a subscription to activate this entity.
+    <div className={styles.card} style={{ gridTemplateColumns: '1fr' }}>
+      <div className={`${styles.cardSection} ${styles.noBorder}`} style={{ alignItems: 'center', padding: '40px 20px', textAlign: 'center' }}>
+        <svg width="48" height="48" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style={{ marginBottom: '16px' }}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', margin: '0 0 8px 0' }}>No GSTIN Added Yet</h3>
+        <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 24px 0', maxWidth: '400px' }}>
+          Please add a GST number and purchase a subscription to activate this entity and start tracking returns.
         </p>
-      </div>
-
-      <div className={styles.cardSection}>
-        <div className={`${styles.alertBox} ${styles.info}`}>
-          <div className={styles.alertHeader}>
-            <span>ℹ</span>
-            <span>INACTIVE</span>
-          </div>
-          <div className={styles.alertContent}>
-            Action Required
-          </div>
-        </div>
-        <div className={styles.cardAction}>
-          <button 
-            className={styles.actionBtn}
-            onClick={() => onAddGst(company.id)}
-          >
-            Add GST →
-          </button>
-        </div>
+        
+        <button 
+          className={styles.primaryActionBtn}
+          onClick={() => onAddGst(company.id)}
+          style={{ width: 'auto' }}
+        >
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add GST Number
+        </button>
       </div>
     </div>
   );

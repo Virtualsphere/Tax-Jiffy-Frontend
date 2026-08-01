@@ -1,8 +1,7 @@
-import { Fragment, useEffect } from 'react';
+import { useEffect } from 'react';
 import styles from './GSTMappingCard.module.css';
 import { useCompanyGST } from '../../../user/hooks/useCompanyGST';
 import type { CompanyProfileResponse } from '../../../user/types/company.types';
-import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 
 interface GSTMappingCardProps {
   gstId: number;
@@ -16,10 +15,8 @@ interface GSTMappingCardProps {
 
 export function GSTMappingCard({ 
   gstId, 
-  companies, 
-  handleNavigateToEntity, 
   onCompanyLoaded, 
-  onAddGst: _onAddGst, 
+  handleNavigateToEntity,
   onUpgradePlan, 
   filterCompanyId 
 }: GSTMappingCardProps) {
@@ -45,88 +42,63 @@ export function GSTMappingCard({
     return null;
   }
 
-  // Find logo from the companies list
-  const companyInfo = companies?.find((c) => c.id === gst.companyId);
-  const companyLogo = companyInfo?.companyLogo;
+  // Mocked data to match design
+  const returnsData = [
+    { label: 'GSTR-1 (11th Mar)', status: 'Pending Payment', class: 'pendingPayment' },
+    { label: 'GSTR-3B (20th Mar)', status: 'In Progress', class: 'inProgress' },
+    { label: 'GSTR-9 (31st Dec)', status: 'Not Started Yet', class: 'notStarted' }
+  ];
 
-  const stateCode = gst.gstNumber.substring(0, 2);
-  const stateName = stateCode === '27' ? 'Maharashtra' 
-                  : stateCode === '29' ? 'Karnataka' 
-                  : stateCode === '07' ? 'Delhi' 
-                  : stateCode === '19' ? 'West Bengal' 
-                  : 'State (Other)';
-
-  const defaultMock = {
-    state: stateName,
-    statusMonth: 'July 2025',
-    businessType: 'REGULAR',
-    filings: [
-      { label: 'GSTR-1 (11th Mar):', status: gst.isPaymentDone ? 'Filed' : 'Pending Payment', class: gst.isPaymentDone ? 'filed' : 'notStarted' },
-      { label: 'GSTR-3B (20th Mar):', status: 'In Process', class: 'inProcess' },
-      { label: 'GSTR-9 (31st Dec):', status: 'Not Started Yet', class: 'notStarted' }
-    ],
-    process: {
-      title: 'GSTR-3B PROCESS',
-      steps: [
-        { title: 'Purchase register uploaded', sub: '3 minutes ago', state: 'completed' },
-        { title: 'ITC Reconciliation', sub: 'Matches with 2B', state: 'completed' },
-        { title: 'Payment & Filing', sub: 'Pending on portal', state: 'inProgress' }
-      ]
-    },
-    alert: {
-      type: gst.isPaymentDone ? 'success' : 'icon', // fallback, actual type is success or info
-      icon: gst.isPaymentDone ? '✓' : 'ℹ',
-      header: gst.isPaymentDone ? 'ACTIVE' : 'INACTIVE',
-      content: gst.isPaymentDone ? `${gst.subscriptionPlanName || 'Plan'} Active` : 'Subscription Required'
-    },
-    actionLabel: 'Reconciliation Data →'
-  };
-
-  // fix type for alert type mapping
-  const alertType = gst.isPaymentDone ? 'success' : 'info';
+  const processData = [
+    { title: 'Purchase Register Uploaded', sub: '3 minutes ago', state: 'completed' },
+    { title: 'ITC Reconciliation', sub: 'Matches with 2B', state: 'completed' },
+    { title: 'Payment & Filing', sub: 'Pending on portal', state: 'inProgress' },
+    { title: 'Return Filing', sub: 'Upcoming', state: 'upcoming' }
+  ];
 
   return (
     <div className={styles.card}>
-      {/* Column 1: Info */}
+      {/* ═══ Column 1: GST Returns Status ═══ */}
       <div className={styles.cardSection}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-          {companyLogo && (
-            <AuthenticatedImage src={companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
-          )}
-          <h2 className={styles.companyName}>{gst.gstNumber}</h2>
+        <div className={styles.sectionHeader}>
+          <svg width="16" height="16" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3>GST Returns Status</h3>
         </div>
-        <div className={styles.companyMeta}>
-          {defaultMock.state}
-        </div>
-        <div className={styles.companyStatus}>
-          Filing Status: {defaultMock.statusMonth}
-        </div>
-        <div className={styles.businessType}>{defaultMock.businessType}</div>
         
-        <div className={styles.filingGrid}>
-          {defaultMock.filings.map((f, i) => (
-            <Fragment key={i}>
-              <span className={styles.filingItemLabel}>{f.label}</span>
-              <span className={`${styles.filingBadge} ${styles[f.class]}`}>{f.status}</span>
-            </Fragment>
+        <div className={styles.returnsList}>
+          {returnsData.map((item, i) => (
+            <div key={i} className={styles.returnItem}>
+              <span className={styles.returnLabel}>{item.label}</span>
+              <span className={`${styles.returnBadge} ${styles[item.class]}`}>{item.status}</span>
+            </div>
           ))}
         </div>
+        
+        <button className={styles.viewAllBtn}>View All Returns &rarr;</button>
       </div>
 
-      {/* Column 2: Process */}
+      {/* ═══ Column 2: Process Timeline ═══ */}
       <div className={styles.cardSection}>
-        <div className={styles.processTitle}>{defaultMock.process.title}</div>
+        <div className={styles.sectionHeader}>
+          <svg width="16" height="16" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <h3>Process Timeline</h3>
+        </div>
+        
         <div className={styles.stepper}>
-          {defaultMock.process.steps.map((step, i) => (
+          {processData.map((step, i) => (
             <div key={i} className={styles.step}>
-              {i < defaultMock.process.steps.length - 1 && <div className={styles.stepLine} />}
+              {i < processData.length - 1 && <div className={`${styles.stepLine} ${step.state === 'completed' ? styles.lineCompleted : ''}`} />}
               <div className={`${styles.stepIcon} ${styles[step.state]}`}>
                 {step.state === 'completed' ? (
                   <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 ) : null}
               </div>
               <div className={styles.stepText}>
-                <div className={`${styles.stepTitle} ${step.state === 'pending' ? styles.pending : ''}`}>{step.title}</div>
+                <div className={`${styles.stepTitle} ${step.state === 'upcoming' ? styles.upcomingText : ''}`}>{step.title}</div>
                 <div className={styles.stepSub}>{step.sub}</div>
               </div>
             </div>
@@ -134,37 +106,41 @@ export function GSTMappingCard({
         </div>
       </div>
 
-      {/* Column 3: Alert & Action */}
-      <div className={styles.cardSection}>
-        <div className={`${styles.alertBox} ${styles[alertType]}`}>
-          <div className={styles.alertHeader}>
-            <span>{defaultMock.alert.icon}</span>
-            <span>{defaultMock.alert.header}</span>
-          </div>
-          <div className={styles.alertContent}>
-            <div>{defaultMock.alert.content}</div>
-          </div>
+      {/* ═══ Column 3: Quick Actions ═══ */}
+      <div className={`${styles.cardSection} ${styles.noBorder}`}>
+        <div className={styles.sectionHeader}>
+          <svg width="16" height="16" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <h3>Quick Actions</h3>
         </div>
-        <div className={styles.cardAction} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        
+        <div className={styles.actionsList}>
           <button 
-            className={styles.actionBtn}
+            className={styles.primaryActionBtn}
             onClick={() => handleNavigateToEntity(gst.id)}
           >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
             Reconciliation Data &rarr;
           </button>
-          {gst.subscriptionPlanName?.toLowerCase().includes('basic') && gst.isPaymentDone && (
-            <button 
-              className={styles.buySubscriptionBtn}
-              onClick={() => onUpgradePlan(gst.id, false, gst.companyId)}
-            >
-              Buy Subscription &rarr;
-            </button>
-          )}
+          
+          <button className={styles.secondaryActionBtn}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download Reports
+          </button>
+          
           {!gst.isPaymentDone && (
             <button 
-              className={styles.buySubscriptionBtn}
+              className={styles.secondaryActionBtn}
               onClick={() => onUpgradePlan(gst.id, true, gst.companyId)}
             >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
               Buy Subscription &rarr;
             </button>
           )}

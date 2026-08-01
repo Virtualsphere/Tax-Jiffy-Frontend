@@ -90,6 +90,26 @@
   background-color: #4a59b6;
 }
 
+.addGstHeaderBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #5a6acf;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.addGstHeaderBtn:hover {
+  background-color: #4a59b6;
+}
+
 .avatar {
   width: 36px;
   height: 36px;

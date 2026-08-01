@@ -28,7 +28,7 @@ export function CompaniesDashboardPage() {
   const [deletingCompanyId, setDeletingCompanyId] = useState<number | null>(null);
   const [expandedCompanyId, setExpandedCompanyId] = useState<number | null>(urlCompanyId);
 
-  useCurrentUser();
+  const { data: user } = useCurrentUser();
   const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
   const deleteCompanyMutation = useDeleteCompany();
 
@@ -92,24 +92,50 @@ export function CompaniesDashboardPage() {
     return allCompanyGsts.filter(g => g.companyId === companyId).map(g => g.id);
   };
 
+  const getFirstGstForCompany = (companyId: number) => {
+    const gsts = allCompanyGsts.filter(g => g.companyId === companyId);
+    return gsts.length > 0 ? gsts[0] : null;
+  };
+
+  // Format today's date
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Current period badge
+  const periodLabel = today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+
   return (
     <div className={styles.container}>
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.title}>My Companies</h1>
-          <p className={styles.subtitle}>Select a company to view its active GST reconciliations.</p>
+      {/* ═══ Welcome Banner ═══ */}
+      <div className={styles.welcomeBanner}>
+        <div className={styles.welcomeLeft}>
+          <div className={styles.welcomeIcon}>👋</div>
+          <div className={styles.welcomeContent}>
+            <h1 className={styles.welcomeTitle}>Welcome, {user?.name?.split(' ')[0] || 'User'}! 👋</h1>
+            <p className={styles.welcomeSubtitle}>Manage your GST numbers and stay compliant.</p>
+          </div>
         </div>
-        <button 
-          className={styles.addCompanyBtn}
-          onClick={() => setConnectModalOpen(true)}
-        >
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        <div className={styles.welcomeDate}>
+          <svg width="20" height="20" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          Add New Company
-        </button>
+          <div>
+            <span className={styles.dateLabel}>Today is</span>
+            <span className={styles.dateValue}>{formattedDate}</span>
+          </div>
+        </div>
       </div>
 
+      {/* ═══ Section Header ═══ */}
+      <div className={styles.sectionHeader}>
+        <div>
+          <h2 className={styles.sectionTitle}>Your Companies</h2>
+          <p className={styles.sectionSubtitle}>Manage and track all your GSTINs and filing progress.</p>
+        </div>
+        <div className={styles.periodBadge}>{periodLabel}</div>
+      </div>
+
+      {/* ═══ Company List ═══ */}
       {isLoading ? (
         <p>Loading your companies...</p>
       ) : isError ? (
@@ -121,6 +147,7 @@ export function CompaniesDashboardPage() {
             .map((company) => {
             const gstIds = getGstIdsForCompany(company.id);
             const hasGsts = gstIds.length > 0;
+            const firstGst = getFirstGstForCompany(company.id);
             
             return (
               <CompanyAccordionItem 
@@ -131,6 +158,8 @@ export function CompaniesDashboardPage() {
                 onDelete={handleDeleteCompany}
                 onAddGst={setSelectedCompanyForGst}
                 isDeleting={deleteCompanyMutation.isPending}
+                gstNumber={firstGst?.gstNumber}
+                onOpenWorkspace={firstGst ? () => handleNavigateToEntity(firstGst.id) : undefined}
               >
                 {hasGsts ? (
                   gstIds.map(gstId => (
@@ -159,8 +188,11 @@ export function CompaniesDashboardPage() {
           })}
           
           {companies?.length === 0 && (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-              No companies found. Add a new company to get started.
+            <div className={styles.emptyState}>
+              <svg width="48" height="48" fill="none" stroke="#94a3b8" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <p>No companies found. Add a new company to get started.</p>
             </div>
           )}
         </div>

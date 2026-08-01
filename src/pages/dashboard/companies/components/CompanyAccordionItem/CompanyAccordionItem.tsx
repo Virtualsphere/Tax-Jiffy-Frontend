@@ -1,4 +1,3 @@
-
 import styles from './CompanyAccordionItem.module.css';
 import { AuthenticatedImage } from '@/components/AuthenticatedImage/AuthenticatedImage';
 import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
@@ -12,10 +11,30 @@ interface CompanyAccordionItemProps {
   isDeleting?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
+  gstNumber?: string;
+  onOpenWorkspace?: () => void;
   children: React.ReactNode;
 }
 
-export function CompanyAccordionItem({ company, isExpanded = false, onToggle, onDelete, onAddGst, isDeleting, children }: CompanyAccordionItemProps) {
+export function CompanyAccordionItem({ 
+  company, 
+  isExpanded = false, 
+  onToggle, 
+  gstNumber,
+  onOpenWorkspace,
+  children 
+}: CompanyAccordionItemProps) {
+
+  // Derive state from GST number if available
+  let stateName = 'Other';
+  if (gstNumber) {
+    const stateCode = gstNumber.substring(0, 2);
+    stateName = stateCode === '27' ? 'Maharashtra' 
+              : stateCode === '29' ? 'Karnataka' 
+              : stateCode === '07' ? 'Delhi' 
+              : stateCode === '19' ? 'West Bengal' 
+              : 'Other';
+  }
 
   return (
     <div className={`${styles.accordionItem} ${isExpanded ? styles.expanded : ''}`}>
@@ -24,60 +43,53 @@ export function CompanyAccordionItem({ company, isExpanded = false, onToggle, on
         onClick={onToggle}
       >
         <div className={styles.headerLeft}>
+          <div className={styles.companyIconBox}>
+            {company.companyLogo ? (
+              <AuthenticatedImage src={company.companyLogo} alt="logo" className={styles.companyLogo} />
+            ) : (
+              <svg width="24" height="24" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            )}
+          </div>
+          
+          <div className={styles.companyInfo}>
+            <h2 className={styles.companyName}>{company.companyName}</h2>
+            <div className={styles.companyMeta}>
+              {gstNumber ? (
+                <>
+                  <span className={styles.metaLabel}>GSTIN:</span> <span className={styles.metaValue}>{gstNumber}</span>
+                  <span className={styles.metaDot}>•</span>
+                  <span className={styles.metaLabel}>State:</span> <span className={styles.metaValue}>{stateName}</span>
+                </>
+              ) : (
+                <span className={styles.metaValue}>No GSTIN Added</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.headerRight}>
+          {onOpenWorkspace && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenWorkspace();
+              }}
+              className={styles.openWorkspaceBtn}
+            >
+              Open Workspace &rarr;
+            </button>
+          )}
           <div className={styles.iconWrapper}>
             <svg 
               className={`${styles.chevron} ${isExpanded ? styles.rotate : ''}`} 
               width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          
-          {company.companyLogo ? (
-            <AuthenticatedImage src={company.companyLogo} alt="logo" className={styles.companyLogo} />
-          ) : (
-            <div className={styles.companyLogoPlaceholder}>🏢</div>
-          )}
-          
-          <div className={styles.companyInfo}>
-            <h2 className={styles.companyName}>{company.companyName}</h2>
-          </div>
         </div>
-
-        {(onAddGst || onDelete) && (
-          <div className={styles.headerRight}>
-            {onAddGst && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddGst(company.id);
-                }}
-                className={styles.addGstBtn}
-                title="Add GST No."
-              >
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className={styles.btnText}>Add GST No.</span>
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(company.id);
-                }}
-                disabled={isDeleting}
-                className={styles.deleteBtn}
-                title="Delete Company"
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
       </div>
       
       <AnimatedExpandable isExpanded={isExpanded}>
