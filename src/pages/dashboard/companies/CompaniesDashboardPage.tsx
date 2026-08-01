@@ -125,10 +125,9 @@ export function CompaniesDashboardPage() {
       {/* ═══ Section Header ═══ */}
       <div className={styles.sectionHeader}>
         <div>
-          <h2 className={styles.sectionTitle}>Your Companies</h2>
+          <h2 className={styles.sectionTitle}>Your GSTIN</h2>
           <p className={styles.sectionSubtitle}>Manage and track all your GSTINs and filing progress.</p>
         </div>
-        <div className={styles.periodBadge}>{periodLabel}</div>
       </div>
 
       {/* ═══ Company List ═══ */}
