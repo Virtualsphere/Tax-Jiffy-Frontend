@@ -5,7 +5,7 @@ import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { eInvoiceApi } from './api/einvoice.api';
 
 export function EInvoicePage() {
-  const { currentEntity } = useCurrentEntity();
+  const { data: currentEntity } = useCurrentEntity();
   const { selectedYear, selectedMonth } = usePeriod();
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -17,10 +17,15 @@ export function EInvoicePage() {
 
     try {
       setIsSyncing(true); // Reusing the syncing state for simplicity, or we can use another state
+      const MONTH_MAP: Record<string, string> = {
+        January: '01', February: '02', March: '03', April: '04', May: '05', June: '06',
+        July: '07', August: '08', September: '09', October: '10', November: '11', December: '12'
+      };
       const startYear = parseInt(year.split('-')[0], 10);
-      const m = parseInt(month, 10);
+      const monthNumStr = MONTH_MAP[month] || '01';
+      const m = parseInt(monthNumStr, 10);
       const actualYear = m <= 3 ? startYear + 1 : startYear;
-      const retPeriod = `${month}${actualYear}`;
+      const retPeriod = `${monthNumStr}${actualYear}`;
 
       console.log('Uploading E-Invoice file:', file.name, retPeriod);
       await eInvoiceApi.upload(file, currentEntity.id, retPeriod);
@@ -41,13 +46,17 @@ export function EInvoicePage() {
 
     try {
       setIsSyncing(true);
-      // Construct retPeriod as MMYYYY based on financial year and selected month
+      const MONTH_MAP: Record<string, string> = {
+        January: '01', February: '02', March: '03', April: '04', May: '05', June: '06',
+        July: '07', August: '08', September: '09', October: '10', November: '11', December: '12'
+      };
       const yearLabel = selectedYear.label; // e.g., "2024-2025"
       const startYear = parseInt(yearLabel.split('-')[0], 10);
-      const m = parseInt(selectedMonth, 10);
+      const monthNumStr = MONTH_MAP[selectedMonth] || '01';
+      const m = parseInt(monthNumStr, 10);
       // Months 01-03 belong to the next calendar year of the financial year
       const actualYear = m <= 3 ? startYear + 1 : startYear;
-      const retPeriod = `${selectedMonth}${actualYear}`;
+      const retPeriod = `${monthNumStr}${actualYear}`;
 
       console.log('Syncing E-Invoice for period:', retPeriod);
       await eInvoiceApi.sync({ companyGstId: currentEntity.id, retPeriod });

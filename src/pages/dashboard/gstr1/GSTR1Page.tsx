@@ -696,9 +696,15 @@ export function GSTR1Page() {
                   <span className={styles.draftTitleIcon}>📋</span>
                   GSTR-1 Draft Preview
                 </h3>
-                <button type="button" className={styles.downloadDraftBtn}>
-                  ⬇ Download Draft
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span className={styles.filingPeriodSync} style={{ margin: 0 }}>
+                    <span className={styles.syncIcon}>ⓘ</span>
+                    Data synced from GST Portal
+                  </span>
+                  <button type="button" className={styles.downloadDraftBtn}>
+                    ⬇ Download Draft
+                  </button>
+                </div>
               </div>
 
               {draft.isLoading ? (
@@ -711,16 +717,14 @@ export function GSTR1Page() {
                 </div>
               ) : (
                 <>
-                  <div className={styles.draftFilingPeriod} style={{ border: 'none', background: 'transparent', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span className={styles.filingPeriodSync} style={{ marginLeft: 'auto' }}>
-                      <span className={styles.syncIcon}>ⓘ</span>
-                      Data synced from GST Portal
-                    </span>
-                  </div>
 
                   {/* All sections stacked vertically — always shown */}
                   <div className={styles.draftTableWrap}>
-                    <GSTR1BasicTab data={draft.data.rows ?? []} />
+                    <GSTR1BasicTab 
+                      data={draft.data.rows ?? []} 
+                      expandedAccordion={expandedAccordion}
+                      setExpandedAccordion={setExpandedAccordion}
+                    />
                   </div>
                   <GSTR1OutwardTab
                     data={draft.data.outwardData ?? {}}

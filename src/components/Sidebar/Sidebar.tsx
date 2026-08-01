@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Hamburger from 'hamburger-react';
 import logo from '@/assets/logo-icon.png';
 import {
   DEFAULT_SIDEBAR_ENTITY,
-  SIDEBAR_NAV_LINKS,
-  SIDEBAR_NAV_SECTIONS,
+  SIDEBAR_ITEMS,
 } from '@/components/Sidebar/sidebar-config';
 import {
   IconChevronDown,
 } from '@/components/Sidebar/SidebarIcons';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { authStorage } from '@/features/auth/lib/auth-storage';
+import { ROUTES } from '@/config/routes';
 
 import styles from '@/components/Sidebar/Sidebar.module.css';
 
@@ -27,7 +29,9 @@ export type SidebarProps = {
   onMobileClose?: () => void;
 };
 
-const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_NAV_SECTIONS.map((section) => section.id);
+const DEFAULT_EXPANDED_SECTIONS = SIDEBAR_ITEMS
+  .filter((item) => item.type === 'section')
+  .map((section) => section.id);
 
 export function Sidebar({
   entity = DEFAULT_SIDEBAR_ENTITY,
@@ -42,6 +46,14 @@ export function Sidebar({
     DEFAULT_EXPANDED_SECTIONS,
   );
   const [openFlyoutSectionId, setOpenFlyoutSectionId] = useState<string | null>(null);
+
+  const { data: user } = useCurrentUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    authStorage.clearToken();
+    navigate(ROUTES.home);
+  };
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => !prev);
@@ -119,87 +131,106 @@ export function Sidebar({
       </div>
 
       <div className={styles.entityCard}>
-        <p className={styles.companyName}>{entity.companyName}</p>
-        <p className={styles.gstin}>
-          <span className={styles.gstinLabel}>GSTIN:</span> {entity.gstin}
+        <p className={styles.companyName} style={{ color: '#000' }}>
+          {entity.gstin || 'No GSTIN Added'}
         </p>
-        <p className={styles.location}>{entity.location}</p>
-        <p className={styles.period}>
-          <span className={styles.periodLabel}>PERIOD:</span> {entity.period}
-        </p>
+        <div className={styles.gstin} style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'nowrap', minWidth: 0 }}>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entity.companyName}</span>
+          <span style={{ color: 'var(--sidebar-divider)', flexShrink: 0 }}>•</span>
+          <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{entity.location}</span>
+        </div>
       </div>
 
       <nav id={navId} className={styles.nav} aria-label="GST modules">
         <ul className={styles.navList}>
-          {SIDEBAR_NAV_SECTIONS.map((section) => {
-            const isExpanded = expandedSections.includes(section.id);
-            const isFlyoutOpen = openFlyoutSectionId === section.id;
+          {SIDEBAR_ITEMS.map((item) => {
+            if (item.type === 'section') {
+              const section = item;
+              const isExpanded = expandedSections.includes(section.id);
+              const isFlyoutOpen = openFlyoutSectionId === section.id;
 
-            return (
-              <li key={section.id} className={styles.navSection}>
-                <button
-                  type="button"
-                  className={`${styles.sectionToggle} ${
-                    (collapsed ? isFlyoutOpen : isExpanded) ? styles.sectionToggleExpanded : ''
-                  }`}
-                  onClick={() => toggleSection(section.id)}
-                  aria-expanded={collapsed ? isFlyoutOpen : isExpanded}
-                  aria-controls={`${navId}-${section.id}-children`}
-                  title={collapsed ? section.label : undefined}
-                >
-                  <span className={styles.sectionIcon}>{section.icon}</span>
-                  <span className={styles.sectionLabel}>{section.label}</span>
-                  <IconChevronDown
-                    className={`${styles.sectionChevron} ${
-                      (collapsed ? isFlyoutOpen : isExpanded) ? styles.sectionChevronOpen : ''
+              return (
+                <li key={section.id} className={styles.navSection}>
+                  <button
+                    type="button"
+                    className={`${styles.sectionToggle} ${
+                      (collapsed ? isFlyoutOpen : isExpanded) ? styles.sectionToggleExpanded : ''
                     }`}
-                  />
-                </button>
-
-                {(collapsed ? isFlyoutOpen : isExpanded) && (
-                  <ul
-                    id={`${navId}-${section.id}-children`}
-                    className={`${styles.subList} ${collapsed ? styles.subListFlyout : ''}`}
+                    onClick={() => toggleSection(section.id)}
+                    aria-expanded={collapsed ? isFlyoutOpen : isExpanded}
+                    aria-controls={`${navId}-${section.id}-children`}
+                    title={collapsed ? section.label : undefined}
                   >
-                    {section.children.map((child) => (
-                      <li key={child.id}>
-                        <NavLink
-                          to={child.path}
-                          className={subItemClass}
-                          onClick={() => {
-                            if (collapsed) setOpenFlyoutSectionId(null);
-                            onMobileClose?.();
-                          }}
-                          title={collapsed ? child.label : undefined}
-                          end
-                        >
-                          <span className={styles.subIcon}>{child.icon}</span>
-                          <span className={styles.subLabel}>{child.label}</span>
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                    <span className={styles.sectionIcon}>{section.icon}</span>
+                    <span className={styles.sectionLabel}>{section.label}</span>
+                    <IconChevronDown
+                      className={`${styles.sectionChevron} ${
+                        (collapsed ? isFlyoutOpen : isExpanded) ? styles.sectionChevronOpen : ''
+                      }`}
+                    />
+                  </button>
+
+                  {(collapsed ? isFlyoutOpen : isExpanded) && (
+                    <ul
+                      id={`${navId}-${section.id}-children`}
+                      className={`${styles.subList} ${collapsed ? styles.subListFlyout : ''}`}
+                    >
+                      {section.children.map((child) => (
+                        <li key={child.id}>
+                          <NavLink
+                            to={child.path}
+                            className={subItemClass}
+                            onClick={() => {
+                              if (collapsed) setOpenFlyoutSectionId(null);
+                              onMobileClose?.();
+                            }}
+                            title={collapsed ? child.label : undefined}
+                            end
+                          >
+                            <span className={styles.subIcon}>{child.icon}</span>
+                            <span className={styles.subLabel}>{child.label}</span>
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
+            const link = item;
+            return (
+              <li key={link.id}>
+                <NavLink
+                  to={link.path}
+                  className={navLinkClass}
+                  title={collapsed ? link.label : undefined}
+                  onClick={() => onMobileClose?.()}
+                  end
+                >
+                  <span className={styles.navLinkIcon}>{link.icon}</span>
+                  <span className={styles.navLinkLabel}>{link.label}</span>
+                </NavLink>
               </li>
             );
           })}
-
-          {SIDEBAR_NAV_LINKS.map((link) => (
-            <li key={link.id}>
-              <NavLink
-                to={link.path}
-                className={navLinkClass}
-                title={collapsed ? link.label : undefined}
-                onClick={() => onMobileClose?.()}
-                end
-              >
-                <span className={styles.navLinkIcon}>{link.icon}</span>
-                <span className={styles.navLinkLabel}>{link.label}</span>
-              </NavLink>
-            </li>
-          ))}
         </ul>
       </nav>
+
+      <div className={styles.userProfile}>
+        <div className={styles.avatar} aria-label="User avatar" title={user.name}>{user.initials}</div>
+        <div className={styles.userInfo}>
+          <span className={styles.userName}>{user.name}</span>
+          <span className={styles.userEmail}>{user.email}</span>
+        </div>
+        <button onClick={handleLogout} className={styles.logoutButton} title="Logout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
     </aside>
   );
 }

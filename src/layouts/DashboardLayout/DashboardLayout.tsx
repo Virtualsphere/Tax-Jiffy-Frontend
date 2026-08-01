@@ -1,10 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { authStorage } from '@/features/auth/lib/auth-storage';
-import { ROUTES } from '@/config/routes';
+
 import styles from '@/layouts/DashboardLayout/DashboardLayout.module.css';
 
 /** Map route segments to human-readable page titles */
@@ -14,7 +12,7 @@ const TITLE_MAP: Record<string, string> = {
   roles: 'Roles',
   'subscription-plans': 'Subscription Plans',
   'sale-register': 'Sale Register',
-  'gstr-1': 'GSTR-1 Filing',
+  'gstr-1': 'GSTR-1',
   'gstr-1a': 'GSTR-1A',
   'purchase-register': 'Purchase Register',
   ims: 'IMS',
@@ -34,12 +32,11 @@ const TITLE_MAP: Record<string, string> = {
 
 export function DashboardLayout() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+
   const segment = pathname.replace('/dashboard', '').replace(/^\//, '');
   const title = TITLE_MAP[segment] ?? 'Dashboard';
 
   const { data: entity } = useCurrentEntity();
-  const { data: user } = useCurrentUser();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -60,10 +57,6 @@ export function DashboardLayout() {
     return () => { document.body.style.overflow = ''; };
   }, [mobileSidebarOpen]);
 
-  const handleLogout = () => {
-    authStorage.clearToken();
-    navigate(ROUTES.home);
-  };
 
   return (
     <div className={styles.shell}>
@@ -89,29 +82,14 @@ export function DashboardLayout() {
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <h1 className={styles.topbarTitle}>{title}</h1>
-          </div>
-          <div className={styles.topbarActions}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div className={styles.avatar} aria-label="User avatar" title={user.name}>{user.initials}</div>
-              <button onClick={handleLogout} className={styles.logoutButton} style={{
-                background: 'none',
-                border: '1px solid #e2e8f0',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                color: '#64748b',
-                fontWeight: 500,
-                fontSize: '14px'
-              }}>
-                Logout
-              </button>
-            </div>
           </div>
         </header>
 
         <div className={styles.content}>
-          <Outlet />
+          <div className={styles.contentInner}>
+            <h1 className={styles.pageHeading}>{title}</h1>
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

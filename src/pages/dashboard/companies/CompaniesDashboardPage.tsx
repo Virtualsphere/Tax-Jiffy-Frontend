@@ -140,7 +140,7 @@ export function CompaniesDashboardPage() {
         <div className={styles.accordionList}>
           {(() => {
             const filteredCompanies = (companies || []).filter(company => urlCompanyId ? company.id === urlCompanyId : true);
-            const elements = [];
+            const elements: React.ReactNode[] = [];
 
             filteredCompanies.forEach((company) => {
               const gstIds = getGstIdsForCompany(company.id);
@@ -212,6 +212,8 @@ export function CompaniesDashboardPage() {
           )}
         </div>
       )}
+
+
 
       {isConnectModalOpen && (
         <ConnectEntityModal onClose={(companyId, isNew) => {

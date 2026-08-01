@@ -1,41 +1,24 @@
-.layout {
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #f4f7fa;
+}
+
+.main {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background-color: #f7f8fa; /* Soft background from screenshot */
-  font-family: var(--font-family, inherit);
+  min-width: 0; /* important for preventing flex children from overflowing */
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 16px 32px;
   background-color: var(--color-surface, #ffffff);
   border-bottom: 1px solid var(--color-border, #e2e8f0);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-
-.logoText {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a2b5f; /* Dark blue/purple from logo */
-  letter-spacing: 0.5px;
-  line-height: 1.2;
-}
-
-.logoText span {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  color: #64748b;
-  letter-spacing: 1px;
 }
 
 .searchContainer {
@@ -74,42 +57,6 @@
   gap: 16px;
 }
 
-.connectBtn {
-  background-color: #5a6acf;
-  color: white;
-  border: none;
-  border-radius: 99px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.connectBtn:hover {
-  background-color: #4a59b6;
-}
-
-.addGstHeaderBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #5a6acf;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-}
-
-.addGstHeaderBtn:hover {
-  background-color: #4a59b6;
-}
-
 .avatar {
   width: 36px;
   height: 36px;
@@ -118,15 +65,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #eab308; /* Yellow/Gold icon color in avatar */
+  color: #eab308;
   font-weight: 700;
   cursor: pointer;
 }
 
-.main {
+.content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
 }
 
 /* ─── Responsive: ≤ 768px ─── */
@@ -141,10 +88,6 @@
     order: 3;
     width: 100%;
     flex: 1 1 100%;
-  }
-
-  .logoText {
-    font-size: 14px;
   }
 }
 

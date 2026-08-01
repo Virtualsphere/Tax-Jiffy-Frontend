@@ -54,16 +54,14 @@ export function CompanyAccordionItem({
           </div>
           
           <div className={styles.companyInfo}>
-            <h2 className={styles.companyName}>{company.companyName}</h2>
+            <h2 className={styles.companyName}>{gstNumber || 'No GSTIN Added'}</h2>
             <div className={styles.companyMeta}>
-              {gstNumber ? (
+              <span className={styles.metaValue}>{company.companyName}</span>
+              {gstNumber && (
                 <>
-                  <span className={styles.metaLabel}>GSTIN:</span> <span className={styles.metaValue}>{gstNumber}</span>
                   <span className={styles.metaDot}>•</span>
-                  <span className={styles.metaLabel}>State:</span> <span className={styles.metaValue}>{stateName}</span>
+                  <span className={styles.metaValue}>{stateName}</span>
                 </>
-              ) : (
-                <span className={styles.metaValue}>No GSTIN Added</span>
               )}
             </div>
           </div>
