@@ -20,11 +20,6 @@ import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 /* ── Types ── */
 type Step = 1 | 2 | 3;
 
-const STEPS = [
-  { num: 1 as const, label: 'Upload & Verify' },
-  { num: 2 as const, label: 'Match & Confirm' },
-  { num: 3 as const, label: 'Success' },
-];
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -33,19 +28,7 @@ function formatFileSize(bytes: number): string {
 }
 
 /* ── Icons ── */
-function CheckIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M5 10.5l3.5 3.5L15 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+
 
 function FileIcon() {
   return (
@@ -201,7 +184,7 @@ export function GSTR1Page() {
   // Pass filing ID to the draft hook so it fetches compiled report data from the backend
   const draft = useGstr1Draft(activeFilingId);
 
-  const [activeTab, setActiveTab] = useState<string>('Basic');
+  const [activeTab, setActiveTab] = useState<string>('Import');
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>('table4');
 
   // Submit modal state
@@ -301,51 +284,6 @@ export function GSTR1Page() {
     </div>
   );
 
-  /* ── Stepper ── */
-  const renderStepper = () => (
-    <div className={styles.stepper}>
-      {STEPS.map((s, i) => {
-        const isActive = step === s.num;
-        const isCompleted = step > s.num;
-
-        return (
-          <div key={s.num} style={{ display: 'contents' }}>
-            <div className={styles.step}>
-              <div
-                className={`${styles.stepCircle} ${
-                  isCompleted
-                    ? styles.stepCircleCompleted
-                    : isActive
-                      ? styles.stepCircleActive
-                      : styles.stepCircleInactive
-                }`}
-              >
-                {isCompleted ? <CheckIcon /> : s.num}
-              </div>
-              <span
-                className={`${styles.stepLabel} ${
-                  isCompleted
-                    ? styles.stepLabelCompleted
-                    : isActive
-                      ? styles.stepLabelActive
-                      : styles.stepLabelInactive
-                }`}
-              >
-                {s.label}
-              </span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div
-                className={`${styles.stepLine} ${
-                  isCompleted ? styles.stepLineCompleted : styles.stepLineInactive
-                }`}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
 
   /* ── Quick Link Helpers ── */
   const getPrevMonth = (m: string) => {
@@ -389,7 +327,7 @@ export function GSTR1Page() {
 
       {/* ── Dropdown Panel ── */}
       {pickerOpen && (
-        <div className={styles.periodDropdown} role="dialog" aria-label="Select filing period">
+        <div className={styles.periodDropdown} style={step === 2 ? { right: 0, left: 'auto' } : undefined} role="dialog" aria-label="Select filing period">
 
           {/* Header */}
           <div className={styles.periodDropdownHead}>
@@ -512,10 +450,6 @@ export function GSTR1Page() {
         <button type="button" className={styles.templateBtn}>
           ⬇ Download Template
         </button>
-      </div>
-
-      <div style={{ marginBottom: '24px' }}>
-        {renderPeriodSelector()}
       </div>
 
       <div
@@ -655,135 +589,184 @@ export function GSTR1Page() {
     </div>
   );
 
-  /* ── Step 2: Match & Confirm ── */
-  const renderMatching = () => (
-    <>
-      {/* Header */}
-      <div className={styles.matchPageHeader}>
-        <h2 className={styles.matchPageTitle}>GSTR-1 Matching & Confirmation</h2>
-        <p className={styles.matchPageSubtitle}>
-          Review the matched results from the GST API before proceeding to file. Ensure
-          all mismatch discrepancies are resolved.
-        </p>
-      </div>
+  /* ── Step 2: Match & Confirm — new 3-tab layout ── */
+  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  type MainTab = typeof MAIN_TABS[number];
 
-      {/* Stats */}
-      <div className={styles.matchStats}>
-        <div className={styles.matchStatCard}>
-          <div className={`${styles.matchStatIcon} ${styles.matchStatIconBlue}`}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="10" fill="#5a6acf" />
-              <path d="M6 10.5l2.5 2.5L14 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div>
-            <p className={styles.matchStatValue}>{match.matchStats?.matched.toLocaleString() ?? '—'}</p>
-            <p className={styles.matchStatLabel}>MATCHED</p>
-          </div>
-        </div>
-        <div className={styles.matchStatCard}>
-          <div className={`${styles.matchStatIcon} ${styles.matchStatIconRed}`}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M8.66 2.5L1.22 15.5a1.5 1.5 0 001.28 2.25h14.88a1.5 1.5 0 001.28-2.25L11.22 2.5a1.5 1.5 0 00-2.56 0z" fill="#dc2626" />
-              <path d="M10 7v4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="10" cy="14" r="0.75" fill="#fff" />
-            </svg>
-          </div>
-          <div>
-            <p className={styles.matchStatValue}>{match.matchStats?.mismatched.toLocaleString() ?? '—'}</p>
-            <p className={styles.matchStatLabel}>MISMATCHED</p>
-          </div>
-        </div>
-        <div className={styles.matchStatCard}>
-          <div className={`${styles.matchStatIcon} ${styles.matchStatIconGray}`}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M2 5h16M2 10h16M2 15h16" stroke="#8b8fa3" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M4 3l12 14" stroke="#8b8fa3" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div>
-            <p className={styles.matchStatValue}>{match.matchStats?.missingInSystem.toLocaleString() ?? '—'}</p>
-            <p className={styles.matchStatLabel}>MISSING IN SYSTEM</p>
-          </div>
-        </div>
-      </div>
+  const renderMatching = () => {
+    const currentMainTab = (MAIN_TABS.includes(activeTab as MainTab) ? activeTab : 'Import') as MainTab;
 
-      {/* Draft Preview */}
-      <div className={styles.draftSection}>
-        <div className={styles.draftHeader}>
-          <h3 className={styles.draftTitle}>
-            <span className={styles.draftTitleIcon}>📋</span>
-            GSTR-1 Draft Preview
-          </h3>
-          <button type="button" className={styles.downloadDraftBtn}>
-            ⬇ Download Draft
-          </button>
-        </div>
-
-        {/* Tabs & Content Area */}
-        {draft.isLoading ? (
-          <div className={styles.parsingCard} style={{ margin: '2rem 0' }}>
-            <div className={styles.parsingSpinner} />
-            <div className={styles.parsingText}>
-              <p className={styles.parsingTitle}>Loading draft data…</p>
-              <p className={styles.parsingSubtitle}>Fetching compiled GSTR-1 report from server</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Tabs */}
-            <div className={styles.draftTabs}>
-              {draft.data.tabs.map((tab) => (
+    return (
+      <>
+        {/* Main Tabs + Period Selector in one bar */}
+        <div className={styles.draftSection}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f1f3f9', borderRadius: 9999, padding: '4px', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {MAIN_TABS.map((tab) => (
                 <button
                   key={tab}
                   type="button"
-                  className={`${styles.draftTab} ${activeTab === tab ? styles.draftTabActive : ''}`}
+                  className={`${styles.draftTab} ${currentMainTab === tab ? styles.draftTabActive : ''}`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}
-                  {draft.data.tabBadges[tab] != null && (
-                    <span className={styles.draftTabBadge}>{draft.data.tabBadges[tab]}</span>
-                  )}
                 </button>
               ))}
             </div>
+            <div style={{ paddingRight: '4px' }}>
+              {renderPeriodSelector()}
+            </div>
+          </div>
 
-            {/* Content Area */}
-            <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
-              <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0, alignItems: 'center' } : { alignItems: 'center' }}>
-                {renderPeriodSelector()}
-                <span className={styles.filingPeriodSync} style={{ marginLeft: 'auto' }}>
-                  <span className={styles.syncIcon}>ⓘ</span>
-                  Data synced from GST Portal
-                </span>
+          {/* ── Import Tab ── */}
+          {currentMainTab === 'Import' && (
+            <>
+              {matchingFiling ? (
+                <div className={styles.card} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M8 16.5l5 5L24 10" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#15803d', margin: '0 0 0.25rem' }}>
+                        File already uploaded for this period
+                      </h3>
+                      <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
+                        A filing already exists for{' '}
+                        <strong>{uploadMonth} {getCalendarYear(uploadMonth, uploadYear)}</strong>.
+                        To view the data, switch to the <strong>Return</strong> tab.
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                      <button
+                        type="button"
+                        className={styles.proceedBtn}
+                        onClick={() => setActiveTab('Return')}
+                        style={{ opacity: 1 }}
+                      >
+                        View in Return tab →
+                      </button>
+                      <button
+                        type="button"
+                        style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                        onClick={() => {
+                          upload.reset();
+                        }}
+                      >
+                        Upload new file anyway
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {renderUpload()}
+                  <button
+                    type="button"
+                    className={styles.proceedBtn}
+                    disabled={!upload.data || upload.data.validationErrors.length > 0 || upload.isPending}
+                    onClick={handleStartMatching}
+                  >
+                    {upload.isPending ? 'Processing file…' : 'Proceed to Matching →'}
+                  </button>
+                </>
+              )}
+            </>
+          )}
+
+          {/* ── Reconciliation Tab ── */}
+          {currentMainTab === 'Reconciliation' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', color: '#94a3b8', gap: '1rem' }}>
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                <circle cx="28" cy="28" r="28" fill="#f1f5f9" />
+                <path d="M18 28h20M28 18v20" stroke="#cbd5e1" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+              <p style={{ fontSize: '1rem', fontWeight: 600, color: '#64748b' }}>Reconciliation coming soon</p>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>This section is under construction.</p>
+            </div>
+          )}
+
+          {/* ── Return Tab ── */}
+          {currentMainTab === 'Return' && (
+            <>
+              <div className={styles.draftHeader}>
+                <h3 className={styles.draftTitle}>
+                  <span className={styles.draftTitleIcon}>📋</span>
+                  GSTR-1 Draft Preview
+                </h3>
+                <button type="button" className={styles.downloadDraftBtn}>
+                  ⬇ Download Draft
+                </button>
               </div>
 
-              {activeTab === 'Basic' && <GSTR1BasicTab data={draft.data.rows} />}
-              {activeTab === 'Outward' && draft.data.outwardData && <GSTR1OutwardTab data={draft.data.outwardData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-              {activeTab === 'Amendments' && draft.data.amendmentsData && <GSTR1AmendmentsTab data={draft.data.amendmentsData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} selectedMonth={selectedMonth} selectedYear={selectedYear} />}
-              {activeTab === 'Advanced' && draft.data.advancedData && <GSTR1AdvancedTab data={draft.data.advancedData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-              {activeTab === 'Others' && draft.data.othersData && <GSTR1OthersTab data={draft.data.othersData} expandedAccordion={expandedAccordion} setExpandedAccordion={setExpandedAccordion} />}
-            </div>
-          </>
-        )}
-      </div>
+              {draft.isLoading ? (
+                <div className={styles.parsingCard} style={{ margin: '2rem 0' }}>
+                  <div className={styles.parsingSpinner} />
+                  <div className={styles.parsingText}>
+                    <p className={styles.parsingTitle}>Loading draft data…</p>
+                    <p className={styles.parsingSubtitle}>Fetching compiled GSTR-1 report from server</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.draftFilingPeriod} style={{ border: 'none', background: 'transparent', alignItems: 'center', marginBottom: '1rem' }}>
+                    <span className={styles.filingPeriodSync} style={{ marginLeft: 'auto' }}>
+                      <span className={styles.syncIcon}>ⓘ</span>
+                      Data synced from GST Portal
+                    </span>
+                  </div>
 
-      {/* Footer */}
-      <div className={styles.matchFooter}>
-        <p className={styles.matchFooterText}>
-          By proceeding, you confirm that you have reviewed
-          the matched summaries for accuracy.
-        </p>
-        <button
-          type="button"
-          className={styles.confirmFilingBtn}
-          onClick={handleConfirmFiling}
-        >
-          Confirm & Proceed to Filing →
-        </button>
-      </div>
-    </>
-  );
+                  {/* All sections stacked vertically — always shown */}
+                  <div className={styles.draftTableWrap}>
+                    <GSTR1BasicTab data={draft.data.rows ?? []} />
+                  </div>
+                  <GSTR1OutwardTab
+                    data={draft.data.outwardData ?? {}}
+                    expandedAccordion={expandedAccordion}
+                    setExpandedAccordion={setExpandedAccordion}
+                  />
+                  <GSTR1AmendmentsTab
+                    data={draft.data.amendmentsData ?? {}}
+                    expandedAccordion={expandedAccordion}
+                    setExpandedAccordion={setExpandedAccordion}
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                  />
+                  <GSTR1AdvancedTab
+                    data={draft.data.advancedData ?? {}}
+                    expandedAccordion={expandedAccordion}
+                    setExpandedAccordion={setExpandedAccordion}
+                  />
+                  <GSTR1OthersTab
+                    data={draft.data.othersData ?? {}}
+                    expandedAccordion={expandedAccordion}
+                    setExpandedAccordion={setExpandedAccordion}
+                  />
+                </>
+              )}
+
+              {/* Footer */}
+              <div className={styles.matchFooter}>
+                <p className={styles.matchFooterText}>
+                  By proceeding, you confirm that you have reviewed
+                  the matched summaries for accuracy.
+                </p>
+                <button
+                  type="button"
+                  className={styles.confirmFilingBtn}
+                  onClick={handleConfirmFiling}
+                >
+                  Confirm & Proceed to Filing →
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </>
+    );
+  };
 
   /* ── Step 3: Success ── */
   const renderSuccess = () => (
@@ -838,36 +821,11 @@ export function GSTR1Page() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeaderWrap}>
-        {step !== 2 && (
-          <div>
-            <h2 className={styles.pageTitle}>GSTR-1 Filing</h2>
-            <p className={styles.pageSubtitle}>
-              Step {step} of 3: {STEPS[step - 1].label}
-            </p>
-          </div>
-        )}
-      </div>
 
-      {renderStepper()}
+      {/* {renderStepper()} */}
 
-      {step === 1 && !match.isMatching && (
-        <>
-          {renderUpload()}
-          <button
-            type="button"
-            className={styles.proceedBtn}
-            disabled={!upload.data || upload.data.validationErrors.length > 0 || upload.isPending}
-            onClick={handleStartMatching}
-          >
-            {upload.isPending ? 'Processing file…' : 'Proceed to Matching →'}
-          </button>
-        </>
-      )}
-
-      {step === 1 && match.isMatching && renderMatchingProgress()}
-
-      {step === 2 && !match.isMatching && renderMatching()}
+      {match.isMatching && renderMatchingProgress()}
+      {!match.isMatching && step !== 3 && renderMatching()}
       {step === 3 && renderSuccess()}
 
       {/* Submit Modal — rendered outside flow so it overlays everything */}
