@@ -1,6 +1,5 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
-import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import styles from '../GSTR1Page.module.css';
 
@@ -10,41 +9,62 @@ interface GSTR1OthersTabProps {
   setExpandedAccordion: (val: string | null) => void;
 }
 
+import { UnifiedTable } from '@/components/UnifiedTable';
+
 /** Sizes to content; only scrolls for large datasets */
 const DynamicAgGrid = (props: any) => {
-  const [cw, setCw] = useState<string>('100%');
-  const updateWidth = useCallback((params: any) => {
-    requestAnimationFrame(() => {
-      if (!params.api) return;
-      const colState: any[] = params.api.getColumnState?.() ?? [];
-      const total = colState
-        .filter((c: any) => !c.hide)
-        .reduce((sum: number, c: any) => sum + (c.width ?? 0), 0);
-      if (total > 0) setCw(`${total + 2}px`);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
+  const innerStyle = { width: '100%', maxWidth: '100%', height: 'auto', marginBottom: props.marginBottom || '0' };
+  
+  const filteredData = useMemo(() => {
+    let data = props.rowData || [];
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      data = data.filter((row: any) => 
+        Object.values(row).some(val => 
+          String(val).toLowerCase().includes(lowerSearch)
+        )
+      );
+    }
+    Object.values(activeFilters).forEach(filterValue => {
+      if (filterValue) {
+        const lowerFilter = filterValue.toLowerCase();
+        data = data.filter((row: any) => 
+          Object.values(row).some(val => 
+            String(val).toLowerCase().includes(lowerFilter)
+          )
+        );
+      }
     });
-  }, []);
-  const maxRows = 10;
-  const isLarge = props.rowData && props.rowData.length > maxRows;
-  const innerStyle = {
-    width: cw,
-    maxWidth: '100%',
-    height: isLarge ? '380px' : 'auto',
-    marginBottom: props.marginBottom || '0',
+    return data;
+  }, [props.rowData, searchTerm, activeFilters]);
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setActiveFilters(prev => ({ ...prev, [filterName]: value }));
   };
+
   return (
-    <div style={{ width: '100%', overflowX: 'auto' }}>
-      <div className="ag-theme-tax-jiffy ag-theme-blue-group-headers" style={innerStyle}>
-        <AgGridReact
-          {...props}
-          domLayout={isLarge ? 'normal' : 'autoHeight'}
-          rowHeight={32}
-          autoSizeStrategy={{ type: 'fitCellContents' }}
-          onGridReady={updateWidth}
-          onFirstDataRendered={updateWidth}
-          onColumnResized={updateWidth}
+    <div style={innerStyle}>
+      <UnifiedTable
+        variant="nested"
+        hideHeader={true}
+        hidePagination={true}
+        onSearch={setSearchTerm}
+        onFilterChange={handleFilterChange}
+        filters={[
+          { name: 'Status', options: [{label: 'Processed', value: 'processed'}, {label: 'Pending', value: 'pending'}] },
+          { name: 'Doc Type', options: [{label: 'Invoice', value: 'inv'}, {label: 'Credit Note', value: 'cn'}] },
+          { name: 'State', options: [{label: 'Delhi', value: 'delhi'}, {label: 'Maharashtra', value: 'mh'}] },
+          { name: 'Date Range', options: [{label: 'Last 7 Days', value: '7d'}, {label: 'Last 30 Days', value: '30d'}] },
+          ]}
+          title=""
+          recordCount={filteredData.length}
+          rowData={filteredData}
+          columnDefs={props.columnDefs}
+          pinnedBottomRowData={props.pinnedBottomRowData}
         />
       </div>
-    </div>
   );
 };
 

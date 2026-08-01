@@ -1,72 +1,79 @@
 @import "ag-grid-community/styles/ag-grid.css";
 @import "ag-grid-community/styles/ag-theme-quartz.css";
 
-/* Base theme mimicking .table */
+/* Base theme mimicking the modern Invoices design */
 .ag-theme-tax-jiffy {
-  --ag-font-family: inherit;
-  --ag-header-background-color: #f3f4f6;
-  --ag-header-foreground-color: #4b5563;
+  --ag-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ag-header-background-color: #ffffff;
+  --ag-header-foreground-color: #101828;
   --ag-background-color: #ffffff;
-  --ag-data-color: #111827;
-  --ag-borders: solid 1px;
-  --ag-border-color: #e5e7eb;
-  --ag-row-border-color: #e5e7eb;
-  --ag-header-column-separator-display: block;
-  --ag-header-column-separator-color: #e5e7eb;
+  --ag-data-color: #475467;
+  --ag-borders: none;
+  --ag-row-border-color: #eaecf0;
+  --ag-header-column-separator-display: none;
   --ag-cell-horizontal-border: solid transparent;
   
-  --ag-font-size: 12px;
-  --ag-header-font-weight: 700;
-  --ag-row-height: 32px;
-  --ag-header-height: 34px;
+  --ag-font-size: 14px;
+  --ag-header-font-weight: 600;
+  --ag-row-height: 56px;
+  --ag-header-height: 48px;
   
-  /* border radius matching .table */
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-radius: 0;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
 }
 
 .ag-theme-tax-jiffy .ag-root-wrapper {
   border: none;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 /* Header tweaks */
-.ag-theme-tax-jiffy .ag-header-cell {
-  padding: 0 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 10.5px;
+.ag-theme-tax-jiffy .ag-header-cell,
+.ag-theme-tax-jiffy .ag-header-group-cell {
+  padding: 0 24px;
+}
+
+.ag-theme-tax-jiffy .ag-header-cell-text,
+.ag-theme-tax-jiffy .ag-header-group-cell-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #101828;
 }
 
 .ag-theme-tax-jiffy .ag-header {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eaecf0;
 }
 
-/* Suppress AG Grid's default white hover flash on header cells */
+/* Suppress AG Grid's default hover flash on header cells */
 .ag-theme-tax-jiffy .ag-header-cell:hover,
-.ag-theme-tax-jiffy .ag-header-cell:focus {
+.ag-theme-tax-jiffy .ag-header-cell:focus,
+.ag-theme-tax-jiffy .ag-header-group-cell:hover,
+.ag-theme-tax-jiffy .ag-header-group-cell:focus {
   background-color: var(--ag-header-background-color) !important;
 }
 
 /* Cell tweaks */
 .ag-theme-tax-jiffy .ag-cell {
-  padding: 0 10px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   border-right: none;
-  font-size: 12px;
-  line-height: 1.3;
+  font-size: 14px;
+  line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* First column border right matching .table th:first-child */
-.ag-theme-tax-jiffy .ag-cell[col-id="field_attribute"],
-.ag-theme-tax-jiffy .ag-header-cell[col-id="field_attribute"] {
-  border-right: 1px solid #e5e7eb;
+.ag-theme-tax-jiffy .ag-row {
+  border-bottom: 1px solid #eaecf0;
+}
+
+.ag-theme-tax-jiffy .ag-checkbox-input-wrapper {
+  font-size: 16px;
+}
+.ag-theme-tax-jiffy .ag-checkbox-input-wrapper.ag-checked::after {
+  color: #2e5cff;
 }
 
 
@@ -258,6 +265,27 @@
 .ag-theme-spreadsheet-borders .ag-header-cell,
 .ag-theme-spreadsheet-borders .ag-header-group-cell {
   border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ─── Floating Filter Styling ─── */
+.ag-theme-tax-jiffy .ag-floating-filter-input:read-only {
+  background-color: transparent;
+}
+.ag-theme-tax-jiffy .ag-floating-filter-input input {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  height: 28px;
+  width: 100%;
+}
+.ag-theme-tax-jiffy .ag-floating-filter-input input:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+.ag-theme-tax-jiffy .ag-floating-filter-button {
+  display: none !important;
 }
 
 /* ─── Responsive: ≤ 768px ─── */

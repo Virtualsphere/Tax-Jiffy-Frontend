@@ -1,12 +1,12 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import { useUploadPurchaseRegister } from './hooks/useUploadPurchaseRegister';
 import { usePurchaseRegisterSheets } from './hooks/usePurchaseRegisterSheets';
 import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { UnifiedTable, TagCellRenderer } from '@/components/UnifiedTable';
 import styles from './PurchaseRegisterPage.module.css';
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
           { field: 'invoiceValue',       headerName: 'Invoice Value',      flex: 1,   ...R },
           { field: 'placeOfSupply',      headerName: 'Place of Supply',    flex: 1,   ...L },
           { field: 'reverseCharge',      headerName: 'Rev. Charge',        flex: 0.7, ...L },
-          { field: 'invoiceType',        headerName: 'Invoice Type',       flex: 1,   ...L },
+          { field: 'invoiceType',        headerName: 'Invoice Type',       flex: 1, cellRenderer: TagCellRenderer, ...L },
           { field: 'rate',               headerName: 'Rate (%)',           flex: 0.7, ...R },
           { field: 'taxableValue',       headerName: 'Taxable Value',      flex: 1,   ...R },
           taxGroup('paid'),
@@ -132,7 +132,7 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
           { field: 'gstinOfSupplier',              headerName: 'GSTIN of Supplier', flex: 1.5, ...L },
           { field: 'noteRefundVoucherNumber',       headerName: 'Note/Voucher No.',  flex: 1,   ...L },
           { field: 'noteRefundVoucherDate',         headerName: 'Note Date',         flex: 1,   ...L },
-          { field: 'documentType',                  headerName: 'Doc Type',          flex: 0.8, ...L },
+          { field: 'documentType',                  headerName: 'Doc Type',          flex: 0.8, cellRenderer: TagCellRenderer, ...L },
           { field: 'reasonForIssuingDocument',      headerName: 'Reason',            flex: 1.2, ...L },
           { field: 'noteRefundVoucherValue',         headerName: 'Note Value',        flex: 1,   ...R },
           { field: 'rate',                          headerName: 'Rate (%)',          flex: 0.7, ...R },
@@ -143,7 +143,7 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
 
       case 'CDNUR':
         return [
-          { field: 'documentType',             headerName: 'Doc Type',      flex: 0.8, ...L },
+          { field: 'documentType',                  headerName: 'Doc Type',          flex: 0.8, cellRenderer: TagCellRenderer, ...L },
           { field: 'noteRefundVoucherNumber',  headerName: 'Note No.',      flex: 1,   ...L },
           { field: 'noteRefundVoucherDate',    headerName: 'Note Date',     flex: 1,   ...L },
           { field: 'reasonForIssuingDocument', headerName: 'Reason',        flex: 1.2, ...L },
@@ -253,11 +253,6 @@ export function PurchaseRegisterPage() {
   }, [upload.data?.filingId, navigate]);
 
   const colDefs = usePrColDefs(activeTab);
-
-  const defaultColDef = useMemo<ColDef>(
-    () => ({ resizable: true, wrapHeaderText: true, autoHeaderHeight: true, minWidth: 100 }),
-    [],
-  );
 
   const activeGstId = currentEntity?.id || 1;
 
@@ -460,21 +455,20 @@ export function PurchaseRegisterPage() {
             <p className={styles.emptyStateText}>No records in this sheet for the uploaded filing.</p>
           </div>
         ) : (
-          <div
-            className="ag-theme-tax-jiffy ag-theme-blue-headers"
-            style={{ width: '100%', minHeight: 400 }}
-          >
-            <AgGridReact
-              theme="legacy"
-              rowData={tabRowData[activeTab] as any[]}
-              columnDefs={colDefs}
-              defaultColDef={defaultColDef}
-              domLayout="autoHeight"
-              suppressMenuHide
-              pagination
-              paginationPageSize={50}
-            />
-          </div>
+          <UnifiedTable
+            title={`${activeTab} Sheet`}
+            subtitle={`Reviewing records for ${activeTab}`}
+            recordCount={tabRowData[activeTab].length}
+            rowData={tabRowData[activeTab] as any[]}
+            columnDefs={colDefs}
+            filters={[
+              { name: 'Status', options: [{ label: 'Posted', value: 'Posted' }, { label: 'Draft', value: 'Draft' }] },
+              { name: 'Doc Type', options: [{ label: 'INV', value: 'INV' }, { label: 'CRN', value: 'CRN' }] }
+            ]}
+            topRightDropdownOptions={[
+              { label: `All ${activeTab} Records`, value: 'all' }
+            ]}
+          />
         )}
       </div>
 
