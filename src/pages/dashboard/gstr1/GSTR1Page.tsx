@@ -13,6 +13,8 @@ import { GSTR1AdvancedTab } from './tabs/GSTR1AdvancedTab';
 import { GSTR1OthersTab } from './tabs/GSTR1OthersTab';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { Gstr1SubmitModal } from './Gstr1SubmitModal';
+import { useQuery } from '@tanstack/react-query';
+import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 
 
 /* ── Types ── */
@@ -122,7 +124,6 @@ export function GSTR1Page() {
   // ── Local upload-period state (independent from global context) ──
   const [uploadYear, setUploadYear] = useState<string>(selectedYear.label);
   const [uploadMonth, setUploadMonth] = useState<string>(selectedMonth);
-  const [uploadDay, setUploadDay] = useState<number>(new Date().getDate());
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
@@ -146,17 +147,6 @@ export function GSTR1Page() {
     const fyStart = Number(fyLabel.split('-')[0]);
     return ['January', 'February', 'March'].includes(month) ? fyStart + 1 : fyStart;
   };
-
-  // Helper: days in a given month/year
-  const daysInMonth = (month: string, fyLabel: string): number => {
-    const calYear = getCalendarYear(month, fyLabel);
-    const monthIndex = new Date(`${month} 1, ${calYear}`).getMonth();
-    return new Date(calYear, monthIndex + 1, 0).getDate();
-  };
-
-  // Clamp day when month changes
-  const clampDay = (day: number, month: string, fyLabel: string) =>
-    Math.min(day, daysInMonth(month, fyLabel));
 
   // Sync active entity period to PeriodContext AND local upload state
   useEffect(() => {
@@ -184,7 +174,6 @@ export function GSTR1Page() {
         // Also seed local upload period
         setUploadYear(fyLabel);
         setUploadMonth(monthName);
-        setUploadDay(clampDay(new Date().getDate(), monthName, fyLabel));
       }
     }
   }, [currentEntity, setSelectedYear, setSelectedMonth]);
@@ -192,8 +181,25 @@ export function GSTR1Page() {
   // Hooks
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
+  
+  const activeGstId = currentEntity?.id || 1;
+
+  // Hook to query filings for this company
+  const { data: filings } = useQuery({
+    queryKey: ['gstr1-filings', activeGstId],
+    queryFn: () => gstr1Api.getFilingsByCompanyGst(activeGstId),
+    enabled: !!activeGstId,
+  });
+
+  const matchingFiling = filings?.find((f: any) => 
+    f.financialYear === uploadYear && 
+    f.taxPeriod.toUpperCase() === uploadMonth.toUpperCase()
+  );
+
+  const activeFilingId = matchingFiling?.id || upload.data?.filingId;
+
   // Pass filing ID to the draft hook so it fetches compiled report data from the backend
-  const draft = useGstr1Draft(upload.data?.filingId);
+  const draft = useGstr1Draft(activeFilingId);
 
   const [activeTab, setActiveTab] = useState<string>('Basic');
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>('table4');
@@ -204,13 +210,23 @@ export function GSTR1Page() {
 
   // When matching completes, move to step 2
   const handleStartMatching = useCallback(() => {
-    match.startMatching(upload.data?.filingId);
-  }, [match, upload.data?.filingId]);
+    match.startMatching(activeFilingId);
+  }, [match, activeFilingId]);
 
   // Check if matching just completed and we need to advance
   if (match.isComplete && step === 1) {
     setStep(2);
   }
+
+  // If there's an existing filing in the DB but no active step, default to step 2 (Match & Confirm) 
+  // so we skip the upload. Or if we just changed period to an existing one, set step 2.
+  useEffect(() => {
+    if (matchingFiling && step === 1 && !upload.isPending) {
+      setStep(2);
+    } else if (!matchingFiling && !upload.data && step === 2 && !match.isComplete) {
+      setStep(1); // go back if there is no data
+    }
+  }, [matchingFiling, step, upload.isPending, upload.data, match.isComplete]);
 
   const handleConfirmFiling = useCallback(() => {
     setSubmitModalOpen(true);
@@ -229,8 +245,6 @@ export function GSTR1Page() {
     setFiledArn(null);
     setActiveTab('Basic');
   }, [upload, match]);
-
-  const activeGstId = currentEntity?.id || 1;
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -333,6 +347,158 @@ export function GSTR1Page() {
     </div>
   );
 
+  /* ── Quick Link Helpers ── */
+  const getPrevMonth = (m: string) => {
+    const idx = MONTHS.indexOf(m);
+    if (idx > 0) return MONTHS[idx - 1];
+    return MONTHS[11];
+  };
+
+  const getPrevReturn = (m: string) => {
+    const idx = MONTHS.indexOf(m);
+    if (idx > 1) return MONTHS[idx - 2];
+    if (idx === 1) return MONTHS[11];
+    return MONTHS[10];
+  };
+
+  const renderPeriodSelector = () => (
+    <div className={styles.periodDropdownWrap} ref={pickerRef}>
+      <button
+        type="button"
+        className={styles.periodTrigger}
+        onClick={() => setPickerOpen(o => !o)}
+        aria-haspopup="dialog"
+        aria-expanded={pickerOpen}
+      >
+        <span className={styles.periodTriggerTopLabel}>Filing Period</span>
+        <span className={styles.periodTriggerRow}>
+          <svg className={styles.periodTriggerIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span className={styles.periodTriggerValue}>
+            {uploadMonth.slice(0, 3)} {getCalendarYear(uploadMonth, uploadYear)}
+          </span>
+          <svg className={`${styles.periodTriggerChevron} ${pickerOpen ? styles.periodTriggerChevronOpen : ''}`} width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      {/* ── Dropdown Panel ── */}
+      {pickerOpen && (
+        <div className={styles.periodDropdown} role="dialog" aria-label="Select filing period">
+
+          {/* Header */}
+          <div className={styles.periodDropdownHead}>
+            <span className={styles.periodDropdownTitle}>Filing Period</span>
+            <div className={styles.periodDropdownFyWrap}>
+              <select
+                className={styles.periodDropdownFySelect}
+                value={uploadYear}
+                onChange={(e) => {
+                  setUploadYear(e.target.value);
+                  if (upload.data) upload.reset();
+                }}
+                aria-label="Select Financial Year"
+              >
+                {FY_YEARS.map(fy => (
+                  <option key={fy.label} value={fy.label}>FY {fy.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Month list */}
+          <div className={styles.periodDropdownBodyList}>
+            {MONTHS.map((m) => {
+              const calYear = getCalendarYear(m, uploadYear);
+              const isActive = uploadMonth === m;
+              return (
+                <label key={m} className={`${styles.pdMonthRadio} ${isActive ? styles.pdMonthRadioActive : ''}`}>
+                  <input 
+                    type="radio" 
+                    name="gstr1-month" 
+                    value={m} 
+                    checked={isActive}
+                    onChange={() => {
+                      setUploadMonth(m);
+                      if (upload.data) upload.reset();
+                      setPickerOpen(false);
+                    }}
+                    className={styles.pdMonthRadioInput}
+                  />
+                  <div className={styles.pdMonthRadioCircle} />
+                  <span className={styles.pdMonthRadioLabel}>{m.slice(0, 3)} {calYear}</span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className={styles.pdDividerH} />
+
+          {/* Quick links */}
+          <div className={styles.pdQuickLinks}>
+            <button 
+              className={styles.pdQuickLinkBtn}
+              type="button"
+              onClick={() => {
+                const currM = MONTHS[new Date().getMonth()];
+                const currYLabel = FY_YEARS[0].label;
+                setUploadMonth(currM);
+                setUploadYear(currYLabel);
+                if (upload.data) upload.reset();
+                setPickerOpen(false);
+              }}
+            >
+              <div className={styles.pdQuickIconWrap}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              </div>
+              <span className={styles.pdQuickLabel}>Current Month</span>
+              <span className={styles.pdQuickValue}>{MONTHS[new Date().getMonth()].slice(0, 3)} {new Date().getFullYear()}</span>
+            </button>
+            
+            <button 
+              className={styles.pdQuickLinkBtn}
+              type="button"
+              onClick={() => {
+                const m = getPrevMonth(uploadMonth);
+                setUploadMonth(m);
+                if (upload.data) upload.reset();
+                setPickerOpen(false);
+              }}
+            >
+              <div className={styles.pdQuickIconWrap}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+              </div>
+              <span className={styles.pdQuickLabel}>Previous Month</span>
+              <span className={styles.pdQuickValue}>{getPrevMonth(uploadMonth).slice(0, 3)} {getCalendarYear(getPrevMonth(uploadMonth), uploadYear)}</span>
+            </button>
+
+            <button 
+              className={styles.pdQuickLinkBtn}
+              type="button"
+              onClick={() => {
+                const m = getPrevReturn(uploadMonth);
+                setUploadMonth(m);
+                if (upload.data) upload.reset();
+                setPickerOpen(false);
+              }}
+            >
+              <div className={styles.pdQuickIconWrap}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+              </div>
+              <span className={styles.pdQuickLabel}>Previous Return</span>
+              <span className={styles.pdQuickValue}>{getPrevReturn(uploadMonth).slice(0, 3)} {getCalendarYear(getPrevReturn(uploadMonth), uploadYear)}</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   /* ── Step 1: Upload ── */
   const renderUpload = () => (
     <div className={styles.card}>
@@ -348,126 +514,8 @@ export function GSTR1Page() {
         </button>
       </div>
 
-      {/* ── Filing Period Dropdown Trigger ── */}
-      <div className={styles.periodDropdownWrap} ref={pickerRef}>
-        <button
-          type="button"
-          className={styles.periodTrigger}
-          onClick={() => setPickerOpen(o => !o)}
-          aria-haspopup="dialog"
-          aria-expanded={pickerOpen}
-        >
-          <span className={styles.periodTriggerIcon}>📅</span>
-          <span className={styles.periodTriggerLabel}>Filing Period</span>
-          <span className={styles.periodTriggerValue}>
-            {uploadDay} {uploadMonth.slice(0, 3)} {getCalendarYear(uploadMonth, uploadYear)}
-            &nbsp;·&nbsp;FY {uploadYear}
-          </span>
-          <svg className={`${styles.periodTriggerChevron} ${pickerOpen ? styles.periodTriggerChevronOpen : ''}`} width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-
-        {/* ── Dropdown Panel ── */}
-        {pickerOpen && (
-          <div className={styles.periodDropdown} role="dialog" aria-label="Select filing period">
-
-            {/* Section header */}
-            <div className={styles.periodDropdownHead}>
-              <span className={styles.periodDropdownTitle}>Select Filing Period</span>
-              <button type="button" className={styles.periodDropdownClose} onClick={() => setPickerOpen(false)} aria-label="Close">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 14 14">
-                  <path d="M2 2l10 10M12 2L2 12" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </div>
-
-            <div className={styles.periodDropdownBody}>
-
-              {/* Col 1 — FY */}
-              <div className={styles.pdCol}>
-                <p className={styles.pdLabel}>FINANCIAL YEAR</p>
-                <div className={styles.pdFyList}>
-                  {FY_YEARS.map((fy) => (
-                    <button
-                      key={fy.label}
-                      type="button"
-                      className={`${styles.pdFyBtn} ${uploadYear === fy.label ? styles.pdFyBtnActive : ''}`}
-                      onClick={() => {
-                        setUploadYear(fy.label);
-                        setUploadDay(clampDay(uploadDay, uploadMonth, fy.label));
-                        if (upload.data) upload.reset();
-                      }}
-                    >
-                      {fy.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.pdDivider} />
-
-              {/* Col 2 — Month */}
-              <div className={styles.pdCol}>
-                <p className={styles.pdLabel}>MONTH</p>
-                <div className={styles.pdMonthGrid}>
-                  {MONTHS.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      className={`${styles.pdMonthBtn} ${uploadMonth === m ? styles.pdMonthBtnActive : ''}`}
-                      onClick={() => {
-                        setUploadMonth(m);
-                        setUploadDay(clampDay(uploadDay, m, uploadYear));
-                        if (upload.data) upload.reset();
-                      }}
-                    >
-                      {m.slice(0, 3)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.pdDivider} />
-
-              {/* Col 3 — Day calendar */}
-              <div className={styles.pdCol}>
-                <p className={styles.pdLabel}>
-                  {uploadMonth.slice(0, 3).toUpperCase()} {getCalendarYear(uploadMonth, uploadYear)}
-                </p>
-                <div className={styles.pdWeekRow}>
-                  {['S','M','T','W','T','F','S'].map((d, i) => (
-                    <span key={i} className={styles.pdWeekLabel}>{d}</span>
-                  ))}
-                </div>
-                <div className={styles.pdDayGrid}>
-                  {Array.from({
-                    length: new Date(
-                      getCalendarYear(uploadMonth, uploadYear),
-                      new Date(`${uploadMonth} 1, ${getCalendarYear(uploadMonth, uploadYear)}`).getMonth(),
-                      1
-                    ).getDay()
-                  }).map((_, i) => <span key={`b${i}`} />)}
-                  {Array.from({ length: daysInMonth(uploadMonth, uploadYear) }, (_, i) => i + 1).map(day => (
-                    <button
-                      key={day}
-                      type="button"
-                      className={`${styles.pdDayBtn} ${uploadDay === day ? styles.pdDayBtnActive : ''}`}
-                      onClick={() => {
-                        setUploadDay(day);
-                        if (upload.data) upload.reset();
-                        setPickerOpen(false); // auto-close after day selected
-                      }}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
+      <div style={{ marginBottom: '24px' }}>
+        {renderPeriodSelector()}
       </div>
 
       <div
@@ -702,15 +750,9 @@ export function GSTR1Page() {
 
             {/* Content Area */}
             <div className={activeTab === 'Basic' ? styles.draftTableWrap : ''}>
-              <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0 } : {}}>
-                <span className={styles.filingPeriodLabel}>FILING PERIOD</span>
-                <span className={styles.filingPeriodYear}>
-                  {uploadYear}
-                </span>
-                <span className={styles.filingPeriodMonth}>
-                  {uploadMonth}
-                </span>
-                <span className={styles.filingPeriodSync}>
+              <div className={styles.draftFilingPeriod} style={activeTab !== 'Basic' ? { border: 'none', background: 'transparent', paddingLeft: 0, paddingRight: 0, alignItems: 'center' } : { alignItems: 'center' }}>
+                {renderPeriodSelector()}
+                <span className={styles.filingPeriodSync} style={{ marginLeft: 'auto' }}>
                   <span className={styles.syncIcon}>ⓘ</span>
                   Data synced from GST Portal
                 </span>
@@ -796,14 +838,16 @@ export function GSTR1Page() {
 
   return (
     <div className={styles.page}>
-      {step !== 2 && (
-        <>
-          <h2 className={styles.pageTitle}>GSTR-1 Filing</h2>
-          <p className={styles.pageSubtitle}>
-            Step {step} of 3: {STEPS[step - 1].label}
-          </p>
-        </>
-      )}
+      <div className={styles.pageHeaderWrap}>
+        {step !== 2 && (
+          <div>
+            <h2 className={styles.pageTitle}>GSTR-1 Filing</h2>
+            <p className={styles.pageSubtitle}>
+              Step {step} of 3: {STEPS[step - 1].label}
+            </p>
+          </div>
+        )}
+      </div>
 
       {renderStepper()}
 
