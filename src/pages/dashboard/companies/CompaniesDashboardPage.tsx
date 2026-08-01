@@ -26,7 +26,7 @@ export function CompaniesDashboardPage() {
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   const [deletingCompanyId, setDeletingCompanyId] = useState<number | null>(null);
-  const [expandedCompanyId, setExpandedCompanyId] = useState<number | null>(urlCompanyId);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: user } = useCurrentUser();
   const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
@@ -92,10 +92,6 @@ export function CompaniesDashboardPage() {
     return allCompanyGsts.filter(g => g.companyId === companyId).map(g => g.id);
   };
 
-  const getFirstGstForCompany = (companyId: number) => {
-    const gsts = allCompanyGsts.filter(g => g.companyId === companyId);
-    return gsts.length > 0 ? gsts[0] : null;
-  };
 
   // Format today's date
   const today = new Date();
@@ -142,50 +138,69 @@ export function CompaniesDashboardPage() {
         <p>Error loading your entities.</p>
       ) : (
         <div className={styles.accordionList}>
-          {(companies || [])
-            .filter(company => urlCompanyId ? company.id === urlCompanyId : true)
-            .map((company) => {
-            const gstIds = getGstIdsForCompany(company.id);
-            const hasGsts = gstIds.length > 0;
-            const firstGst = getFirstGstForCompany(company.id);
-            
-            return (
-              <CompanyAccordionItem 
-                key={company.id} 
-                company={company}
-                isExpanded={expandedCompanyId === company.id}
-                onToggle={() => setExpandedCompanyId(expandedCompanyId === company.id ? null : company.id)}
-                onDelete={handleDeleteCompany}
-                onAddGst={setSelectedCompanyForGst}
-                isDeleting={deleteCompanyMutation.isPending}
-                gstNumber={firstGst?.gstNumber}
-                onOpenWorkspace={firstGst ? () => handleNavigateToEntity(firstGst.id) : undefined}
-              >
-                {hasGsts ? (
-                  gstIds.map(gstId => (
-                    <GSTMappingCard 
-                      key={gstId} 
-                      gstId={gstId} 
-                      companies={companies} 
-                      handleNavigateToEntity={handleNavigateToEntity}
-                      onCompanyLoaded={handleCompanyLoaded}
+          {(() => {
+            const filteredCompanies = (companies || []).filter(company => urlCompanyId ? company.id === urlCompanyId : true);
+            const elements = [];
+
+            filteredCompanies.forEach((company) => {
+              const gstIds = getGstIdsForCompany(company.id);
+              
+              if (gstIds.length > 0) {
+                // One accordion per GST
+                gstIds.forEach(gstId => {
+                  const gst = allCompanyGsts.find(g => g.id === gstId);
+                  const itemId = `gst-${gstId}`;
+                  elements.push(
+                    <CompanyAccordionItem 
+                      key={itemId} 
+                      company={company}
+                      isExpanded={expandedId === itemId}
+                      onToggle={() => setExpandedId(expandedId === itemId ? null : itemId)}
+                      onDelete={handleDeleteCompany}
                       onAddGst={setSelectedCompanyForGst}
-                      onUpgradePlan={(gstId, isNew) => {
-                        setSelectedGstForUpgrade(gstId);
-                        setIsNewPurchaseMode(!!isNew);
-                      }}
-                      filterCompanyId={null}
+                      isDeleting={deleteCompanyMutation.isPending}
+                      gstNumber={gst?.gstNumber}
+                      onOpenWorkspace={() => handleNavigateToEntity(gstId)}
+                    >
+                      <GSTMappingCard 
+                        gstId={gstId} 
+                        companies={companies} 
+                        handleNavigateToEntity={handleNavigateToEntity}
+                        onCompanyLoaded={handleCompanyLoaded}
+                        onAddGst={setSelectedCompanyForGst}
+                        onUpgradePlan={(id, isNew) => {
+                          setSelectedGstForUpgrade(id);
+                          setIsNewPurchaseMode(!!isNew);
+                        }}
+                        filterCompanyId={null}
+                      />
+                    </CompanyAccordionItem>
+                  );
+                });
+              } else {
+                // No GSTs, render one accordion for the company itself
+                const itemId = `company-${company.id}`;
+                elements.push(
+                  <CompanyAccordionItem 
+                    key={itemId} 
+                    company={company}
+                    isExpanded={expandedId === itemId}
+                    onToggle={() => setExpandedId(expandedId === itemId ? null : itemId)}
+                    onDelete={handleDeleteCompany}
+                    onAddGst={setSelectedCompanyForGst}
+                    isDeleting={deleteCompanyMutation.isPending}
+                  >
+                    <CompanyOnlyCard 
+                      company={company} 
+                      onAddGst={setSelectedCompanyForGst} 
                     />
-                  ))
-                ) : (
-                  <CompanyOnlyCard 
-                    company={company} 
-                    onAddGst={setSelectedCompanyForGst} 
-                  />
-                )}
-              </CompanyAccordionItem>
-            );
-          })}
+                  </CompanyAccordionItem>
+                );
+              }
+            });
+
+            return elements;
+          })()}
           
           {companies?.length === 0 && (
             <div className={styles.emptyState}>
