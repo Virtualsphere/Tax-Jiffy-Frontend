@@ -97,8 +97,7 @@ export function CompaniesDashboardPage() {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Current period badge
-  const periodLabel = today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+  // Current period badge (removed)
 
   return (
     <div className={styles.container}>
