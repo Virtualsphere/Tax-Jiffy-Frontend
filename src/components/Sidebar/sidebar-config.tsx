@@ -4,9 +4,13 @@ import {
   IconClipboard,
   IconClipboardCheck,
   IconDocument,
+  IconEInvoice,
+  IconGSTReturns,
   IconGstr9,
   IconInwardSupply,
   IconOutwardSupply,
+  IconSettings,
+  IconSupplies,
   IconTruck,
   IconWallet,
 } from '@/components/Sidebar/SidebarIcons';
@@ -78,13 +82,13 @@ export function IconCreditCard() {
 
 export const SIDEBAR_ITEMS: SidebarNavItem[] = [
   { type: 'link', id: 'dashboard', label: 'Dashboard', icon: <IconDashboard />, path: ROUTES.dashboard.companies },
-  { type: 'link', id: 'e-invoice', label: 'E-Invoice', icon: <IconDocument />, path: ROUTES.dashboard.eInvoice },
+  { type: 'link', id: 'e-invoice', label: 'E-Invoice', icon: <IconEInvoice />, path: ROUTES.dashboard.eInvoice },
   { type: 'link', id: 'e-way-bill', label: 'E-Way Bill', icon: <IconTruck />, path: ROUTES.dashboard.eWayBill },
   {
     type: 'section',
     id: 'supplies',
     label: 'Supplies',
-    icon: <IconOutwardSupply />,
+    icon: <IconSupplies />,
     children: [
       { id: 'inward-supply', label: 'Inward Supply', icon: <IconInwardSupply />, path: ROUTES.dashboard.purchaseRegister },
       { id: 'outward-supply', label: 'Outward Supply', icon: <IconOutwardSupply />, path: ROUTES.dashboard.saleRegister },
@@ -94,8 +98,8 @@ export const SIDEBAR_ITEMS: SidebarNavItem[] = [
   {
     type: 'section',
     id: 'gst-forms',
-    label: 'GST Forms',
-    icon: <IconClipboard />,
+    label: 'GST Returns',
+    icon: <IconGSTReturns />,
     children: [
       { id: 'gstr-1', label: 'GSTR-1', icon: <IconClipboard />, path: ROUTES.dashboard.gstr1 },
       { id: 'ims', label: 'IMS', icon: <IconDocument />, path: ROUTES.dashboard.ims },
@@ -112,8 +116,8 @@ export const SIDEBAR_ITEMS: SidebarNavItem[] = [
   {
     type: 'section',
     id: 'configuration',
-    label: 'Configuration',
-    icon: <IconShield />,
+    label: 'Settings',
+    icon: <IconSettings />,
     children: [
       { id: 'user-management', label: 'User Management', icon: <IconUsers />, path: ROUTES.dashboard.users },
       { id: 'role-editor', label: 'Role Editor', icon: <IconShield />, path: ROUTES.dashboard.roles },
