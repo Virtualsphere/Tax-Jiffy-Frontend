@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { ROUTES } from '@/config/routes';
 import styles from './UserDashboardPage.module.css';
-import { ConnectEntityModal } from './components/ConnectEntityModal/ConnectEntityModal';
-import { AddGSTModal } from './components/AddGSTModal/AddGSTModal';
+import { AddNewGSTINModal } from './components/AddNewGSTINModal/AddNewGSTINModal';
 import { UpgradePlanModal } from './components/UpgradePlanModal/UpgradePlanModal';
 import { useMyCompanies } from './hooks/useMyCompanies';
 import { useDeleteCompany } from './hooks/useDeleteCompany';
@@ -224,7 +223,7 @@ export function UserDashboardPage() {
   const [searchParams] = useSearchParams();
   const urlCompanyId = searchParams.get('companyId') ? Number(searchParams.get('companyId')) : null;
 
-  const [isConnectModalOpen, setConnectModalOpen] = useState(false);
+  const [isAddNewGSTINModalOpen, setAddNewGSTINModalOpen] = useState(false);
   const [mappedCompanyIds, setMappedCompanyIds] = useState<Set<number>>(new Set());
   const [selectedCompanyForGst, setSelectedCompanyForGst] = useState<number | null>(null);
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
@@ -234,17 +233,17 @@ export function UserDashboardPage() {
   const deleteCompanyMutation = useDeleteCompany();
 
   useEffect(() => {
-    const handleOpenModal = () => setConnectModalOpen(true);
+    const handleOpenModal = () => setAddNewGSTINModalOpen(true);
     const handleAddGstModal = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail?.companyId) {
         setSelectedCompanyForGst(customEvent.detail.companyId);
       }
     };
-    window.addEventListener('open-connect-company-modal', handleOpenModal);
+    window.addEventListener('open-add-new-gstin-modal', handleOpenModal);
     window.addEventListener('open-add-gst-modal', handleAddGstModal);
     return () => {
-      window.removeEventListener('open-connect-company-modal', handleOpenModal);
+      window.removeEventListener('open-add-new-gstin-modal', handleOpenModal);
       window.removeEventListener('open-add-gst-modal', handleAddGstModal);
     };
   }, []);
@@ -380,23 +379,18 @@ export function UserDashboardPage() {
         </div>
       )}
 
-      {isConnectModalOpen && (
-        <ConnectEntityModal onClose={(companyId, isNew) => {
-          setConnectModalOpen(false);
-          if (typeof companyId === 'number') {
-            if (isNew) {
-              navigate(ROUTES.dashboard.companies);
-            } else {
-              setSelectedCompanyForGst(companyId);
+      {(isAddNewGSTINModalOpen || selectedCompanyForGst !== null) && (
+        <AddNewGSTINModal
+          initialCompanyId={selectedCompanyForGst}
+          onClose={(companyId, isNew) => {
+            setAddNewGSTINModalOpen(false);
+            setSelectedCompanyForGst(null);
+            if (typeof companyId === 'number') {
+              if (isNew) {
+                navigate(ROUTES.dashboard.companies);
+              }
             }
-          }
-        }} />
-      )}
-
-      {selectedCompanyForGst !== null && (
-        <AddGSTModal
-          companyId={selectedCompanyForGst}
-          onClose={() => setSelectedCompanyForGst(null)}
+          }}
         />
       )}
 

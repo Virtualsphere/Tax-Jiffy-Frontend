@@ -57,10 +57,10 @@ export function UserSidebar({
             <button
               className={styles.addGstBtn}
               onClick={() => {
-                window.dispatchEvent(new CustomEvent('open-connect-company-modal'));
+                window.dispatchEvent(new CustomEvent('open-add-new-gstin-modal'));
                 onMobileClose?.();
               }}
-              title={collapsed ? 'Add GST for New Company' : undefined}
+              title={collapsed ? 'Add New GSTIN' : undefined}
             >
               <span className={styles.addGstIcon}>
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +69,7 @@ export function UserSidebar({
               </span>
               {!collapsed && (
                 <span className={styles.addGstLabel}>
-                  Add GST for New Company
+                  Add New GSTIN
                 </span>
               )}
             </button>

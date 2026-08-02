@@ -8,8 +8,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDeleteCompany } from '../user/hooks/useDeleteCompany';
 import { companyGSTApi } from '../user/api/company-gst.api';
 
-import { ConnectEntityModal } from '../user/components/ConnectEntityModal/ConnectEntityModal';
-import { AddGSTModal } from '../user/components/AddGSTModal/AddGSTModal';
+import { AddNewGSTINModal } from '../user/components/AddNewGSTINModal/AddNewGSTINModal';
 import { UpgradePlanModal } from '../user/components/UpgradePlanModal/UpgradePlanModal';
 
 import { CompanyAccordionItem } from './components/CompanyAccordionItem/CompanyAccordionItem';
@@ -21,7 +20,7 @@ export function CompaniesDashboardPage() {
   const [searchParams] = useSearchParams();
   const urlCompanyId = searchParams.get('companyId') ? Number(searchParams.get('companyId')) : null;
 
-  const [isConnectModalOpen, setConnectModalOpen] = useState(false);
+  const [isAddNewGSTINModalOpen, setAddNewGSTINModalOpen] = useState(false);
   const [selectedCompanyForGst, setSelectedCompanyForGst] = useState<number | null>(null);
   const [selectedGstForUpgrade, setSelectedGstForUpgrade] = useState<number | null>(null);
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
@@ -33,17 +32,17 @@ export function CompaniesDashboardPage() {
   const deleteCompanyMutation = useDeleteCompany();
 
   useEffect(() => {
-    const handleOpenModal = () => setConnectModalOpen(true);
+    const handleOpenModal = () => setAddNewGSTINModalOpen(true);
     const handleAddGstModal = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail?.companyId) {
         setSelectedCompanyForGst(customEvent.detail.companyId);
       }
     };
-    window.addEventListener('open-connect-company-modal', handleOpenModal);
+    window.addEventListener('open-add-new-gstin-modal', handleOpenModal);
     window.addEventListener('open-add-gst-modal', handleAddGstModal);
     return () => {
-      window.removeEventListener('open-connect-company-modal', handleOpenModal);
+      window.removeEventListener('open-add-new-gstin-modal', handleOpenModal);
       window.removeEventListener('open-add-gst-modal', handleAddGstModal);
     };
   }, []);
@@ -213,23 +212,14 @@ export function CompaniesDashboardPage() {
 
 
 
-      {isConnectModalOpen && (
-        <ConnectEntityModal onClose={(companyId, isNew) => {
-          setConnectModalOpen(false);
-          // If we want to navigate to the specific company accordion, we can set search params
-          // But since they are all on this page, maybe just let it refresh.
-          if (typeof companyId === 'number') {
-            if (!isNew) {
-              setSelectedCompanyForGst(companyId);
-            }
-          }
-        }} />
-      )}
-
-      {selectedCompanyForGst !== null && (
-        <AddGSTModal
-          companyId={selectedCompanyForGst}
-          onClose={() => setSelectedCompanyForGst(null)}
+      {(isAddNewGSTINModalOpen || selectedCompanyForGst !== null) && (
+        <AddNewGSTINModal
+          initialCompanyId={selectedCompanyForGst}
+          onClose={() => {
+            setAddNewGSTINModalOpen(false);
+            setSelectedCompanyForGst(null);
+            // Optionally could navigate or highlight the new company
+          }}
         />
       )}
 
