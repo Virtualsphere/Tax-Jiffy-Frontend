@@ -10,6 +10,7 @@ import { companyGSTApi } from '../user/api/company-gst.api';
 
 import { AddNewGSTINModal } from '../user/components/AddNewGSTINModal/AddNewGSTINModal';
 import { UpgradePlanModal } from '../user/components/UpgradePlanModal/UpgradePlanModal';
+import { EditDetailsModal } from '../user/components/EditDetailsModal/EditDetailsModal';
 
 import { CompanyAccordionItem } from './components/CompanyAccordionItem/CompanyAccordionItem';
 import { GSTMappingCard } from './components/GSTMappingCard/GSTMappingCard';
@@ -26,6 +27,7 @@ export function CompaniesDashboardPage() {
   const [isNewPurchaseMode, setIsNewPurchaseMode] = useState(false);
   const [deletingCompanyId, setDeletingCompanyId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<{ companyId: number; companyName: string; companyLogo?: string; gstId?: number; gstin?: string } | null>(null);
 
   const { data: user } = useCurrentUser();
   const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
@@ -89,6 +91,25 @@ export function CompaniesDashboardPage() {
 
   const getGstIdsForCompany = (companyId: number) => {
     return allCompanyGsts.filter(g => g.companyId === companyId).map(g => g.id);
+  };
+
+  const handleEditDetails = (companyId: number, gstId?: number) => {
+    const company = companies?.find(c => c.id === companyId);
+    if (!company) return;
+    
+    let gstin = '';
+    if (gstId) {
+      const gst = allCompanyGsts.find(g => g.id === gstId);
+      if (gst) gstin = gst.gstNumber;
+    }
+    
+    setEditTarget({
+      companyId,
+      companyName: company.companyName,
+      companyLogo: company.companyLogo,
+      gstId,
+      gstin
+    });
   };
 
 
@@ -169,6 +190,7 @@ export function CompaniesDashboardPage() {
                           setSelectedGstForUpgrade(id);
                           setIsNewPurchaseMode(!!isNew);
                         }}
+                        onEditDetails={handleEditDetails}
                         filterCompanyId={null}
                       />
                     </CompanyAccordionItem>
@@ -190,6 +212,7 @@ export function CompaniesDashboardPage() {
                     <CompanyOnlyCard 
                       company={company} 
                       onAddGst={setSelectedCompanyForGst} 
+                      onEditDetails={handleEditDetails}
                     />
                   </CompanyAccordionItem>
                 );
@@ -231,6 +254,17 @@ export function CompaniesDashboardPage() {
             setIsNewPurchaseMode(false);
           }}
           isNewPurchase={isNewPurchaseMode}
+        />
+      )}
+
+      {editTarget && (
+        <EditDetailsModal
+          onClose={() => setEditTarget(null)}
+          companyId={editTarget.companyId}
+          initialCompanyName={editTarget.companyName}
+          initialCompanyLogo={editTarget.companyLogo}
+          gstId={editTarget.gstId}
+          initialGstin={editTarget.gstin}
         />
       )}
 

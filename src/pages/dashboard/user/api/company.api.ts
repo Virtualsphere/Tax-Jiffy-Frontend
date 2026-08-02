@@ -50,4 +50,9 @@ export const companyApi = {
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`${BASE_URL}/${id}`);
   },
+
+  update: async (id: number, data: Partial<CompanyProfileRequest>): Promise<CompanyProfileResponse> => {
+    const response = await apiClient.put<ApiResponse<CompanyProfileResponse>>(`${BASE_URL}/${id}`, data);
+    return response.data.data;
+  },
 };

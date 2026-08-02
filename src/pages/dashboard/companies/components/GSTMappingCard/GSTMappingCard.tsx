@@ -10,6 +10,7 @@ interface GSTMappingCardProps {
   onCompanyLoaded: (companyId: number) => void;
   onAddGst: (companyId: number) => void;
   onUpgradePlan: (gstId: number, isNew?: boolean, companyId?: number) => void;
+  onEditDetails: (companyId: number, gstId: number) => void;
   filterCompanyId: number | null;
 }
 
@@ -18,6 +19,7 @@ export function GSTMappingCard({
   onCompanyLoaded, 
   handleNavigateToEntity,
   onUpgradePlan, 
+  onEditDetails,
   filterCompanyId 
 }: GSTMappingCardProps) {
   const { data: gst, isLoading } = useCompanyGST(gstId);
@@ -144,6 +146,16 @@ export function GSTMappingCard({
               Buy Subscription &rarr;
             </button>
           )}
+
+          <button 
+            className={styles.secondaryActionBtn}
+            onClick={() => onEditDetails(gst.companyId, gst.id)}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            Edit Details
+          </button>
         </div>
       </div>
     </div>

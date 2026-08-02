@@ -1,7 +1,7 @@
 import styles from '../GSTMappingCard/GSTMappingCard.module.css';
 import type { CompanyProfileResponse } from '../../../user/types/company.types';
 
-export function CompanyOnlyCard({ company, onAddGst }: { company: CompanyProfileResponse, onAddGst: (id: number) => void }) {
+export function CompanyOnlyCard({ company, onAddGst, onEditDetails }: { company: CompanyProfileResponse, onAddGst: (id: number) => void, onEditDetails: (id: number) => void }) {
   return (
     <div className={styles.card} style={{ gridTemplateColumns: '1fr' }}>
       <div className={`${styles.cardSection} ${styles.noBorder}`} style={{ alignItems: 'center', padding: '40px 20px', textAlign: 'center' }}>
@@ -12,17 +12,29 @@ export function CompanyOnlyCard({ company, onAddGst }: { company: CompanyProfile
         <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 24px 0', maxWidth: '400px' }}>
           Please add a GST number and purchase a subscription to activate this entity and start tracking returns.
         </p>
-        
-        <button 
-          className={styles.primaryActionBtn}
-          onClick={() => onAddGst(company.id)}
-          style={{ width: 'auto' }}
-        >
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add GST Number
-        </button>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button 
+            className={styles.primaryActionBtn}
+            onClick={() => onAddGst(company.id)}
+            style={{ width: 'auto' }}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add GST Number
+          </button>
+          
+          <button 
+            className={styles.secondaryActionBtn}
+            onClick={() => onEditDetails(company.id)}
+            style={{ width: 'auto', background: 'white' }}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            Edit Company
+          </button>
+        </div>
       </div>
     </div>
   );

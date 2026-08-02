@@ -24,4 +24,9 @@ export const companyGSTApi = {
     const response = await apiClient.get<ApiResponse<CompanyGSTResponse>>(`${BASE_URL}/${id}`);
     return response.data.data;
   },
+
+  update: async (id: number, data: Partial<CompanyGSTRequest>): Promise<CompanyGSTResponse> => {
+    const response = await apiClient.put<ApiResponse<CompanyGSTResponse>>(`${BASE_URL}/${id}`, data);
+    return response.data.data;
+  },
 };
