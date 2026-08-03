@@ -5,6 +5,7 @@ import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadS
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
 import { usePeriod, FY_YEARS, MONTHS } from '@/context/PeriodContext';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
 import { GSTR1OutwardTab } from './tabs/GSTR1OutwardTab';
@@ -302,141 +303,18 @@ export function GSTR1Page() {
   };
 
   const renderPeriodSelector = () => (
-    <div className={styles.periodDropdownWrap} ref={pickerRef}>
-      <button
-        type="button"
-        className={styles.periodTrigger}
-        onClick={() => setPickerOpen(o => !o)}
-        aria-haspopup="dialog"
-        aria-expanded={pickerOpen}
-      >
-        <span className={styles.periodTriggerTopLabel}>Filing Period</span>
-        <span className={styles.periodTriggerRow}>
-          <svg className={styles.periodTriggerIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <span className={styles.periodTriggerValue}>
-            {uploadMonth.slice(0, 3)} {getCalendarYear(uploadMonth, uploadYear)}
-          </span>
-          <svg className={`${styles.periodTriggerChevron} ${pickerOpen ? styles.periodTriggerChevronOpen : ''}`} width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </span>
-      </button>
-
-      {/* ── Dropdown Panel ── */}
-      {pickerOpen && (
-        <div className={styles.periodDropdown} style={step === 2 ? { right: 0, left: 'auto' } : undefined} role="dialog" aria-label="Select filing period">
-
-          {/* Header */}
-          <div className={styles.periodDropdownHead}>
-            <span className={styles.periodDropdownTitle}>Filing Period</span>
-            <div className={styles.periodDropdownFyWrap}>
-              <select
-                className={styles.periodDropdownFySelect}
-                value={uploadYear}
-                onChange={(e) => {
-                  setUploadYear(e.target.value);
-                  if (upload.data) upload.reset();
-                }}
-                aria-label="Select Financial Year"
-              >
-                {FY_YEARS.map(fy => (
-                  <option key={fy.label} value={fy.label}>FY {fy.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Month list */}
-          <div className={styles.periodDropdownBodyList}>
-            {MONTHS.map((m) => {
-              const calYear = getCalendarYear(m, uploadYear);
-              const isActive = uploadMonth === m;
-              return (
-                <label key={m} className={`${styles.pdMonthRadio} ${isActive ? styles.pdMonthRadioActive : ''}`}>
-                  <input 
-                    type="radio" 
-                    name="gstr1-month" 
-                    value={m} 
-                    checked={isActive}
-                    onChange={() => {
-                      setUploadMonth(m);
-                      if (upload.data) upload.reset();
-                      setPickerOpen(false);
-                    }}
-                    className={styles.pdMonthRadioInput}
-                  />
-                  <div className={styles.pdMonthRadioCircle} />
-                  <span className={styles.pdMonthRadioLabel}>{m.slice(0, 3)} {calYear}</span>
-                </label>
-              );
-            })}
-          </div>
-
-          <div className={styles.pdDividerH} />
-
-          {/* Quick links */}
-          <div className={styles.pdQuickLinks}>
-            <button 
-              className={styles.pdQuickLinkBtn}
-              type="button"
-              onClick={() => {
-                const currM = MONTHS[new Date().getMonth()];
-                const currYLabel = FY_YEARS[0].label;
-                setUploadMonth(currM);
-                setUploadYear(currYLabel);
-                if (upload.data) upload.reset();
-                setPickerOpen(false);
-              }}
-            >
-              <div className={styles.pdQuickIconWrap}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-              </div>
-              <span className={styles.pdQuickLabel}>Current Month</span>
-              <span className={styles.pdQuickValue}>{MONTHS[new Date().getMonth()].slice(0, 3)} {new Date().getFullYear()}</span>
-            </button>
-            
-            <button 
-              className={styles.pdQuickLinkBtn}
-              type="button"
-              onClick={() => {
-                const m = getPrevMonth(uploadMonth);
-                setUploadMonth(m);
-                if (upload.data) upload.reset();
-                setPickerOpen(false);
-              }}
-            >
-              <div className={styles.pdQuickIconWrap}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-              </div>
-              <span className={styles.pdQuickLabel}>Previous Month</span>
-              <span className={styles.pdQuickValue}>{getPrevMonth(uploadMonth).slice(0, 3)} {getCalendarYear(getPrevMonth(uploadMonth), uploadYear)}</span>
-            </button>
-
-            <button 
-              className={styles.pdQuickLinkBtn}
-              type="button"
-              onClick={() => {
-                const m = getPrevReturn(uploadMonth);
-                setUploadMonth(m);
-                if (upload.data) upload.reset();
-                setPickerOpen(false);
-              }}
-            >
-              <div className={styles.pdQuickIconWrap}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-              </div>
-              <span className={styles.pdQuickLabel}>Previous Return</span>
-              <span className={styles.pdQuickValue}>{getPrevReturn(uploadMonth).slice(0, 3)} {getCalendarYear(getPrevReturn(uploadMonth), uploadYear)}</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    <PeriodSelector
+      year={uploadYear}
+      month={uploadMonth}
+      onYearChange={(yLabel) => {
+        setUploadYear(yLabel);
+        if (upload.data) upload.reset();
+      }}
+      onMonthChange={(mLabel) => {
+        setUploadMonth(mLabel);
+        if (upload.data) upload.reset();
+      }}
+    />
   );
 
   /* ── Step 1: Upload ── */
