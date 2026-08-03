@@ -1,4 +1,5 @@
 .container {
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -11,6 +12,7 @@
 }
 
 .nestedContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -407,4 +409,133 @@
   background-color: #f2f4f7;
 }
 
+/* Status Bar (1.2) */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background-color: #f9fafb;
+  border-top: 1px solid #eaecf0;
+  font-size: 13px;
+  color: #475467;
+  font-weight: 500;
+}
+
+.statusBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.statusBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667085;
+  font-size: 12px;
+}
+
+/* Fullscreen (1.3) */
+.fullscreenContainer {
+  position: fixed !important;
+  inset: 0;
+  z-index: 9999;
+  background-color: #ffffff;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.fullscreenContainer .gridWrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+.fullscreenContainer .gridWrapper > div {
+  height: 100% !important;
+}
+
+.fullscreenButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fullscreenButton:hover {
+  background: #f9fafb;
+}
+
+/* Floating fullscreen button — always visible */
+.floatingFullscreenButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #667085;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.floatingFullscreenButton:hover {
+  background: #ffffff;
+  color: #344054;
+  border-color: #98a2b3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Empty State (1.7) */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border-top: 1px solid #eaecf0;
+}
+
+.emptyStateIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: #f2f4f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #98a2b3;
+}
+
+.emptyStateText {
+  font-size: 15px;
+  font-weight: 600;
+  color: #344054;
+  margin: 0 0 4px 0;
+}
+
+.emptyStateSubtext {
+  font-size: 13px;
+  color: #667085;
+  margin: 0;
+}
 

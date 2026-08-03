@@ -13,13 +13,15 @@
   --ag-header-column-separator-display: none;
   --ag-cell-horizontal-border: solid transparent;
   
-  --ag-font-size: 14px;
+  --ag-font-size: 13px;
   --ag-header-font-weight: 600;
   --ag-row-height: 56px;
   --ag-header-height: 48px;
   
   border-radius: 0;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .ag-theme-tax-jiffy .ag-root-wrapper {
@@ -58,7 +60,9 @@
   display: flex;
   align-items: center;
   border-right: none;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #475467;
   line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
@@ -74,6 +78,25 @@
 }
 .ag-theme-tax-jiffy .ag-checkbox-input-wrapper.ag-checked::after {
   color: #2e5cff;
+}
+
+/* Column menu icon always visible (fix 1.6) */
+.ag-theme-tax-jiffy .ag-header-cell-menu-button,
+.ag-theme-tax-jiffy .ag-header-cell-filter-button {
+  opacity: 1 !important;
+  display: flex !important;
+  transition: color 0.2s;
+  color: #98a2b3;
+}
+.ag-theme-tax-jiffy .ag-header-cell-menu-button:hover,
+.ag-theme-tax-jiffy .ag-header-cell-filter-button:hover {
+  color: #344054;
+}
+
+/* Ensure number cells left-align (fix 1.5) */
+.ag-theme-tax-jiffy .ag-cell {
+  justify-content: flex-start;
+  text-align: left;
 }
 
 

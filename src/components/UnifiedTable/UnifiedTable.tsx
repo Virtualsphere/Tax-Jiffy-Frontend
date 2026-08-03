@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -47,7 +47,7 @@ export interface UnifiedTableProps {
 export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   title,
   subtitle,
-  recordCount = 0,
+  recordCount: recordCountProp,
   rowData,
   columnDefs,
   filters = [],
@@ -57,10 +57,10 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   onRefresh,
   topRightDropdownOptions,
   onTopRightDropdownChange,
-  page = 1,
-  rowsPerPage = 50,
-  onPageChange,
-  onRowsPerPageChange,
+  page: pageProp,
+  rowsPerPage: rowsPerPageProp,
+  onPageChange: onPageChangeProp,
+  onRowsPerPageChange: onRowsPerPageChangeProp,
   hideHeader = false,
   hideFilterBar = false,
   hidePagination = false,
@@ -73,6 +73,50 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   const [showFilterPopover, setShowFilterPopover] = useState(false);
   const [showColumnPopover, setShowColumnPopover] = useState(false);
   const [filterModel, setFilterModel] = useState<Record<string, string>>({});
+  
+  // 1.3: Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 1.1: Internal pagination state (uncontrolled mode)
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalRowsPerPage, setInternalRowsPerPage] = useState(50);
+  
+  // 1.8: Controlled filter dropdown state
+  const [filterSelections, setFilterSelections] = useState<Record<string, string>>({});
+
+  // Use external pagination if provided, otherwise use internal
+  const isControlledPagination = onPageChangeProp !== undefined;
+  const page = isControlledPagination ? (pageProp ?? 1) : internalPage;
+  const rowsPerPage = isControlledPagination ? (rowsPerPageProp ?? 50) : internalRowsPerPage;
+
+  const onPageChange = useCallback((newPage: number) => {
+    if (isControlledPagination && onPageChangeProp) {
+      onPageChangeProp(newPage);
+    } else {
+      setInternalPage(newPage);
+      // Sync AG Grid's internal pagination
+      if (gridApi && !hidePagination) {
+        gridApi.paginationGoToPage(newPage - 1);
+      }
+    }
+  }, [isControlledPagination, onPageChangeProp, gridApi, hidePagination]);
+
+  const onRowsPerPageChange = useCallback((rows: number) => {
+    if (isControlledPagination && onRowsPerPageChangeProp) {
+      onRowsPerPageChangeProp(rows);
+    } else {
+      setInternalRowsPerPage(rows);
+      setInternalPage(1); // Reset to first page
+      if (gridApi && !hidePagination) {
+        gridApi.paginationSetPageSize(rows);
+        gridApi.paginationGoToPage(0);
+      }
+    }
+  }, [isControlledPagination, onRowsPerPageChangeProp, gridApi, hidePagination]);
+
+  // Use rowData length as recordCount if not explicitly provided
+  const recordCount = recordCountProp ?? rowData.length;
 
   const defaultColDef = useMemo<ColDef>(() => ({
     resizable: true,
@@ -82,6 +126,9 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     minWidth: 100,
     wrapHeaderText: true,
     autoHeaderHeight: true,
+    // 1.6: Always show column menu
+    suppressHeaderMenuButton: false,
+    suppressHeaderFilterButton: false,
   }), []);
 
   const flatColumns = useMemo(() => {
@@ -112,11 +159,37 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     }
   }, [filterModel, gridApi]);
 
+  // 1.3: Escape key listener for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Prevent body scroll in fullscreen
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
+
   const totalPages = Math.max(1, Math.ceil(recordCount / rowsPerPage));
-  const startRecord = (page - 1) * rowsPerPage + 1;
+  const startRecord = recordCount > 0 ? (page - 1) * rowsPerPage + 1 : 0;
   const endRecord = Math.min(page * rowsPerPage, recordCount);
 
   const containerClass = variant === 'standalone' ? styles.container : styles.nestedContainer;
+
+  // 1.8: Handle filter dropdown changes (controlled)
+  const handleFilterDropdownChange = useCallback((filterName: string, value: string) => {
+    setFilterSelections(prev => ({ ...prev, [filterName]: value }));
+    if (onFilterChange) {
+      onFilterChange(filterName, value);
+    }
+  }, [onFilterChange]);
 
   // Pagination page numbers logic
   const renderPageNumbers = () => {
@@ -136,7 +209,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
         <button 
           key={i}
           className={`${styles.pageButton} ${page === i ? styles.active : ''}`}
-          onClick={() => onPageChange && onPageChange(i)}
+          onClick={() => onPageChange(i)}
         >
           {i}
         </button>
@@ -152,7 +225,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
         <button 
           key={totalPages}
           className={`${styles.pageButton} ${page === totalPages ? styles.active : ''}`}
-          onClick={() => onPageChange && onPageChange(totalPages)}
+          onClick={() => onPageChange(totalPages)}
         >
           {totalPages}
         </button>
@@ -175,8 +248,14 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     });
   }, [autoWidth]);
 
+  // Determine final container class (including fullscreen)
+  const finalContainerClass = `${containerClass} ${isFullscreen ? styles.fullscreenContainer : ''}`;
+
+  // 1.7: Check if there are no records
+  const hasNoRecords = !rowData || rowData.length === 0;
+
   return (
-    <div className={containerClass} style={{ width: '100%' }}>
+    <div ref={containerRef} className={finalContainerClass} style={{ width: '100%' }}>
       {/* Header */}
       {!hideHeader && (
         <div className={styles.header}>
@@ -208,6 +287,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 <path d="M2.4 9.6C3.6 12 5.6 13.6 8 13.6C11.2 13.6 13.6 11.2 13.6 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+
             <button className={styles.filterButton}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -227,196 +307,249 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
         </div>
       )}
 
-      {/* Filter Bar */}
-      {!hideFilterBar && (
-        <div className={styles.filterBar}>
-          <div className={styles.filterGroup}>
-            <div className={styles.searchWrapper}>
-              <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none">
-                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* 1.7: Empty state — show "No Records" instead of grid when no data */}
+      {hasNoRecords ? (
+        <>
+          {/* Still show filter bar even when empty, but dropdowns won't do anything */}
+          <div className={styles.emptyState}>
+            <div className={styles.emptyStateIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 14h6M9 18h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <input 
-                type="text" 
-                className={styles.searchInput} 
-                placeholder="Search invoice no., supplier, GSTIN, state..."
-                onChange={(e) => onSearch?.(e.target.value)}
+            </div>
+            <p className={styles.emptyStateText}>No Records</p>
+            <p className={styles.emptyStateSubtext}>There are no records to display for this section.</p>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Filter Bar */}
+          {!hideFilterBar && (
+            <div className={styles.filterBar}>
+              <div className={styles.filterGroup}>
+                <div className={styles.searchWrapper}>
+                  <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none">
+                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <input 
+                    type="text" 
+                    className={styles.searchInput} 
+                    placeholder="Search invoice no., supplier, GSTIN, state..."
+                    onChange={(e) => onSearch?.(e.target.value)}
+                  />
+                </div>
+                
+                {/* 1.8: Controlled filter dropdowns */}
+                {filters.map(filter => (
+                  <select 
+                    key={filter.name}
+                    className={styles.filterSelect}
+                    value={filterSelections[filter.name] || ''}
+                    onChange={(e) => handleFilterDropdownChange(filter.name, e.target.value)}
+                  >
+                    <option value="">{filter.name}</option>
+                    {filter.options.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                ))}
+              </div>
+              
+              <div className={styles.filterGroup} style={{ flex: 'none', gap: '8px' }}>
+                <div style={{ position: 'relative' }}>
+                  <button className={styles.filterButton} onClick={() => { setShowFilterPopover(prev => !prev); setShowColumnPopover(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Filters
+                    {filterCount > 0 && <span className={styles.filterBadge}>{filterCount}</span>}
+                  </button>
+                  {showFilterPopover && (
+                    <div className={styles.columnPopover} style={{ width: '240px' }}>
+                      <div className={styles.columnPopoverTitle}>Filter Columns</div>
+                      <div className={styles.columnPopoverList} style={{ maxHeight: '350px' }}>
+                        {flatColumns.map(col => {
+                          const field = (col as any).field;
+                          const header = (col as any).headerName || field;
+                          return (
+                            <div key={field} style={{ padding: '8px' }}>
+                              <div style={{ fontSize: '12px', marginBottom: '4px', color: '#344054', fontWeight: 500 }}>{header}</div>
+                              <input 
+                                type="text" 
+                                style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #eaecf0', fontSize: '12px', outline: 'none' }}
+                                placeholder={`Contains...`}
+                                value={filterModel[field] || ''}
+                                onChange={(e) => setFilterModel(prev => ({ ...prev, [field]: e.target.value }))}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{ position: 'relative' }}>
+                  <button className={styles.filterButton} onClick={() => { setShowColumnPopover(prev => !prev); setShowFilterPopover(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M6 14H10M2 2H14C14.5523 2 15 2.44772 15 3V13C15 13.5523 14.5523 14 14 14H2C1.44772 14 1 13.5523 1 13V3C1 2.44772 1.44772 2 2 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M5.33331 2V14M10.6666 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Columns
+                  </button>
+                  {showColumnPopover && (
+                    <div className={styles.columnPopover}>
+                      <div className={styles.columnPopoverTitle}>Show/Hide Columns</div>
+                      <div className={styles.columnPopoverList}>
+                        {flatColumns.map(col => {
+                          const field = (col as any).field;
+                          const header = (col as any).headerName || field;
+                          const isVisible = gridApi?.getColumn(field)?.isVisible() ?? true;
+                          
+                          return (
+                            <label key={field} className={styles.columnPopoverItem}>
+                              <input 
+                                type="checkbox" 
+                                defaultChecked={isVisible}
+                                onChange={(e) => {
+                                  gridApi?.setColumnsVisible([field], e.target.checked);
+                                }}
+                              />
+                              {header}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Fullscreen button — inside filter bar */}
+                <button 
+                  className={styles.fullscreenButton} 
+                  onClick={() => setIsFullscreen(prev => !prev)} 
+                  title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen'}
+                >
+                  {isFullscreen ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Grid */}
+          <div className={styles.gridWrapper} style={{ width: autoWidth ? cw : '100%' }}>
+            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: isFullscreen ? 'calc(100vh - 280px)' : (hidePagination ? 'auto' : '500px') }}>
+              <AgGridReact
+                theme="legacy"
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                icons={{
+                  menu: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>',
+                  filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>'
+                }}
+                rowSelection="multiple"
+                domLayout={hidePagination && !isFullscreen ? 'autoHeight' : 'normal'}
+                suppressPaginationPanel={true}
+                pagination={!hidePagination}
+                paginationPageSize={rowsPerPage}
+                pinnedBottomRowData={pinnedBottomRowData}
+                autoSizeStrategy={{ type: 'fitGridWidth' }}
+                onGridReady={(params: GridReadyEvent) => {
+                  setGridApi(params.api);
+                  if (page > 1 && !hidePagination) {
+                    params.api.paginationGoToPage(page - 1);
+                  }
+                  updateWidth(params);
+                }}
+                onFirstDataRendered={updateWidth}
+                onColumnResized={updateWidth}
               />
             </div>
-            
-            {filters.map(filter => (
-              <select 
-                key={filter.name}
-                className={styles.filterSelect}
-                onChange={(e) => onFilterChange?.(filter.name, e.target.value)}
-              >
-                <option value="">{filter.name}</option>
-                {filter.options.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            ))}
           </div>
-          
-          <div className={styles.filterGroup} style={{ flex: 'none', gap: '8px' }}>
-            <div style={{ position: 'relative' }}>
-              <button className={styles.filterButton} onClick={() => { setShowFilterPopover(prev => !prev); setShowColumnPopover(false); }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Filters
-                {filterCount > 0 && <span className={styles.filterBadge}>{filterCount}</span>}
-              </button>
-              {showFilterPopover && (
-                <div className={styles.columnPopover} style={{ width: '240px' }}>
-                  <div className={styles.columnPopoverTitle}>Filter Columns</div>
-                  <div className={styles.columnPopoverList} style={{ maxHeight: '350px' }}>
-                    {flatColumns.map(col => {
-                      const field = (col as any).field;
-                      const header = (col as any).headerName || field;
-                      return (
-                        <div key={field} style={{ padding: '8px' }}>
-                          <div style={{ fontSize: '12px', marginBottom: '4px', color: '#344054', fontWeight: 500 }}>{header}</div>
-                          <input 
-                            type="text" 
-                            style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #eaecf0', fontSize: '12px', outline: 'none' }}
-                            placeholder={`Contains...`}
-                            value={filterModel[field] || ''}
-                            onChange={(e) => setFilterModel(prev => ({ ...prev, [field]: e.target.value }))}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div style={{ position: 'relative' }}>
-              <button className={styles.filterButton} onClick={() => { setShowColumnPopover(prev => !prev); setShowFilterPopover(false); }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 14H10M2 2H14C14.5523 2 15 2.44772 15 3V13C15 13.5523 14.5523 14 14 14H2C1.44772 14 1 13.5523 1 13V3C1 2.44772 1.44772 2 2 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M5.33331 2V14M10.6666 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Columns
-              </button>
-              {showColumnPopover && (
-                <div className={styles.columnPopover}>
-                  <div className={styles.columnPopoverTitle}>Show/Hide Columns</div>
-                  <div className={styles.columnPopoverList}>
-                    {flatColumns.map(col => {
-                      const field = (col as any).field;
-                      const header = (col as any).headerName || field;
-                      const isVisible = gridApi?.getColumn(field)?.isVisible() ?? true;
-                      
-                      return (
-                        <label key={field} className={styles.columnPopoverItem}>
-                          <input 
-                            type="checkbox" 
-                            defaultChecked={isVisible}
-                            onChange={(e) => {
-                              gridApi?.setColumnsVisible([field], e.target.checked);
-                            }}
-                          />
-                          {header}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Grid */}
-      <div className={styles.gridWrapper} style={{ width: autoWidth ? cw : '100%' }}>
-        <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: hidePagination ? 'auto' : '500px' }}>
-          <AgGridReact
-            theme="legacy"
-            rowData={rowData}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            icons={{
-              menu: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>',
-              filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>'
-            }}
-            rowSelection="multiple"
-            domLayout={hidePagination ? 'autoHeight' : 'normal'}
-            suppressPaginationPanel={true}
-            pagination={!hidePagination}
-            paginationPageSize={rowsPerPage}
-            pinnedBottomRowData={pinnedBottomRowData}
-            autoSizeStrategy={{ type: 'fitCellContents' }}
-            onGridReady={(params: GridReadyEvent) => {
-              setGridApi(params.api);
-              if (page > 1 && !hidePagination) {
-                params.api.paginationGoToPage(page - 1);
-              }
-              updateWidth(params);
-            }}
-            onFirstDataRendered={updateWidth}
-            onColumnResized={updateWidth}
-          />
-        </div>
-      </div>
+          {/* 1.2: Status Bar */}
+          <div className={styles.statusBar}>
+            <div className={styles.statusBarLeft}>
+              <span>
+                {recordCount > 0 
+                  ? `Showing ${startRecord}–${endRecord} of ${recordCount} records` 
+                  : 'No records'}
+              </span>
+            </div>
+            <div className={styles.statusBarRight}>
+              <span>{flatColumns.length} columns</span>
+            </div>
+          </div>
 
-      {/* Pagination Footer */}
-      {!hidePagination && (
-        <div className={styles.pagination}>
-          <div className={styles.paginationLeft}>
-            <div className={styles.rowsPerPage}>
-              Rows per page:
-              <select 
-                className={styles.rowsSelect}
-                value={rowsPerPage}
-                onChange={(e) => onRowsPerPageChange?.(Number(e.target.value))}
-              >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
+          {/* Pagination Footer */}
+          {!hidePagination && (
+            <div className={styles.pagination}>
+              <div className={styles.paginationLeft}>
+                <div className={styles.rowsPerPage}>
+                  Rows per page:
+                  <select 
+                    className={styles.rowsSelect}
+                    value={rowsPerPage}
+                    onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
+                  >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </div>
+                <div className={styles.recordCount}>
+                  {recordCount > 0 ? `${startRecord} - ${endRecord} of ${recordCount}` : '0 of 0'}
+                </div>
+              </div>
+              
+              <div className={styles.paginationControls}>
+                <button 
+                  className={styles.pageButton} 
+                  disabled={page === 1}
+                  onClick={() => onPageChange(1)}
+                >
+                  «
+                </button>
+                <button 
+                  className={styles.pageButton} 
+                  disabled={page === 1}
+                  onClick={() => onPageChange(page - 1)}
+                >
+                  ‹
+                </button>
+                
+                {renderPageNumbers()}
+                
+                <button 
+                  className={styles.pageButton} 
+                  disabled={page === totalPages || totalPages === 0}
+                  onClick={() => onPageChange(page + 1)}
+                >
+                  ›
+                </button>
+                <button 
+                  className={styles.pageButton} 
+                  disabled={page === totalPages || totalPages === 0}
+                  onClick={() => onPageChange(totalPages)}
+                >
+                  »
+                </button>
+              </div>
             </div>
-            <div className={styles.recordCount}>
-              {recordCount > 0 ? `${startRecord} - ${endRecord} of ${recordCount}` : '0 of 0'}
-            </div>
-          </div>
-          
-          <div className={styles.paginationControls}>
-            <button 
-              className={styles.pageButton} 
-              disabled={page === 1}
-              onClick={() => onPageChange?.(1)}
-            >
-              «
-            </button>
-            <button 
-              className={styles.pageButton} 
-              disabled={page === 1}
-              onClick={() => onPageChange?.(page - 1)}
-            >
-              ‹
-            </button>
-            
-            {renderPageNumbers()}
-            
-            <button 
-              className={styles.pageButton} 
-              disabled={page === totalPages || totalPages === 0}
-              onClick={() => onPageChange?.(page + 1)}
-            >
-              ›
-            </button>
-            <button 
-              className={styles.pageButton} 
-              disabled={page === totalPages || totalPages === 0}
-              onClick={() => onPageChange?.(totalPages)}
-            >
-              »
-            </button>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );
