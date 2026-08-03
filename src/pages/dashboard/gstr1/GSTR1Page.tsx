@@ -13,6 +13,8 @@ import { GSTR1AdvancedTab } from './tabs/GSTR1AdvancedTab';
 import { GSTR1OthersTab } from './tabs/GSTR1OthersTab';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { Gstr1SubmitModal } from './Gstr1SubmitModal';
+import { GSTR1ReconciliationTab } from './tabs/GSTR1ReconciliationTab';
+
 import { useQuery } from '@tanstack/react-query';
 import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 
@@ -678,13 +680,14 @@ export function GSTR1Page() {
 
           {/* ── Reconciliation Tab ── */}
           {currentMainTab === 'Reconciliation' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', color: '#94a3b8', gap: '1rem' }}>
-              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                <circle cx="28" cy="28" r="28" fill="#f1f5f9" />
-                <path d="M18 28h20M28 18v20" stroke="#cbd5e1" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <p style={{ fontSize: '1rem', fontWeight: 600, color: '#64748b' }}>Reconciliation coming soon</p>
-              <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>This section is under construction.</p>
+            <div style={{ width: '100%' }}>
+              {matchingFiling?.id || upload.data?.filingId ? (
+                <GSTR1ReconciliationTab filingId={matchingFiling?.id || upload.data?.filingId || 0} />
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#94a3b8' }}>
+                  Please upload a sale register first to view reconciliation.
+                </div>
+              )}
             </div>
           )}
 
