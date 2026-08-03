@@ -5,14 +5,17 @@ export type FYYear = {
   startYear: number;
 };
 
-export const FY_YEARS: FYYear[] = [
-  { label: '2025-26', startYear: 2025 },
-  { label: '2024-25', startYear: 2024 },
-  { label: '2023-24', startYear: 2023 },
-  { label: '2022-23', startYear: 2022 },
-  { label: '2021-22', startYear: 2021 },
-  { label: '2020-21', startYear: 2020 },
-];
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth(); // 0-indexed, so Jan=0, Mar=2, Apr=3
+const currentFYStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+
+export const FY_YEARS: FYYear[] = [];
+for (let y = currentFYStart; y >= 2017; y--) {
+  FY_YEARS.push({
+    label: `${y}-${(y + 1).toString().slice(-2)}`,
+    startYear: y,
+  });
+}
 
 export const MONTHS = [
   'April', 'May', 'June', 'July', 'August', 'September',

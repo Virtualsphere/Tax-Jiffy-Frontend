@@ -2,76 +2,66 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
 }
 
-/* ── Trigger badges ── */
-.yearBadge,
-.monthBadge {
+.triggerBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 0.8125rem;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #5a6acf;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  white-space: nowrap;
-  line-height: 1.4;
+  transition: all 0.15s ease;
+  min-width: 140px;
 }
 
-.yearBadge {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #1f2937;
-}
-
-.yearBadge:hover {
-  border-color: #5a6acf;
-  color: #5a6acf;
+.triggerBtn:hover {
   background: rgb(90 106 207 / 0.05);
 }
 
-.monthBadge {
-  border: 1px solid #5a6acf;
-  background: rgb(90 106 207 / 0.06);
-  color: #5a6acf;
-}
-
-.monthBadge:hover {
-  background: rgb(90 106 207 / 0.12);
-}
-
-.yearBadge:focus-visible,
-.monthBadge:focus-visible {
+.triggerBtn:focus-visible {
   outline: 2px solid #5a6acf;
   outline-offset: 2px;
 }
 
+.calendarIcon {
+  color: #5a6acf;
+}
+
+.triggerLabel {
+  flex: 1;
+  text-align: left;
+}
+
 .chevron {
-  flex-shrink: 0;
+  color: #5a6acf;
   transition: transform 0.2s ease;
-  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .chevronOpen {
   transform: rotate(180deg);
 }
 
-/* ── Popover ── */
 .popover {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   z-index: 200;
-  width: 280px;
-  padding: 14px;
+  width: 380px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
   animation: popoverIn 0.14s ease;
 }
 
@@ -80,72 +70,177 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.popoverHeader {
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
 .popoverTitle {
-  margin: 0 0 12px;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.scrollArea {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 16px 16px 16px;
+}
+
+.fyGroup {
+  margin-top: 16px;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 16px;
+}
+
+.fyGroup:last-child {
+  border-bottom: none;
+}
+
+.fyHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fyTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fySubtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.quartersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quarterRow {
+  display: flex;
+  gap: 16px;
+}
+
+.quarterInfo {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 6px;
+}
+
+.quarterTitle {
   font-size: 0.75rem;
   font-weight: 700;
+  color: #111827;
+}
+
+.quarterSubtitle {
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+.monthsCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #f3f4f6;
+  padding-left: 12px;
+  margin-left: -12px; /* Pull back to align border */
+}
+
+.monthOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+  font-size: 0.875rem;
   color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  margin-bottom: 2px;
 }
 
-.section {
-  /* intentionally minimal */
-}
-
-.sectionLabel {
-  margin: 0 0 7px;
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-
-.divider {
-  height: 1px;
-  background: #f1f3f9;
-  margin: 10px 0;
-}
-
-/* Year: 2 columns */
-.yearGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
+.monthOption:last-child {
   margin-bottom: 0;
 }
 
-/* Month: 4 columns */
-.monthGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
+.monthOption:hover {
+  background: #f9fafb;
 }
 
-.optionBtn {
-  padding: 6px 4px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: transparent;
-  color: #374151;
-  font-size: 0.75rem;
+.monthOptionSelected {
+  background: #eff1fc !important;
+  color: #111827;
   font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-  text-align: center;
 }
 
-.optionBtn:hover {
-  background: rgb(90 106 207 / 0.07);
+.hiddenRadio {
+  display: none;
+}
+
+.radioCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+
+.radioCircleSelected {
   border-color: #5a6acf;
-  color: #5a6acf;
 }
 
-.optionBtnActive {
-  background: #5a6acf !important;
-  border-color: #5a6acf !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
+.radioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5a6acf;
+}
+
+.footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+.keyBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
