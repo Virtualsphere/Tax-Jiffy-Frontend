@@ -72,7 +72,7 @@ const DynamicAgGrid = (props: any) => {
   }
 
   return (
-    <div style={innerStyle}>
+    <div style={innerStyle} className="compact-grid-wrapper">
       {sectionExtra}
       {sectionTitle && (
         <>
@@ -106,36 +106,38 @@ const DynamicAgGrid = (props: any) => {
 export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordion, selectedMonth, selectedYear }: GSTR1AmendmentsTabProps) {
 
   const defaultColDef = useMemo<ColDef>(() => ({
-    wrapHeaderText: true,
-    autoHeaderHeight: true,
+    wrapHeaderText: false,
+    autoHeaderHeight: false,
     minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
+    suppressHeaderMenuButton: true,
+    suppressHeaderFilterButton: true,
   }), []);
 
   const colDefs9 = useMemo<(ColDef | ColGroupDef)[]>(() => [
     {
       headerName: 'DETAILS OF ORIGINAL DOCUMENT',
       children: [
-        { field: 'originalGstin',   headerName: 'GSTIN',     minWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'originalInvNo',   headerName: 'INV. NO.',  minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'originalInvDate', headerName: 'INV. DATE', minWidth: 85,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalGstin',   headerName: 'GSTIN',     minWidth: 160, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalInvNo',   headerName: 'INV. NO.',  minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'originalInvDate', headerName: 'INV. DATE', minWidth: 105, cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
     {
       headerName: 'REVISED DETAILS / DEBIT NOTE / CREDIT NOTE / REFUND VOUCHER',
       children: [
-        { field: 'revisedGstin',   headerName: 'GSTIN',    minWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'revisedInvNo',   headerName: 'INV NO',   minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'revisedInvDate', headerName: 'INV DATE', minWidth: 85,  cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'sbNo',           headerName: 'SB NO.',   minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'sbDate',         headerName: 'SB DATE',  minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedGstin',   headerName: 'GSTIN',    minWidth: 160, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedInvNo',   headerName: 'INV NO',   minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'revisedInvDate', headerName: 'INV DATE', minWidth: 105, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbNo',           headerName: 'SB NO.',   minWidth: 95,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'sbDate',         headerName: 'SB DATE',  minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
-    { field: 'value',         headerName: 'VALUE',         minWidth: 75,  maxWidth: 105, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'rate',          headerName: 'RATE (%)',       minWidth: 70,  maxWidth: 95,  cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue',  headerName: 'TAXABLE VALUE',  minWidth: 95,  maxWidth: 125, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'integratedTax', headerName: 'IGST',           minWidth: 75,  maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'value',         headerName: 'VALUE',         minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',          headerName: 'RATE (%)',       minWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'taxableValue',  headerName: 'TAXABLE VALUE',  minWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'integratedTax', headerName: 'IGST',           minWidth: 95,  cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
   // colDefs10: use minWidth (not width) so autoSizeStrategy won't shrink below readable size
