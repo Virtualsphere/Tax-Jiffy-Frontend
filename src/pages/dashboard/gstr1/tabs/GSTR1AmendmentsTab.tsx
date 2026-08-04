@@ -87,8 +87,6 @@ const DynamicAgGrid = (props: any) => {
         onSearch={setSearchTerm}
         onFilterChange={handleFilterChange}
         filters={[
-          { name: 'Status', options: [{label: 'Processed', value: 'processed'}, {label: 'Pending', value: 'pending'}] },
-          { name: 'Doc Type', options: [{label: 'Invoice', value: 'inv'}, {label: 'Credit Note', value: 'cn'}] },
           { name: 'State', options: [{label: 'Delhi', value: 'delhi'}, {label: 'Maharashtra', value: 'mh'}] },
           { name: 'Date Range', options: [{label: 'Last 7 Days', value: '7d'}, {label: 'Last 30 Days', value: '30d'}] },
           ]}

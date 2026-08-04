@@ -128,6 +128,10 @@
   gap: 16px;
 }
 
+.fullscreenContainer .filterBar {
+  padding: 24px 32px 16px 32px;
+}
+
 .filterGroup {
   display: flex;
   align-items: center;
