@@ -44,8 +44,39 @@ const DynamicAgGrid = (props: any) => {
     setActiveFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const hasNoRecords = !props.rowData || props.rowData.length === 0;
+  const { sectionTitle, sectionSubtitle, sectionExtra, sectionTitleStyle } = props;
+
+  if (hasNoRecords && sectionTitle) {
+    return (
+      <div style={innerStyle}>
+        {sectionExtra}
+        <div className={styles.sectionTitleRow}>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          <span className={styles.noRecordsBadge}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            No Records
+          </span>
+          {sectionSubtitle && (
+            <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={innerStyle}>
+      {sectionExtra}
+      {sectionTitle && (
+        <>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          {sectionSubtitle && <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>}
+        </>
+      )}
       <UnifiedTable
         variant="nested"
         hideHeader={true}
@@ -63,6 +94,7 @@ const DynamicAgGrid = (props: any) => {
           rowData={filteredData}
           columnDefs={props.columnDefs}
           pinnedBottomRowData={props.pinnedBottomRowData}
+          showFilterBarInFullscreenOnly={true}
         />
       </div>
   );
@@ -127,22 +159,28 @@ export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion
 
             <div className={styles.outwardSectionTitleSub}>11A. Advance amount received in the tax period for which invoice has not been issued (tax amount to be added to output tax liability)</div>
 
-            <div className={styles.outwardSectionTitleSub}>11A (1). Intra-State supplies (Rate Wise)</div>
-            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11A1} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11A1} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy"
+              sectionTitle="11A (1). Intra-State supplies (Rate Wise)"
+            />
 
-            <div className={styles.outwardSectionTitleSub}>11A (2). Inter-State Supplies (Rate Wise)</div>
-            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11A2} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11A2} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy"
+              sectionTitle="11A (2). Inter-State Supplies (Rate Wise)"
+            />
 
             <div className={styles.outwardSectionTitleSub}>11B. Advance amount received in earlier tax period and adjusted against the supplies being shown in this tax period in Table Nos. 4, 5, 6 and 7</div>
 
-            <div className={styles.outwardSectionTitleSub}>11B (1). Intra-State Supplies (Rate Wise)</div>
-            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11B1} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11B1} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy"
+              sectionTitle="11B (1). Intra-State Supplies (Rate Wise)"
+            />
 
-            <div className={styles.outwardSectionTitleSub}>11B (2). Inter-State Supplies (Rate Wise)</div>
-            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11B2} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="16px" defaultColDef={defaultColDef} rowData={data.table11.section11B2} columnDefs={colDefs11} suppressMenuHide={true} theme="legacy"
+              sectionTitle="11B (2). Inter-State Supplies (Rate Wise)"
+            />
 
-            <div className={styles.outwardSectionTitleSub} style={{ color: '#111827', fontWeight: 600 }}>II Amendment of information furnished in Table No. 11(1) in GSTR-1 statement for earlier tax periods [Furnish revised information]</div>
-            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table11.amendments} columnDefs={colDefs11Amendments} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table11.amendments} columnDefs={colDefs11Amendments} suppressMenuHide={true} theme="legacy"
+              sectionTitle="II Amendment of information furnished in Table No. 11(1) in GSTR-1 statement for earlier tax periods [Furnish revised information]"
+              sectionTitleStyle={{ color: '#111827', fontWeight: 600 }}
+            />
           </div>
         </AnimatedExpandable>
       </div>

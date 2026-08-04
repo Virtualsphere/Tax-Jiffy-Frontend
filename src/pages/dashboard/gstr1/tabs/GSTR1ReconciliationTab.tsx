@@ -219,6 +219,7 @@ export function GSTR1ReconciliationTab({ filingId }: GSTR1ReconciliationTabProps
                 columnDefs={columnDefs}
                 hideHeader
                 variant="nested"
+                showFilterBarInFullscreenOnly={true}
               />
             </div>
           )}

@@ -46,8 +46,40 @@ const DynamicAgGrid = (props: any) => {
     setActiveFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const hasNoRecords = !props.rowData || props.rowData.length === 0;
+  const { sectionTitle, sectionSubtitle, sectionExtra, sectionTitleStyle } = props;
+
+  // When no records and a section title is provided, show compact inline badge
+  if (hasNoRecords && sectionTitle) {
+    return (
+      <div style={innerStyle}>
+        {sectionExtra}
+        <div className={styles.sectionTitleRow}>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          <span className={styles.noRecordsBadge}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            No Records
+          </span>
+          {sectionSubtitle && (
+            <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={innerStyle}>
+      {sectionExtra}
+      {sectionTitle && (
+        <>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          {sectionSubtitle && <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>}
+        </>
+      )}
       <UnifiedTable
         variant="nested"
         hideHeader={true}
@@ -65,6 +97,7 @@ const DynamicAgGrid = (props: any) => {
           rowData={filteredData}
           columnDefs={props.columnDefs}
           pinnedBottomRowData={props.pinnedBottomRowData}
+          showFilterBarInFullscreenOnly={true}
         />
       </div>
   );
@@ -140,14 +173,20 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
         </div>
         <AnimatedExpandable isExpanded={expandedAccordion === 'table9'}>
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9A. If the invoice/Shipping bill details furnished earlier were incorrect</div>
-            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9A} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy"
+              sectionTitle="9A. If the invoice/Shipping bill details furnished earlier were incorrect"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+            />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9B. Debit Notes/Credit Notes/Refund voucher [original]</div>
-            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9B} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table9.section9B} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy"
+              sectionTitle="9B. Debit Notes/Credit Notes/Refund voucher [original]"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+            />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>9C. Debit Notes/Credit Notes/Refund voucher [amendments thereof]</div>
-            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table9.section9C} columnDefs={colDefs9} suppressMenuHide={true} theme="legacy"
+              sectionTitle="9C. Debit Notes/Credit Notes/Refund voucher [amendments thereof]"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+            />
           </div>
         </AnimatedExpandable>
       </div>
@@ -165,20 +204,28 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
           <div className={styles.accordionContent}>
             <div className={styles.outwardSectionTitleSub}>Tax period for which the details are being revised: {selectedMonth} {selectedYear.startYear}</div>
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A. Intra-State Supplies [Rate wise]</div>
-            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy"
+              sectionTitle="10A. Intra-State Supplies [Rate wise]"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+            />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10A (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
-            <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10A1_ecommerceGstin}</div>
-            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10A1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy"
+              sectionTitle="10A (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10A1_ecommerceGstin}</div>}
+            />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B. Inter-State Supplies [Rate wise]</div>
-            <div className={styles.outwardSectionTitleSub}>Place of Supply (Name of State): {data.table10.section10B_pos}</div>
-            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10B} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid marginBottom="20px" defaultColDef={defaultColDef} rowData={data.table10.section10B} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy"
+              sectionTitle="10B. Inter-State Supplies [Rate wise]"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+              sectionSubtitle={<>Place of Supply (Name of State): {data.table10.section10B_pos}</>}
+            />
 
-            <div className={styles.outwardSectionTitle} style={{ color: '#5a6acf' }}>10B (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
-            <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10B1_ecommerceGstin}</div>
-            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy" />
+            <DynamicAgGrid defaultColDef={defaultColDef} rowData={data.table10.section10B1} columnDefs={colDefs10} suppressMenuHide={true} theme="legacy"
+              sectionTitle="10B (1). Supplies through e-Commerce Operators attracting TCS (operator wise, rate wise)"
+              sectionTitleStyle={{ color: '#5a6acf' }}
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table10.section10B1_ecommerceGstin}</div>}
+            />
           </div>
         </AnimatedExpandable>
       </div>

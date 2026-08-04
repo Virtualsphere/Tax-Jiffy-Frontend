@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Hamburger from 'hamburger-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -30,6 +30,16 @@ export function UserSidebar({
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handleToggle = (e: any) => {
+      if (e.detail?.collapsed !== undefined) {
+        setCollapsed(e.detail.collapsed);
+      }
+    };
+    window.addEventListener('toggle-sidebar', handleToggle);
+    return () => window.removeEventListener('toggle-sidebar', handleToggle);
   }, []);
 
   return (

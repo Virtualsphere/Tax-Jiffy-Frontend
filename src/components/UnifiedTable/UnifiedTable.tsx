@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -42,6 +43,7 @@ export interface UnifiedTableProps {
   variant?: 'standalone' | 'nested';
   autoWidth?: boolean;
   filterCount?: number;
+  showFilterBarInFullscreenOnly?: boolean;
 }
 
 export const UnifiedTable: React.FC<UnifiedTableProps> = ({
@@ -68,6 +70,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   variant = 'standalone',
   autoWidth = false,
   filterCount = 0,
+  showFilterBarInFullscreenOnly = false,
 }) => {
   const [gridApi, setGridApi] = useState<any>(null);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
@@ -77,6 +80,11 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   // 1.3: Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleFullscreen = (full: boolean) => {
+    setIsFullscreen(full);
+    window.dispatchEvent(new CustomEvent('toggle-sidebar', { detail: { collapsed: full } }));
+  };
 
   // 1.1: Internal pagination state (uncontrolled mode)
   const [internalPage, setInternalPage] = useState(1);
@@ -161,18 +169,18 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
 
   // 1.3: Escape key listener for fullscreen
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
+        handleToggleFullscreen(false);
       }
     };
     if (isFullscreen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keydown', handleEscape);
       // Prevent body scroll in fullscreen
       document.body.style.overflow = 'hidden';
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
   }, [isFullscreen]);
@@ -254,7 +262,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   // 1.7: Check if there are no records
   const hasNoRecords = !rowData || rowData.length === 0;
 
-  return (
+  const tableContent = (
     <div ref={containerRef} className={finalContainerClass} style={{ width: '100%' }}>
       {/* Header */}
       {!hideHeader && (
@@ -326,7 +334,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
       ) : (
         <>
           {/* Filter Bar */}
-          {!hideFilterBar && (
+          {(!hideFilterBar && (!showFilterBarInFullscreenOnly || isFullscreen)) && (
             <div className={styles.filterBar}>
               <div className={styles.filterGroup}>
                 <div className={styles.searchWrapper}>
@@ -429,7 +437,7 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 {/* Fullscreen button — inside filter bar */}
                 <button 
                   className={styles.fullscreenButton} 
-                  onClick={() => setIsFullscreen(prev => !prev)} 
+                  onClick={() => handleToggleFullscreen(!isFullscreen)} 
                   title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen'}
                 >
                   {isFullscreen ? (
@@ -446,8 +454,20 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
             </div>
           )}
 
+          {showFilterBarInFullscreenOnly && !isFullscreen && !hideFilterBar && (
+            <button 
+              className={styles.floatingFullscreenButton} 
+              onClick={() => handleToggleFullscreen(true)} 
+              title="Fullscreen"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+
           {/* Grid */}
-          <div className={styles.gridWrapper} style={{ width: autoWidth ? cw : '100%' }}>
+          <div className={styles.gridWrapper} style={{ width: autoWidth ? cw : '100%', position: 'relative' }}>
             <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: isFullscreen ? 'calc(100vh - 280px)' : (hidePagination ? 'auto' : '500px') }}>
               <AgGridReact
                 theme="legacy"
@@ -553,4 +573,13 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
       )}
     </div>
   );
+
+  // When fullscreen, render via portal at document.body to escape
+  // any ancestor stacking contexts (transforms, will-change, etc.)
+  // that would keep the sidebar visible.
+  if (isFullscreen) {
+    return ReactDOM.createPortal(tableContent, document.body);
+  }
+
+  return tableContent;
 };

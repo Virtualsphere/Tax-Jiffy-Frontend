@@ -44,8 +44,39 @@ const DynamicAgGrid = (props: any) => {
     setActiveFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const hasNoRecords = !props.rowData || props.rowData.length === 0;
+  const { sectionTitle, sectionSubtitle, sectionExtra, sectionTitleStyle } = props;
+
+  if (hasNoRecords && sectionTitle) {
+    return (
+      <div style={innerStyle}>
+        {sectionExtra}
+        <div className={styles.sectionTitleRow}>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          <span className={styles.noRecordsBadge}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            No Records
+          </span>
+          {sectionSubtitle && (
+            <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={innerStyle}>
+      {sectionExtra}
+      {sectionTitle && (
+        <>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          {sectionSubtitle && <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>}
+        </>
+      )}
       <UnifiedTable
         variant="nested"
         hideHeader={true}
@@ -63,6 +94,7 @@ const DynamicAgGrid = (props: any) => {
           rowData={filteredData}
           columnDefs={props.columnDefs}
           pinnedBottomRowData={props.pinnedBottomRowData}
+          showFilterBarInFullscreenOnly={true}
         />
       </div>
   );

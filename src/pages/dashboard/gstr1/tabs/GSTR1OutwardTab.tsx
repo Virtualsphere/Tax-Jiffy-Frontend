@@ -43,8 +43,40 @@ const DynamicAgGrid = (props: any) => {
     setActiveFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const hasNoRecords = !props.rowData || props.rowData.length === 0;
+  const { sectionTitle, sectionSubtitle, sectionExtra, sectionTitleStyle } = props;
+
+  // When no records and a section title is provided, show compact inline badge
+  if (hasNoRecords && sectionTitle) {
+    return (
+      <div style={innerStyle}>
+        {sectionExtra}
+        <div className={styles.sectionTitleRow}>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          <span className={styles.noRecordsBadge}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            No Records
+          </span>
+          {sectionSubtitle && (
+            <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={innerStyle}>
+      {sectionExtra}
+      {sectionTitle && (
+        <>
+          <div className={styles.outwardSectionTitle} style={sectionTitleStyle}>{sectionTitle}</div>
+          {sectionSubtitle && <div className={styles.outwardSectionTitleSub}>{sectionSubtitle}</div>}
+        </>
+      )}
       <UnifiedTable
         variant="nested"
         hideHeader={true}
@@ -62,10 +94,12 @@ const DynamicAgGrid = (props: any) => {
           rowData={filteredData}
           columnDefs={props.columnDefs}
           pinnedBottomRowData={props.pinnedBottomRowData}
+          showFilterBarInFullscreenOnly={true}
         />
       </div>
   );
 };
+
 
 export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OutwardTabProps) {
   const defaultColDef = useMemo<ColDef>(() => ({
@@ -195,19 +229,21 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         <AnimatedExpandable isExpanded={expandedAccordion === 'table4'}>
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle}>4A. SUPPLIES OTHER THAN REVERSE CHARGE &amp; E-COMMERCE</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4A} columnDefs={colDefs4} suppressMenuHide={true}
+              sectionTitle="4A. SUPPLIES OTHER THAN REVERSE CHARGE & E-COMMERCE"
+            />
 
-            <div className={styles.outwardSectionTitle}>4B. SUPPLIES ATTRACTING REVERSE CHARGE</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4B} columnDefs={colDefs4} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table4.section4B} columnDefs={colDefs4} suppressMenuHide={true}
+              sectionTitle="4B. SUPPLIES ATTRACTING REVERSE CHARGE"
+            />
 
-            <div className={styles.outwardEcommerceGSTIN}>E-COMMERCE OPERATOR GSTIN: {data.table4.section4C_ecommerceGstin}</div>
-            <div className={styles.outwardSectionTitle}>4C. SUPPLIES THROUGH E-COMMERCE (TCS)</div>
             <DynamicAgGrid theme="legacy"
               defaultColDef={defaultColDef}
               rowData={data.table4.section4C}
               columnDefs={colDefs4}
               suppressMenuHide={true}
+              sectionTitle="4C. SUPPLIES THROUGH E-COMMERCE (TCS)"
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>E-COMMERCE OPERATOR GSTIN: {data.table4.section4C_ecommerceGstin}</div>}
               pinnedBottomRowData={[{
                 gstin: 'TOTAL SUMMARIZED RECORDS FOR TABLE 4',
                 invoiceValue: data.table4.total.invoiceValue,
@@ -233,17 +269,18 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         <AnimatedExpandable isExpanded={expandedAccordion === 'table5'}>
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle}>5A. OUTWARD SUPPLIES (OTHER THAN E-COMMERCE OPERATOR, RATE-WISE)</div>
-            <div className={styles.outwardSectionTitleSub}>Inter-state supplies to unregistered persons (aggregated by rate)</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table5.section5A} columnDefs={colDefs5.filter((c: any) => !c.hide)} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table5.section5A} columnDefs={colDefs5.filter((c: any) => !c.hide)} suppressMenuHide={true}
+              sectionTitle="5A. OUTWARD SUPPLIES (OTHER THAN E-COMMERCE OPERATOR, RATE-WISE)"
+              sectionSubtitle="Inter-state supplies to unregistered persons (aggregated by rate)"
+            />
 
-            <div className={styles.outwardEcommerceGSTIN}>GSTIN OF E-COMMERCE OPERATOR <span style={{ background: '#f1f3f9', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px' }}>{data.table5.section5B_ecommerceGstin}</span></div>
-            <div className={styles.outwardSectionTitle}>5B. SUPPLIES MADE THROUGH E-COMMERCE OPERATOR (TCS APPLICABLE, RATE-WISE)</div>
             <DynamicAgGrid theme="legacy"
               defaultColDef={defaultColDef}
               rowData={data.table5.section5B}
               columnDefs={colDefs5B}
               suppressMenuHide={true}
+              sectionTitle="5B. SUPPLIES MADE THROUGH E-COMMERCE OPERATOR (TCS APPLICABLE, RATE-WISE)"
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>GSTIN OF E-COMMERCE OPERATOR <span style={{ background: '#f1f3f9', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px' }}>{data.table5.section5B_ecommerceGstin}</span></div>}
               pinnedBottomRowData={[{
                 pos: 'TOTAL SUMMARIZED RECORDS FOR TABLE 5',
                 invoiceValue: data.table5.total.invoiceValue,
@@ -266,14 +303,17 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         <AnimatedExpandable isExpanded={expandedAccordion === 'table6'}>
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle}>6A. EXPORTS</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6A} columnDefs={colDefs6} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6A} columnDefs={colDefs6} suppressMenuHide={true}
+              sectionTitle="6A. EXPORTS"
+            />
 
-            <div className={styles.outwardSectionTitle}>6B. SUPPLIES MADE TO SEZ UNIT / SEZ DEVELOPER</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6B} columnDefs={colDefs6} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6B} columnDefs={colDefs6} suppressMenuHide={true}
+              sectionTitle="6B. SUPPLIES MADE TO SEZ UNIT / SEZ DEVELOPER"
+            />
 
-            <div className={styles.outwardSectionTitle}>6C. DEEMED EXPORTS</div>
-            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6C} columnDefs={colDefs6} suppressMenuHide={true} />
+            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table6.section6C} columnDefs={colDefs6} suppressMenuHide={true}
+              sectionTitle="6C. DEEMED EXPORTS"
+            />
           </div>
         </AnimatedExpandable>
       </div>
@@ -288,21 +328,25 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
         </div>
         {expandedAccordion === 'table7' && (
           <div className={styles.accordionContent}>
-            <div className={styles.outwardSectionTitle}>7A. Intra-State supplies</div>
-            <div className={styles.outwardSectionTitleSub}>7A (1). Consolidated rate wise outward supplies [including supplies made through e-commerce operator attracting TCS]</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A1} columnDefs={colDefs7} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A1} columnDefs={colDefs7} suppressMenuHide={true}
+              sectionTitle="7A. Intra-State supplies"
+              sectionSubtitle="7A (1). Consolidated rate wise outward supplies [including supplies made through e-commerce operator attracting TCS]"
+            />
 
-            <div className={styles.outwardSectionTitleSub}>7A (2). Out of supplies mentioned at 7A(1), value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)</div>
-            <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7A2_ecommerceGstin}</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A2} columnDefs={colDefs7} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7A2} columnDefs={colDefs7} suppressMenuHide={true}
+              sectionTitle="7A (2). Out of supplies mentioned at 7A(1), value of supplies made through e-Commerce Operators attracting TCS (operator wise, rate wise)"
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7A2_ecommerceGstin}</div>}
+            />
 
-            <div className={styles.outwardSectionTitle}>7B. Inter-State Supplies where invoice value is upto Rs 2.5 Lakh [Rate wise]</div>
-            <div className={styles.outwardSectionTitleSub}>7B (1). Place of Supply (Name of State): {data.table7.section7B1_pos}</div>
-            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY', minWidth: 130 }]} suppressMenuHide={true} />
+            <DynamicAgGrid marginBottom="20px" theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B1} columnDefs={[...colDefs7, { field: 'stateName', headerName: 'PLACE OF SUPPLY', minWidth: 130 }]} suppressMenuHide={true}
+              sectionTitle="7B. Inter-State Supplies where invoice value is upto Rs 2.5 Lakh [Rate wise]"
+              sectionSubtitle={<>7B (1). Place of Supply (Name of State): {data.table7.section7B1_pos}</>}
+            />
 
-            <div className={styles.outwardSectionTitleSub}>7B (2). Out of the supplies mentioned in 7B (1), the supplies made through e-Commerce Operators (operator wise, rate wise)</div>
-            <div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7B2_ecommerceGstin}</div>
-            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B2} columnDefs={colDefs7} suppressMenuHide={true} />
+            <DynamicAgGrid theme="legacy" defaultColDef={defaultColDef} rowData={data.table7.section7B2} columnDefs={colDefs7} suppressMenuHide={true}
+              sectionTitle="7B (2). Out of the supplies mentioned in 7B (1), the supplies made through e-Commerce Operators (operator wise, rate wise)"
+              sectionExtra={<div className={styles.outwardEcommerceGSTIN}>GSTIN of e-commerce operator: {data.table7.section7B2_ecommerceGstin}</div>}
+            />
           </div>
         )}
       </div>
