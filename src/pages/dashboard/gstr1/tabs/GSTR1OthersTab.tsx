@@ -101,8 +101,6 @@ const DynamicAgGrid = (props: any) => {
 export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OthersTabProps) {
 
   const defaultColDef = useMemo<ColDef>(() => ({
-    wrapHeaderText: true,
-    autoHeaderHeight: true,
     minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
@@ -112,44 +110,44 @@ export function GSTR1OthersTab({ data, expandedAccordion, setExpandedAccordion }
     {
       headerName: 'Items',
       children: [
-        { field: 'srNo',        headerName: 'Sr.',         valueGetter: 'node.rowIndex + 1', minWidth: 50, maxWidth: 60,  cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'hsn',         headerName: 'HSN',         minWidth: 70, maxWidth: 100,                cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'srNo',        headerName: 'Sr.',         valueGetter: 'node.rowIndex + 1', minWidth: 50,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'hsn',         headerName: 'HSN',         minWidth: 70,                cellClass: styles.centered, headerClass: styles.centered },
         { field: 'description', headerName: 'Description', minWidth: 160 },
-        { field: 'uqc',         headerName: 'UQC',         minWidth: 60,  maxWidth: 80,                   cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'uqc',         headerName: 'UQC',         minWidth: 60,                    cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
     {
       headerName: 'Qty & Value',
       children: [
-        { field: 'totalQuantity', headerName: 'Qty',   minWidth: 80,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'totalValue',    headerName: 'Value', minWidth: 100, maxWidth: 140 },
+        { field: 'totalQuantity', headerName: 'Qty',   minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'totalValue',    headerName: 'Value', minWidth: 100 },
       ]
     },
     {
       headerName: 'Tax Details',
       children: [
         { field: 'taxableValue',  headerName: 'Taxable Value', minWidth: 110 },
-        { field: 'integratedTax', headerName: 'IGST',          minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'centralTax',    headerName: 'CGST',          minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'stateTax',      headerName: 'SGST/UT',       minWidth: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'cess',          headerName: 'Cess',          minWidth: 80,  maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integratedTax', headerName: 'IGST',          minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'centralTax',    headerName: 'CGST',          minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'stateTax',      headerName: 'SGST/UT',       minWidth: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'cess',          headerName: 'Cess',          minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
 
   const colDefs13 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'srNo',             headerName: 'Sr.',              valueGetter: 'node.rowIndex + 1', minWidth: 50, maxWidth: 60,  cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'srNo',             headerName: 'Sr.',              valueGetter: 'node.rowIndex + 1', minWidth: 50,  cellClass: styles.centered, headerClass: styles.centered },
     { field: 'natureOfDocument', headerName: 'Nature of Document', minWidth: 200 },
     {
       headerName: 'Sr. No. Range',
       children: [
-        { field: 'from', headerName: 'From', minWidth: 70, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'to',   headerName: 'To',   minWidth: 70, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'from', headerName: 'From', minWidth: 70, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'to',   headerName: 'To',   minWidth: 70, cellClass: styles.centered, headerClass: styles.centered },
       ]
     },
-    { field: 'totalNumber', headerName: 'Total',     minWidth: 75, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'cancelled',   headerName: 'Cancelled', minWidth: 85, maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'netIssued',   headerName: 'Net Issued', minWidth: 90, maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'totalNumber', headerName: 'Total',     minWidth: 75, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'cancelled',   headerName: 'Cancelled', minWidth: 85, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'netIssued',   headerName: 'Net Issued', minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
   const AccordionIcon = ({ expanded }: { expanded: boolean }) => (

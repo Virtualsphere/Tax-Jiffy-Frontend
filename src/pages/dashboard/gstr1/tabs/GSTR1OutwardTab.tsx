@@ -101,20 +101,18 @@ const DynamicAgGrid = (props: any) => {
 
 export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1OutwardTabProps) {
   const defaultColDef = useMemo<ColDef>(() => ({
-    wrapHeaderText: true,
-    autoHeaderHeight: true,
     minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
   }), []);
 
   /* ── Narrow numeric widths shared across tables ── */
-  const TAX_COL = { minWidth: 90, maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered };
-  const VAL_COL = { minWidth: 110, maxWidth: 160 };
+  const TAX_COL = { minWidth: 90, cellClass: styles.centered, headerClass: styles.centered };
+  const VAL_COL = { minWidth: 110 };
 
   /* ─── Table 4 cols ─── */
   const colDefs4 = useMemo<ColDef[]>(() => [
-    { field: 'gstin',        headerName: 'GSTIN/UIN',         minWidth: 160, maxWidth: 180,
+    { field: 'gstin',        headerName: 'GSTIN/UIN',         minWidth: 160,
       colSpan: (p: any) => p.node?.rowPinned === 'bottom' ? 3 : 1,
       cellStyle: (p: any) => p.node?.rowPinned === 'bottom' ? { color: '#5A6ACF', whiteSpace: 'nowrap' } as any : { whiteSpace: 'nowrap' } as any },
     { field: 'invoiceNo',    headerName: 'INVOICE NO',         minWidth: 110 },
@@ -174,24 +172,24 @@ export function GSTR1OutwardTab({ data, expandedAccordion, setExpandedAccordion 
     {
       headerName: 'INTEGRATED TAX',
       children: [
-        { field: 'rate',         headerName: 'RATE (%)',      width: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'rate',         headerName: 'RATE (%)',      width: 80, cellClass: styles.centered, headerClass: styles.centered },
         { field: 'taxableValue', headerName: 'TAXABLE VALUE', minWidth: 110 },
-        { field: 'amt',          headerName: 'AMT.',          width: 90, maxWidth: 120, cellClass: styles.textBlue },
+        { field: 'amt',          headerName: 'AMT.',          width: 90, cellClass: styles.textBlue },
       ]
     }
   ], []);
 
   /* ─── Table 7 cols (grouped) ─── */
   const colDefs7 = useMemo<any[]>(() => [
-    { field: 'rate',      headerName: 'RATE OF TAX',           width: 90,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',      headerName: 'RATE OF TAX',           width: 90,  cellClass: styles.centered, headerClass: styles.centered },
     { field: 'stateName', headerName: 'PLACE OF SUPPLY',       minWidth: 130, hide: true },
     { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE (₹)', minWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
     {
       headerName: 'AMOUNT (₹)',
       children: [
-        { field: 'integrated', headerName: 'INTEGRATED', width: 100, maxWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'central',    headerName: 'CENTRAL',    width: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'state',      headerName: 'STATE/UT',   width: 90,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integrated', headerName: 'INTEGRATED', width: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'central',    headerName: 'CENTRAL',    width: 90,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'state',      headerName: 'STATE/UT',   width: 90,  cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);

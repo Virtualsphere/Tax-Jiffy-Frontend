@@ -4,6 +4,7 @@ import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Just in case, though they use legacy/custom
+import 'ag-grid-enterprise';
 
 import styles from './UnifiedTable.module.css';
 
@@ -132,8 +133,9 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     filter: 'agTextColumnFilter',
     floatingFilter: false,
     minWidth: 100,
-    wrapHeaderText: true,
-    autoHeaderHeight: true,
+    enableRowGroup: true,
+    enablePivot: true,
+    enableValue: true,
     // 1.6: Always show column menu
     suppressHeaderMenuButton: false,
     suppressHeaderFilterButton: false,
@@ -463,9 +465,16 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 rowData={rowData}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
+                headerHeight={48}
+                groupHeaderHeight={48}
+                floatingFiltersHeight={48}
+                autoSizeStrategy={{
+                  type: 'fitCellContents',
+                  defaultMinWidth: 100,
+                }}
                 icons={{
-                  menu: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>',
-                  filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14.6667 2H1.33333L6.66667 8.30667V12.6667L9.33333 14V8.30667L14.6667 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>'
+                  menu: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
+                  filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 2 15 2 9 8 9 14 7 14 7 8"></polygon></svg>'
                 }}
                 rowSelection="multiple"
                 domLayout={hidePagination && !isFullscreen ? 'autoHeight' : 'normal'}
@@ -473,7 +482,6 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 pagination={!hidePagination}
                 paginationPageSize={rowsPerPage}
                 pinnedBottomRowData={pinnedBottomRowData}
-                autoSizeStrategy={{ type: 'fitGridWidth' }}
                 onGridReady={(params: GridReadyEvent) => {
                   setGridApi(params.api);
                   if (page > 1 && !hidePagination) {
@@ -481,7 +489,13 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                   }
                   updateWidth(params);
                 }}
-                onFirstDataRendered={updateWidth}
+                onFirstDataRendered={(params: any) => {
+                  if (params.api) {
+                    const allColIds = params.api.getColumns()?.map((col: any) => col.getId()) || [];
+                    params.api.autoSizeColumns(allColIds, false);
+                  }
+                  updateWidth(params);
+                }}
                 onColumnResized={updateWidth}
               />
             </div>

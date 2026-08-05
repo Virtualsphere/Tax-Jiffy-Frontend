@@ -61,11 +61,14 @@ export function PricingComparisonSection({ isAnnual }: PricingComparisonSectionP
 
       <div className={styles.tableWrapper}>
         <div className="ag-theme-tax-jiffy" style={{ width: '100%' }}>
-          <AgGridReact theme="legacy"
+          <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
             rowData={COMPARISON_DATA}
             columnDefs={colDefs}
             domLayout="autoHeight"
             suppressMenuHide={true}
+            headerHeight={48}
+            groupHeaderHeight={48}
+            floatingFiltersHeight={48}
           />
         </div>
       </div>

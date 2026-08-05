@@ -101,35 +101,33 @@ const DynamicAgGrid = (props: any) => {
 export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion }: GSTR1AdvancedTabProps) {
 
   const defaultColDef = useMemo<ColDef>(() => ({
-    wrapHeaderText: true,
-    autoHeaderHeight: true,
     minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
   }), []);
 
   const colDefs11 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'rate',         headerName: 'RATE',                           minWidth: 80,  maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',         headerName: 'RATE',                           minWidth: 80,  cellClass: styles.centered, headerClass: styles.centered },
     { field: 'grossAdvance', headerName: 'GROSS ADVANCE RECEIVED/ADJUSTED', minWidth: 160 },
     { field: 'pos',          headerName: 'PLACE OF SUPPLY',                 minWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
     {
       headerName: 'AMOUNT',
       children: [
-        { field: 'integrated', headerName: 'IGST',    minWidth: 90, maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'central',    headerName: 'CGST',    minWidth: 90, maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'state',      headerName: 'SGST/UT', minWidth: 90, maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'cess',       headerName: 'CESS',    minWidth: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integrated', headerName: 'IGST',    minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'central',    headerName: 'CGST',    minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'state',      headerName: 'SGST/UT', minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'cess',       headerName: 'CESS',    minWidth: 80, cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
 
   const colDefs11Amendments = useMemo<ColDef[]>(() => [
-    { field: 'month',              headerName: 'Month',         minWidth: 90, maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'month',              headerName: 'Month',         minWidth: 90, cellClass: styles.centered, headerClass: styles.centered },
     { field: 'amendmentRelatingTo', headerName: 'Amendment Relating To (S. No.)', minWidth: 200 },
-    { field: 'val11A1', headerName: '11A(1)', minWidth: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'val11A2', headerName: '11A(2)', minWidth: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'val11B1', headerName: '11B(1)', minWidth: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'val11B2', headerName: '11B(2)', minWidth: 80, maxWidth: 100, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'val11A1', headerName: '11A(1)', minWidth: 80, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'val11A2', headerName: '11A(2)', minWidth: 80, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'val11B1', headerName: '11B(1)', minWidth: 80, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'val11B2', headerName: '11B(2)', minWidth: 80, cellClass: styles.centered, headerClass: styles.centered },
   ], []);
 
   const AccordionIcon = ({ expanded }: { expanded: boolean }) => (

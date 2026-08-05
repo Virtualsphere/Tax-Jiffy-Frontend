@@ -64,9 +64,18 @@ const DynamicAgGrid = (props: any) => {
       <div className={props.wrapperClassName} style={{ width: cw, maxWidth: '100%', marginBottom: props.marginBottom || 0 }}>
         <AgGridReact
           {...props}
+          headerHeight={48}
+          groupHeaderHeight={48}
+          floatingFiltersHeight={48}
           autoSizeStrategy={{ type: 'fitCellContents' }}
           onGridReady={updateWidth}
-          onFirstDataRendered={updateWidth}
+          onFirstDataRendered={(params: any) => {
+            if (params.api) {
+              const allColIds = params.api.getColumns()?.map((col: any) => col.getId()) || [];
+              params.api.autoSizeColumns(allColIds, false);
+            }
+            updateWidth(params);
+          }}
           onColumnResized={updateWidth}
         />
       </div>
@@ -379,7 +388,7 @@ export function GSTR3BPage() {
 
   // ── ColDefs ──────────────────────────────────────────────────────────────
   const defaultColDef = useMemo<ColDef>(
-    () => ({ resizable: true, wrapHeaderText: true, autoHeaderHeight: true, suppressSizeToFit: true }),
+    () => ({ resizable: true, suppressSizeToFit: true }),
     []
   );
 

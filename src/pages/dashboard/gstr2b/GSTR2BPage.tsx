@@ -194,7 +194,7 @@ export function GSTR2BPage() {
           <p className={styles.cardSubtitle}>Validated GST registration records from the official portal.</p>
           
           <div className="ag-theme-tax-jiffy" style={{ width: '100%' }}>
-            <AgGridReact theme="legacy"
+            <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
               rowData={registrationRowData}
               columnDefs={registrationColDefs}
               domLayout="autoHeight"
@@ -219,7 +219,7 @@ export function GSTR2BPage() {
             
             <AnimatedExpandable isExpanded={isAccordionAExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
-                <AgGridReact theme="legacy"
+                <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
                   rowData={data?.itcAvailable.creditMayBeClaimed || []}
                   columnDefs={itcColDefs}
                   domLayout="autoHeight"
@@ -242,7 +242,7 @@ export function GSTR2BPage() {
             
             <AnimatedExpandable isExpanded={isAccordionBExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
-                <AgGridReact theme="legacy"
+                <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
                   rowData={data?.itcAvailable.creditShallBeReversed || []}
                   columnDefs={itcColDefs}
                   domLayout="autoHeight"
@@ -272,7 +272,7 @@ export function GSTR2BPage() {
             
             <AnimatedExpandable isExpanded={isUnavailableAExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
-                <AgGridReact theme="legacy"
+                <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
                   rowData={data?.itcUnavailable.itcNotAvailable || []}
                   columnDefs={itcColDefs}
                   domLayout="autoHeight"
@@ -295,7 +295,7 @@ export function GSTR2BPage() {
             
             <AnimatedExpandable isExpanded={isUnavailableBExpanded}>
               <div className="ag-theme-tax-jiffy-data" style={{ width: '100%' }}>
-                <AgGridReact theme="legacy"
+                <AgGridReact onFirstDataRendered={(params) => { if (params.api) { const ids = params.api.getColumns()?.map((c) => c.getId()) || []; params.api.autoSizeColumns(ids, false); } }} theme="legacy"
                   rowData={data?.itcUnavailable.itcReversal || []}
                   columnDefs={itcColDefs}
                   domLayout="autoHeight"

@@ -104,8 +104,6 @@ const DynamicAgGrid = (props: any) => {
 export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordion, selectedMonth, selectedYear }: GSTR1AmendmentsTabProps) {
 
   const defaultColDef = useMemo<ColDef>(() => ({
-    wrapHeaderText: false,
-    autoHeaderHeight: false,
     minWidth: 80,
     resizable: true,
     suppressSizeToFit: true,
@@ -140,14 +138,14 @@ export function GSTR1AmendmentsTab({ data, expandedAccordion, setExpandedAccordi
 
   // colDefs10: use minWidth (not width) so autoSizeStrategy won't shrink below readable size
   const colDefs10 = useMemo<(ColDef | ColGroupDef)[]>(() => [
-    { field: 'rate',         headerName: 'RATE (%)',            minWidth: 75,  maxWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
-    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE', minWidth: 110, maxWidth: 155, cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'rate',         headerName: 'RATE (%)',            minWidth: 75,  cellClass: styles.centered, headerClass: styles.centered },
+    { field: 'taxableValue', headerName: 'TOTAL TAXABLE VALUE', minWidth: 110, cellClass: styles.centered, headerClass: styles.centered },
     {
       headerName: 'AMOUNT',
       children: [
-        { field: 'integrated', headerName: 'INTEGRATED', minWidth: 85,  maxWidth: 130, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'central',    headerName: 'CENTRAL',    minWidth: 70,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
-        { field: 'state',      headerName: 'STATE/UT',   minWidth: 70,  maxWidth: 120, cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'integrated', headerName: 'INTEGRATED', minWidth: 85,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'central',    headerName: 'CENTRAL',    minWidth: 70,  cellClass: styles.centered, headerClass: styles.centered },
+        { field: 'state',      headerName: 'STATE/UT',   minWidth: 70,  cellClass: styles.centered, headerClass: styles.centered },
       ]
     }
   ], []);
