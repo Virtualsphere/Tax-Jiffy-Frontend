@@ -4,7 +4,7 @@ import { ROUTES } from '@/config/routes';
 import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
-import { usePeriod, FY_YEARS, MONTHS } from '@/context/PeriodContext';
+import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
@@ -289,18 +289,6 @@ export function GSTR1Page() {
 
 
   /* ── Quick Link Helpers ── */
-  const getPrevMonth = (m: string) => {
-    const idx = MONTHS.indexOf(m);
-    if (idx > 0) return MONTHS[idx - 1];
-    return MONTHS[11];
-  };
-
-  const getPrevReturn = (m: string) => {
-    const idx = MONTHS.indexOf(m);
-    if (idx > 1) return MONTHS[idx - 2];
-    if (idx === 1) return MONTHS[11];
-    return MONTHS[10];
-  };
 
   const renderPeriodSelector = () => (
     <PeriodSelector
