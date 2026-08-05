@@ -588,13 +588,11 @@ export function GSTR1Page() {
                 <>
 
                   {/* All sections stacked vertically — always shown */}
-                  <div className={styles.draftTableWrap}>
-                    <GSTR1BasicTab 
-                      data={draft.data.rows ?? []} 
-                      expandedAccordion={expandedAccordion}
-                      setExpandedAccordion={setExpandedAccordion}
-                    />
-                  </div>
+                  <GSTR1BasicTab 
+                    data={draft.data.rows ?? []} 
+                    expandedAccordion={expandedAccordion}
+                    setExpandedAccordion={setExpandedAccordion}
+                  />
                   <GSTR1OutwardTab
                     data={draft.data.outwardData ?? {}}
                     expandedAccordion={expandedAccordion}
