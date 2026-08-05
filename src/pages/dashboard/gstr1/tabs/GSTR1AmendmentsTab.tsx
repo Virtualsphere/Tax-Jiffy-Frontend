@@ -83,7 +83,6 @@ const DynamicAgGrid = (props: any) => {
       <UnifiedTable
         variant="nested"
         hideHeader={true}
-        hidePagination={true}
         onSearch={setSearchTerm}
         onFilterChange={handleFilterChange}
         filters={[

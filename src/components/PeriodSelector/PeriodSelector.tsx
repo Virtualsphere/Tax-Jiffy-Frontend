@@ -91,10 +91,10 @@ export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Pro
     
     return sortedFYs.map(fy => ({
       fy,
-      quarters: [0, 1, 2, 3].map(qIdx => {
+      quarters: [3, 2, 1, 0].map(qIdx => {
         return {
           qIdx,
-          months: groups.get(fy)!.filter(m => m.quarterIndex === qIdx)
+          months: groups.get(fy)!.filter(m => m.quarterIndex === qIdx).reverse()
         };
       }).filter(q => q.months.length > 0)
     }));

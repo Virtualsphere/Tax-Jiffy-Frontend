@@ -141,6 +141,73 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     suppressHeaderFilterButton: false,
   }), []);
 
+  const enhancedColumnDefs = useMemo(() => {
+    if (!rowData || rowData.length === 0) return columnDefs;
+    
+    // Sample first few rows to accurately determine type
+    const sampleRows = rowData.slice(0, 5);
+    
+    const isNumeric = (value: any) => {
+      if (value === null || value === undefined || value === '') return false;
+      if (typeof value === 'number') return true;
+      if (typeof value === 'string') {
+        const withoutCommas = value.replace(/,/g, '');
+        if (withoutCommas.trim() === '') return false;
+        return !isNaN(Number(withoutCommas));
+      }
+      return false;
+    };
+
+    const processColumns = (cols: ColDef[]): ColDef[] => {
+      return cols.map(col => {
+        let newCol = { ...col };
+
+        // Format header name: first letter capital, rest small
+        if (newCol.headerName) {
+          newCol.headerName = newCol.headerName.charAt(0).toUpperCase() + newCol.headerName.slice(1).toLowerCase();
+        }
+
+        if ((newCol as any).children) {
+          return { ...newCol, children: processColumns((newCol as any).children as ColDef[]) };
+        }
+        
+        if (newCol.type !== 'numericColumn' && newCol.field) {
+          // Check if this field is numeric in all sampled rows (where it exists)
+          let isNum = false;
+          let hasVal = false;
+          for (const row of sampleRows) {
+            const val = row[newCol.field];
+            if (val !== null && val !== undefined && val !== '') {
+              hasVal = true;
+              if (!isNumeric(val)) {
+                isNum = false;
+                break;
+              } else {
+                isNum = true;
+              }
+            }
+          }
+          
+          // Exclusion based on typical string/code fields that might happen to be numeric
+          const name = newCol.field.toLowerCase();
+          const exclude = /(id|date|no|num|number|gstin|hsn|sac|code|phone|mobile)/.test(name);
+          
+          if (hasVal && isNum && !exclude) {
+            return {
+              ...newCol,
+              type: 'numericColumn',
+              cellClass: newCol.cellClass ? `${newCol.cellClass} force-right-align` : 'force-right-align',
+              headerClass: newCol.headerClass ? `${newCol.headerClass} force-right-align` : 'force-right-align',
+            };
+          }
+        }
+        return newCol;
+      });
+    };
+    
+    return processColumns(columnDefs || []);
+  }, [columnDefs, rowData]);
+
   const flatColumns = useMemo(() => {
     const flatten = (cols: any[]): any[] => {
       let flat: any[] = [];
@@ -459,11 +526,11 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
 
           {/* Grid */}
           <div className={styles.gridWrapper} style={{ width: autoWidth ? cw : '100%', position: 'relative' }}>
-            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: isFullscreen ? 'calc(100vh - 280px)' : (hidePagination ? 'auto' : '500px') }}>
+            <div className="ag-theme-tax-jiffy" style={{ width: '100%', height: isFullscreen ? 'calc(100vh - 280px)' : 'auto' }}>
               <AgGridReact
                 theme="legacy"
                 rowData={rowData}
-                columnDefs={columnDefs}
+                columnDefs={enhancedColumnDefs}
                 defaultColDef={defaultColDef}
                 headerHeight={48}
                 groupHeaderHeight={48}
@@ -477,11 +544,19 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                   filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 2 15 2 9 8 9 14 7 14 7 8"></polygon></svg>'
                 }}
                 rowSelection="multiple"
-                domLayout={hidePagination && !isFullscreen ? 'autoHeight' : 'normal'}
+                domLayout={!isFullscreen ? 'autoHeight' : 'normal'}
                 suppressPaginationPanel={true}
                 pagination={!hidePagination}
                 paginationPageSize={rowsPerPage}
                 pinnedBottomRowData={pinnedBottomRowData}
+                enableRangeSelection={true}
+                statusBar={{
+                  statusPanels: [
+                    { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                    { statusPanel: 'agSelectedRowCountComponent', align: 'center' },
+                    { statusPanel: 'agAggregationComponent', align: 'right' }
+                  ]
+                }}
                 onGridReady={(params: GridReadyEvent) => {
                   setGridApi(params.api);
                   if (page > 1 && !hidePagination) {

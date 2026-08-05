@@ -85,11 +85,13 @@ function IconVerified() {
   );
 }
 
-const TABS = ['Basic', 'ITC Available', 'ITC Inavailable'];
+
+const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+type MainTab = typeof MAIN_TABS[number];
 
 export function GSTR2BPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('ITC Inavailable');
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
   const [isAccordionAExpanded, setIsAccordionAExpanded] = useState(false);
   const [isAccordionBExpanded, setIsAccordionBExpanded] = useState(false);
   const [isUnavailableAExpanded, setIsUnavailableAExpanded] = useState(false);
@@ -174,21 +176,30 @@ export function GSTR2BPage() {
 
   return (
     <div className={styles.pageContainer}>
-      <h1 className={styles.pageTitle}>GSTR 2B Details</h1>
-      
-      <div className={styles.tabsContainer}>
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
+      <div className="global-main-tabs-container">
+        <div className="global-main-tabs-wrapper">
+          {MAIN_TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+              onClick={() => setActiveMainTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {activeTab === 'Basic' && (
+      <h1 className={styles.pageTitle} style={{ padding: '0 24px', marginTop: '24px' }}>GSTR 2B Details</h1>
+
+      {activeMainTab === 'Import' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Import section coming soon</div>
+      )}
+
+      {activeMainTab === 'Return' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', padding: '0 24px 32px' }}>
+      {/* ═══════════════════ SECTION: BASIC ═══════════════════ */}
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>Registration Details</h2>
           <p className={styles.cardSubtitle}>Validated GST registration records from the official portal.</p>
@@ -201,10 +212,7 @@ export function GSTR2BPage() {
             />
           </div>
         </div>
-      )}
-
-      {activeTab === 'ITC Available' && (
-        <>
+      {/* ═══════════════════ SECTION: ITC AVAILABLE ═══════════════════ */}
           <div className={styles.accordion}>
             <div 
               className={styles.accordionHeader} 
@@ -251,13 +259,7 @@ export function GSTR2BPage() {
             </AnimatedExpandable>
           </div>
 
-          <div className={styles.confirmContainer}>
-            <button className={styles.confirmBtn} onClick={() => setIsFiled(true)}>Confirm Filing</button>
-          </div>
-        </>
-      )}
-      {activeTab === 'ITC Inavailable' && (
-        <>
+      {/* ═══════════════════ SECTION: ITC NOT AVAILABLE ═══════════════════ */}
           <div className={styles.accordion}>
             <div 
               className={styles.accordionHeader} 
@@ -307,7 +309,11 @@ export function GSTR2BPage() {
           <div className={styles.confirmContainer}>
             <button className={styles.confirmBtn} onClick={() => setIsFiled(true)}>Confirm Filing</button>
           </div>
-        </>
+        </div>
+      )}
+
+      {activeMainTab === 'Reconciliation' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
       )}
     </div>
   );

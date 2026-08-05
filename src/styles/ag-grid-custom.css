@@ -137,7 +137,7 @@
 
 .ag-theme-tax-jiffy-data .ag-header-cell {
   padding: 0 10px;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.04em;
   font-size: 10.5px;
 }
@@ -189,11 +189,18 @@
 }
 
 /* Right align utility */
-.ag-cell-right {
-  justify-content: flex-end;
+.ag-cell-right,
+.force-right-align,
+.ag-right-aligned-cell {
+  justify-content: flex-end !important;
+  text-align: right !important;
 }
-.ag-header-cell-right .ag-header-cell-label {
-  justify-content: flex-end;
+
+.ag-header-cell-right .ag-header-cell-label,
+.force-right-align .ag-header-cell-label,
+.ag-right-aligned-header .ag-header-cell-label {
+  justify-content: flex-end !important;
+  text-align: right !important;
 }
 
 /* ── Neutral header theme — matches base ag-theme-tax-jiffy style ── */
@@ -778,7 +785,6 @@
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cline x1='3' y1='6' x2='21' y2='6'/%3E%3Cline x1='3' y1='18' x2='21' y2='18'/%3E%3C/svg%3E") no-repeat center / contain;
 }
 
-/* Also fix .ag-icon-aasc and .ag-icon-adesc just in case */
 .ag-theme-tax-jiffy .ag-icon-aasc::before,
 .ag-theme-tax-jiffy-data .ag-icon-aasc::before,
 .ag-theme-blue-headers .ag-icon-aasc::before,
@@ -786,4 +792,30 @@
 .ag-theme-tax-jiffy-data .ag-icon-adesc::before,
 .ag-theme-blue-headers .ag-icon-adesc::before {
   content: none !important;
+}
+
+/* --- STATUS BAR STYLING --- */
+.ag-theme-tax-jiffy .ag-status-bar,
+.ag-theme-tax-jiffy-data .ag-status-bar {
+  border: none;
+  border-top: 1px solid var(--ag-row-border-color);
+  background-color: #fafafa;
+  font-family: inherit;
+  font-size: 12px;
+  color: #667085;
+  padding: 8px 24px;
+}
+
+.ag-theme-tax-jiffy .ag-status-name-value,
+.ag-theme-tax-jiffy-data .ag-status-name-value {
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ag-theme-tax-jiffy .ag-status-name-value-value,
+.ag-theme-tax-jiffy-data .ag-status-name-value-value {
+  font-weight: 600;
+  color: #344054;
 }

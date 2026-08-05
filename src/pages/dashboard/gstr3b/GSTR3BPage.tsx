@@ -25,9 +25,6 @@ import type {
   Gstr3bInterestLateFeeRequest,
 } from './api/gstr3bApi';
 
-// ── Tabs ─────────────────────────────────────────────────────────────────
-type Tab = 'Basic' | 'Outward' | 'Inward' | 'Payment of Tax';
-const TABS: Tab[] = ['Basic', 'Outward', 'Inward', 'Payment of Tax'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function fmt(v: number | null | undefined): string {
@@ -227,7 +224,9 @@ function TwoBCredentialModal({
 
 // ── Main Component ────────────────────────────────────────────────────────
 export function GSTR3BPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('Basic');
+  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  type MainTab = typeof MAIN_TABS[number];
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null);
   const [isFiled, setIsFiled] = useState(false);
   const [showImsModal, setShowImsModal] = useState(false);
@@ -479,8 +478,25 @@ export function GSTR3BPage() {
 
   return (
     <div className={styles.page}>
-      {/* ── Page Header ── */}
-      <div className={styles.pageHeader}>
+      <div className="global-main-tabs-container">
+        <div className="global-main-tabs-wrapper">
+          {MAIN_TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+              onClick={() => setActiveMainTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeMainTab === 'Import' && (
+        <>
+          {/* ── Page Header ── */}
+          <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>GSTR-3B</h1>
         <p className={styles.pageSubtitle}>
           Reconcile outward supplies, ITC, and payment of tax before filing your monthly GSTR-3B return.
@@ -581,18 +597,13 @@ export function GSTR3BPage() {
           </div>
         </div>
       )}
+        </>
+      )}
 
-      {/* ── Tabs ── */}
-      <div className={styles.tabsContainer}>
-        {TABS.map((tab) => (
-          <button key={tab} type="button" className={`${styles.tabButton} ${activeTab === tab ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab(tab)}>
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* ═══════════════════ TAB: BASIC ═══════════════════ */}
-      {activeTab === 'Basic' && (
+      {activeMainTab === 'Return' && (
+        <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginTop: '24px', paddingBottom: '32px' }}>
+      {/* ═══════════════════ SECTION: BASIC ═══════════════════ */}
         <div className={styles.registrationCard}>
           <div className={styles.cardHeader}>
             <div className={styles.cardIcon}>
@@ -681,10 +692,8 @@ export function GSTR3BPage() {
             </div>
           )}
         </div>
-      )}
 
-      {/* ═══════════════════ TAB: OUTWARD ═══════════════════ */}
-      {activeTab === 'Outward' && (
+      {/* ═══════════════════ SECTION: OUTWARD ═══════════════════ */}
         <div className={styles.outwardContainer}>
           {!filing ? (
             <div className={styles.noFilingMsg}>Create or load a filing first to see preview data.</div>
@@ -735,10 +744,8 @@ export function GSTR3BPage() {
             </>
           )}
         </div>
-      )}
 
-      {/* ═══════════════════ TAB: INWARD ═══════════════════ */}
-      {activeTab === 'Inward' && (
+      {/* ═══════════════════ SECTION: INWARD ═══════════════════ */}
         <div className={styles.outwardContainer}>
           {!filing ? (
             <div className={styles.noFilingMsg}>Create or load a filing first to see preview data.</div>
@@ -831,10 +838,8 @@ export function GSTR3BPage() {
             </>
           )}
         </div>
-      )}
 
-      {/* ═══════════════════ TAB: PAYMENT OF TAX ═══════════════════ */}
-      {activeTab === 'Payment of Tax' && (
+      {/* ═══════════════════ SECTION: PAYMENT OF TAX ═══════════════════ */}
         <div className={styles.outwardContainer}>
           {!filing ? (
             <div className={styles.noFilingMsg}>Create or load a filing first to see preview data.</div>
@@ -881,6 +886,8 @@ export function GSTR3BPage() {
             </div>
           )}
         </div>
+      </div>
+        </>
       )}
 
       {/* ── Footer ── */}
@@ -918,6 +925,10 @@ export function GSTR3BPage() {
           onSubmit={handle2bSubmit}
           isLoading={twoBSync.isLoading}
         />
+      )}
+
+      {activeMainTab === 'Reconciliation' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
       )}
     </div>
   );

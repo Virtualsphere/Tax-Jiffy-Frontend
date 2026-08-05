@@ -69,6 +69,10 @@ export function EInvoicePage() {
     }
   }, [currentEntity, selectedYear, selectedMonth]);
 
+  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  type MainTab = typeof MAIN_TABS[number];
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
+
   return (
     <div style={{ position: 'relative' }}>
       {isSyncing && (
@@ -76,12 +80,36 @@ export function EInvoicePage() {
           Syncing E-Invoice Data...
         </div>
       )}
-      <SimpleUploadUI
-        title="E-Invoice"
-        subtitle="Upload your E-Invoice data or Sync directly from GST portal"
-        onUpload={handleUpload}
-        onSync={handleSync}
-      />
+
+      <div className="global-main-tabs-container">
+        <div className="global-main-tabs-wrapper">
+          {MAIN_TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+              onClick={() => setActiveMainTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeMainTab === 'Import' && (
+        <SimpleUploadUI
+          title="E-Invoice"
+          subtitle="Upload your E-Invoice data or Sync directly from GST portal"
+          onUpload={handleUpload}
+          onSync={handleSync}
+        />
+      )}
+      {activeMainTab === 'Reconciliation' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
+      )}
+      {activeMainTab === 'Return' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
+      )}
     </div>
   );
 }

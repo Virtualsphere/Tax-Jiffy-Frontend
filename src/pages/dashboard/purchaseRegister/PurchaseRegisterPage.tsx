@@ -234,6 +234,9 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
 
 // ── Main Component ────────────────────────────────────────────────────────
 export function PurchaseRegisterPage() {
+  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  type MainTab = typeof MAIN_TABS[number];
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
   const [step, setStep] = useState<Step>(1);
   const [activeTab, setActiveTab] = useState<SheetTab>('B2B');
   const [dragOver, setDragOver] = useState(false);
@@ -533,23 +536,44 @@ export function PurchaseRegisterPage() {
 
   return (
     <div className={styles.page}>
-      {step !== 2 && (
+      <div className="global-main-tabs-container">
+        <div className="global-main-tabs-wrapper">
+          {MAIN_TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+              onClick={() => setActiveMainTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeMainTab === 'Import' && (
         <>
-          <h2 className={styles.pageTitle}>Purchase Register</h2>
-          <p className={styles.pageSubtitle}>Step {step} of 3: {STEPS[step - 1].label}</p>
+          {step !== 2 && (
+            <>
+              <h2 className={styles.pageTitle}>Purchase Register</h2>
+              <p className={styles.pageSubtitle}>Step {step} of 3: {STEPS[step - 1].label}</p>
+            </>
+          )}
+
+          {renderStepper()}
+
+          {step === 1 && renderUpload()}
+          {step === 2 && renderReview()}
+          {step === 3 && renderSuccess()}
         </>
       )}
 
-      {renderStepper()}
-
-      {step === 1 && (
-        <>
-          {renderUpload()}
-        </>
+      {activeMainTab === 'Reconciliation' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
       )}
-
-      {step === 2 && renderReview()}
-      {step === 3 && renderSuccess()}
+      {activeMainTab === 'Return' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
+      )}
     </div>
   );
 }
