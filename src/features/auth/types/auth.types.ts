@@ -22,4 +22,5 @@ export type AuthSession = {
   userId: number;
   userName: string;
   email: string;
+  role?: string;
 };

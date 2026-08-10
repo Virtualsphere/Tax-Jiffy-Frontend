@@ -559,13 +559,16 @@
 .userInfo {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   flex: 1;
   min-width: 0;
+  gap: 3px;
 }
 
 .userName {
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
   color: var(--sidebar-brand-text);
   white-space: nowrap;
   overflow: hidden;
@@ -575,10 +578,25 @@
 .userEmail {
   font-size: 12px;
   font-weight: 500;
+  line-height: 1.2;
   color: var(--sidebar-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.userRole {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--sidebar-accent);
+  background: var(--sidebar-accent-hover-strong);
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .logoutButton {

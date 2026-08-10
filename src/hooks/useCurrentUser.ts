@@ -5,6 +5,7 @@ export type CurrentUser = {
   name: string;
   email: string;
   initials: string;
+  role: string;
 };
 
 export function useCurrentUser() {
@@ -24,12 +25,14 @@ export function useCurrentUser() {
         name: authUser.userName,
         email: authUser.email,
         initials: getInitials(authUser.userName),
+        role: authUser.role || 'Admin',
       }
     : {
         id: 'usr_mock_001',
         name: 'Guest User',
         email: 'guest@example.com',
         initials: 'G',
+        role: 'Guest',
       };
 
   return {
