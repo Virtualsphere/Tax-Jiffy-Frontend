@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import styles from './RolesPage.module.css';
 import { useRoles, useCreateRole, useUpdateRole, useDeleteRole } from './hooks/useRoles';
 import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
 import type { RolesResponse } from './types/roles.types';
-import { RolePermissionsMatrix } from './components/RolePermissionsMatrix';
 import { UserManagementPage } from '../users/UserManagementPage';
+import { useSaveRoleMapping, useRoleMappings } from './hooks/useRoleMapping';
+import type { RoleMappingRequest } from './types/roleMapping.types';
+import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -13,6 +15,25 @@ const ITEMS_PER_PAGE = 10;
 function formatRoleId(id: number): string {
   return `R${String(id).padStart(4, '0')}`;
 }
+
+
+const AVAILABLE_SCREENS = [
+  { pageName: 'Menus', screenName: 'Appearance - Menus' },
+  { pageName: 'Dashboard', screenName: 'Dashboard View' },
+  { pageName: 'User Management', screenName: 'Users List' },
+  { pageName: 'GSTR-1', screenName: 'B2B Invoices' },
+  { pageName: 'GSTR-1', screenName: 'B2C Invoices' },
+];
+
+type ScreenPermission = {
+  pageName: string;
+  screenName: string;
+  add: boolean;
+  edit: boolean;
+  view: boolean;
+  delete: boolean;
+  mappingId?: number;
+};
 
 /* ── Add Role Modal ───────────────────────────────────── */
 interface AddRoleModalProps {
@@ -26,6 +47,17 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
   const [roleName, setRoleName] = useState('');
   const [error, setError] = useState('');
   const createRole = useCreateRole();
+  const saveMapping = useSaveRoleMapping();
+
+  const [permissions, setPermissions] = useState<ScreenPermission[]>(
+    AVAILABLE_SCREENS.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
+  );
+
+  const togglePermission = (index: number, field: 'add' | 'edit' | 'view' | 'delete') => {
+    const newPerms = [...permissions];
+    newPerms[index] = { ...newPerms[index], [field]: !newPerms[index][field] };
+    setPermissions(newPerms);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +71,28 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
       return;
     }
     try {
-      await createRole.mutateAsync({ 
+      const createdRole = await createRole.mutateAsync({ 
         roleName: roleName.trim(),
         companyId: Number(companyId),
         companyGstId: Number(companyGstId),
       });
+
+      const mappingPromises = permissions.map(p => {
+        const req: RoleMappingRequest = {
+          roleId: createdRole.id,
+          companyId: Number(companyId),
+          companyGstId: Number(companyGstId),
+          pageNumber: p.pageName,
+          screenNumber: p.screenName,
+          add: p.add,
+          edit: p.edit,
+          view: p.view,
+          delete: p.delete,
+        };
+        return saveMapping.mutateAsync({ data: req });
+      });
+
+      await Promise.all(mappingPromises);
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to create role.');
@@ -52,7 +101,7 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
 
   return (
     <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modalContent}>
+      <div className={`${styles.modalContent} ${styles.modalContentLg}`} style={{ maxWidth: '800px', width: '90%' }}>
         <div className={styles.modalHeader}>
           <h4 className={styles.modalTitle}>Add New Role</h4>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">×</button>
@@ -61,41 +110,67 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
           <div className={styles.modalBody}>
             {error && <div className={styles.errorAlert}>{error}</div>}
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Role ID</label>
-              <div className={styles.inputWrapper}>
+            <div className={styles.formGroupRow} style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+              <div className={styles.formGroup} style={{ flex: 1 }}>
+                <label className={styles.label}>Role ID</label>
+                <div className={styles.inputWrapper}>
+                  <input
+                    type="text"
+                    className={`${styles.input} ${styles.inputReadonly}`}
+                    value={formatRoleId(nextRoleId)}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup} style={{ flex: 2 }}>
+                <label className={styles.label}>Role Name</label>
                 <input
                   type="text"
-                  className={`${styles.input} ${styles.inputReadonly}`}
-                  value={formatRoleId(nextRoleId)}
-                  readOnly
+                  className={styles.input}
+                  placeholder="Enter role name"
+                  value={roleName}
+                  onChange={(e) => setRoleName(e.target.value)}
+                  autoFocus
                 />
-                <svg className={styles.lockIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
               </div>
-              <span className={styles.inputHint}>Role ID is automatically generated by the system.</span>
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Role Name</label>
-              <input
-                type="text"
-                className={styles.input}
-                placeholder="Enter role name"
-                value={roleName}
-                onChange={(e) => setRoleName(e.target.value)}
-                autoFocus
-              />
+            <h5 className={styles.sectionTitle} style={{ marginTop: '20px', marginBottom: '10px', fontSize: '1.1rem', fontWeight: 600 }}>Permissions</h5>
+            <div className={styles.tableContainer} style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th className={styles.th}>Page Name</th>
+                    <th className={styles.th}>Screen Name</th>
+                    <th className={styles.thCenter}>View</th>
+                    <th className={styles.thCenter}>Add</th>
+                    <th className={styles.thCenter}>Edit</th>
+                    <th className={styles.thCenter}>Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {permissions.map((row, idx) => (
+                    <tr key={idx} className={styles.tr}>
+                      <td className={styles.td}>{row.pageName}</td>
+                      <td className={styles.td}>{row.screenName}</td>
+                      <td className={styles.tdCenter}><input type="checkbox" checked={row.view} onChange={() => togglePermission(idx, 'view')} /></td>
+                      <td className={styles.tdCenter}><input type="checkbox" checked={row.add} onChange={() => togglePermission(idx, 'add')} /></td>
+                      <td className={styles.tdCenter}><input type="checkbox" checked={row.edit} onChange={() => togglePermission(idx, 'edit')} /></td>
+                      <td className={styles.tdCenter}><input type="checkbox" checked={row.delete} onChange={() => togglePermission(idx, 'delete')} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+
           </div>
           <div className={styles.modalFooter}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn} disabled={createRole.isPending}>
-              {createRole.isPending ? 'Saving...' : 'Save Role'}
+            <button type="submit" className={styles.submitBtn} disabled={createRole.isPending || saveMapping.isPending}>
+              {createRole.isPending || saveMapping.isPending ? 'Saving...' : 'Save Role'}
             </button>
           </div>
         </form>
@@ -116,6 +191,36 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
   const [roleName, setRoleName] = useState(role.roleName);
   const [error, setError] = useState('');
   const updateRole = useUpdateRole();
+  const saveMapping = useSaveRoleMapping();
+  
+  const { data: existingMappings, isLoading: isMappingsLoading } = useRoleMappings(role.id, companyGstId);
+
+  const [permissions, setPermissions] = useState<ScreenPermission[]>(
+    AVAILABLE_SCREENS.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
+  );
+
+  useEffect(() => {
+    if (existingMappings && existingMappings.length > 0) {
+      const merged = AVAILABLE_SCREENS.map(screen => {
+        const mapping = existingMappings.find(m => m.pageNumber === screen.pageName && m.screenNumber === screen.screenName);
+        return {
+          ...screen,
+          mappingId: mapping?.id,
+          add: mapping?.add ?? false,
+          edit: mapping?.edit ?? false,
+          view: mapping?.view ?? false,
+          delete: mapping?.delete ?? false,
+        };
+      });
+      setPermissions(merged);
+    }
+  }, [existingMappings]);
+
+  const togglePermission = (index: number, field: 'add' | 'edit' | 'view' | 'delete') => {
+    const newPerms = [...permissions];
+    newPerms[index] = { ...newPerms[index], [field]: !newPerms[index][field] };
+    setPermissions(newPerms);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +242,23 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
           companyGstId: Number(companyGstId),
         } 
       });
+
+      const mappingPromises = permissions.map(p => {
+        const req: RoleMappingRequest = {
+          roleId: role.id,
+          companyId: Number(companyId),
+          companyGstId: Number(companyGstId),
+          pageNumber: p.pageName,
+          screenNumber: p.screenName,
+          add: p.add,
+          edit: p.edit,
+          view: p.view,
+          delete: p.delete,
+        };
+        return saveMapping.mutateAsync({ id: p.mappingId, data: req });
+      });
+
+      await Promise.all(mappingPromises);
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to update role.');
@@ -145,7 +267,7 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
 
   return (
     <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modalContent}>
+      <div className={`${styles.modalContent} ${styles.modalContentLg}`} style={{ maxWidth: '800px', width: '90%' }}>
         <div className={styles.modalHeader}>
           <h4 className={styles.modalTitle}>Edit Role</h4>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">×</button>
@@ -153,6 +275,7 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
         <form onSubmit={handleSubmit}>
           <div className={styles.modalBody}>
             {error && <div className={styles.errorAlert}>{error}</div>}
+            
             <div className={styles.formGroup}>
               <label className={styles.label}>Role Name</label>
               <input
@@ -163,13 +286,46 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
                 autoFocus
               />
             </div>
+
+            <h5 className={styles.sectionTitle} style={{ marginTop: '20px', marginBottom: '10px', fontSize: '1.1rem', fontWeight: 600 }}>Permissions</h5>
+            <div className={styles.tableContainer} style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {isMappingsLoading ? (
+                 <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Loading permissions...</p>
+              ) : (
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th className={styles.th}>Page Name</th>
+                      <th className={styles.th}>Screen Name</th>
+                      <th className={styles.thCenter}>View</th>
+                      <th className={styles.thCenter}>Add</th>
+                      <th className={styles.thCenter}>Edit</th>
+                      <th className={styles.thCenter}>Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {permissions.map((row, idx) => (
+                      <tr key={idx} className={styles.tr}>
+                        <td className={styles.td}>{row.pageName}</td>
+                        <td className={styles.td}>{row.screenName}</td>
+                        <td className={styles.tdCenter}><input type="checkbox" checked={row.view} onChange={() => togglePermission(idx, 'view')} /></td>
+                        <td className={styles.tdCenter}><input type="checkbox" checked={row.add} onChange={() => togglePermission(idx, 'add')} /></td>
+                        <td className={styles.tdCenter}><input type="checkbox" checked={row.edit} onChange={() => togglePermission(idx, 'edit')} /></td>
+                        <td className={styles.tdCenter}><input type="checkbox" checked={row.delete} onChange={() => togglePermission(idx, 'delete')} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            
           </div>
           <div className={styles.modalFooter}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn} disabled={updateRole.isPending}>
-              {updateRole.isPending ? 'Saving...' : 'Save Changes'}
+            <button type="submit" className={styles.submitBtn} disabled={updateRole.isPending || saveMapping.isPending}>
+              {updateRole.isPending || saveMapping.isPending ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -232,9 +388,7 @@ function DeleteRoleModal({ role, onClose }: DeleteRoleModalProps) {
 
 /* ── Main Page ────────────────────────────────────────── */
 export function RolesPage() {
-  const [activeTab, setActiveTab] = useState<'roles' | 'permissions' | 'users'>('roles');
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | ''>('');
-  const [selectedGSTId, setSelectedGSTId] = useState<number | ''>('');
+  const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -244,11 +398,12 @@ export function RolesPage() {
   const [deletingRole, setDeletingRole] = useState<RolesResponse | null>(null);
 
   // Queries
-  const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
-  const { data: gsts, isLoading: isGstsLoading } = useCompanyGSTs(
-    selectedCompanyId ? Number(selectedCompanyId) : 0
-  );
+  const { data: currentEntity, isLoading: isEntityLoading } = useCurrentEntity();
+  const selectedCompanyId = currentEntity.companyId || '';
+  const selectedGSTId = currentEntity.id || '';
+
   const { data: roles, isLoading: isRolesLoading } = useRoles(selectedCompanyId, selectedGSTId);
+  if (currentEntity) { console.log('Current Entity in RolesPage 2:', currentEntity); }
 
   // Filtered + paginated roles
   const filteredRoles = useMemo(() => {
@@ -278,11 +433,6 @@ export function RolesPage() {
     ? Math.max(...roles.map((r) => r.id)) + 1
     : 1;
 
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCompanyId(e.target.value ? Number(e.target.value) : '');
-    setSelectedGSTId('');
-  };
-
   const isLoading = isRolesLoading;
 
   return (
@@ -295,12 +445,7 @@ export function RolesPage() {
         >
           Manage Roles
         </button>
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'permissions' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('permissions')}
-        >
-          Role Permissions Matrix
-        </button>
+
         <button 
           className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabBtnActive : ''}`}
           onClick={() => setActiveTab('users')}
@@ -311,8 +456,6 @@ export function RolesPage() {
 
       {activeTab === 'users' ? (
         <UserManagementPage />
-      ) : activeTab === 'permissions' ? (
-        <RolePermissionsMatrix />
       ) : (
         <>
           {/* ── Header ── */}
@@ -322,31 +465,6 @@ export function RolesPage() {
               <h1 className={styles.pageTitle}>Roles</h1>
             </div>
             <div className={styles.controls}>
-          <select
-            id="roles-company-select"
-            className={styles.select}
-            value={selectedCompanyId}
-            onChange={handleCompanyChange}
-            disabled={isCompaniesLoading}
-          >
-            <option value="">Choose Company</option>
-            {companies?.map((c) => (
-              <option key={c.id} value={c.id}>{c.companyName}</option>
-            ))}
-          </select>
-
-          <select
-            id="roles-gstin-select"
-            className={styles.select}
-            value={selectedGSTId}
-            onChange={(e) => setSelectedGSTId(e.target.value ? Number(e.target.value) : '')}
-            disabled={isGstsLoading || !selectedCompanyId}
-          >
-            <option value="">Choose GSTIN</option>
-            {gsts?.map((g) => (
-              <option key={g.id} value={g.id}>{g.gstNumber}</option>
-            ))}
-          </select>
 
           <button
             id="roles-add-btn"

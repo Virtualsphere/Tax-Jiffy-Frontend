@@ -3,6 +3,7 @@ import { companyGSTApi } from '@/pages/dashboard/user/api/company-gst.api';
 
 export type CurrentEntity = {
   id: number;
+  companyId: number;
   companyName: string;
   gstin: string;
   location: string;
@@ -16,7 +17,7 @@ export function useCurrentEntity() {
   const activeId = activeIdStr ? Number(activeIdStr) : null;
 
   const query = useQuery({
-    queryKey: ['active-entity', activeId],
+    queryKey: ['active-entity-v2', activeId],
     queryFn: async () => {
       if (!activeId) return null;
       const gst = await companyGSTApi.getById(activeId);
@@ -29,6 +30,7 @@ export function useCurrentEntity() {
 
       return {
         id: gst.id,
+        companyId: gst.companyId,
         companyName: gst.companyName,
         gstin: gst.gstNumber,
         location: stateName,
@@ -42,6 +44,7 @@ export function useCurrentEntity() {
 
   const defaultEntity: CurrentEntity = {
     id: 0,
+    companyId: 0,
     companyName: 'No Entity Selected',
     gstin: 'N/A',
     location: 'N/A',

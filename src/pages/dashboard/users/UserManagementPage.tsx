@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styles from './UserManagementPage.module.css';
-import { useMyCompanies } from '../user/hooks/useMyCompanies';
-import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
 import { useGSTUsers } from '../user/hooks/useGSTUsers';
 import { useCompanyUsers } from '../user/hooks/useCompanyUsers';
 import { useCreateSubUser } from '../user/hooks/useCreateSubUser';
 import { useDeactivateMapping } from '../user/hooks/useDeactivateMapping';
-import { useCompanyGST } from '../user/hooks/useCompanyGST';
 import { useSubscriptions } from '../user/hooks/useSubscriptions';
+import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 
 export function UserManagementPage() {
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
-  const [selectedGSTId, setSelectedGSTId] = useState<number | null>(null);
+  const { data: currentEntity } = useCurrentEntity();
+  const selectedCompanyId = currentEntity.companyId || null;
+  const selectedGSTId = currentEntity.id || null;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -23,50 +23,16 @@ export function UserManagementPage() {
   const [formError, setFormError] = useState('');
 
   const [searchParams] = useSearchParams();
-  const urlGstId = searchParams.get('gstId') ? Number(searchParams.get('gstId')) : null;
 
   // Queries
-  const { data: companies, isLoading: isCompaniesLoading } = useMyCompanies();
   const { data: plans } = useSubscriptions();
-
-  // Read active GST from URL param first, then fall back to localStorage navigation state
-  const storedGstIdStr = localStorage.getItem('active_company_gst_id');
-  const activeGSTId = urlGstId || (storedGstIdStr ? Number(storedGstIdStr) : null);
-  const { data: activeGst } = useCompanyGST(activeGSTId || 0);
-
-  // Initialize selected company and GST from active entity
-  useEffect(() => {
-    if (activeGst && selectedCompanyId === null && selectedGSTId === null) {
-      setSelectedCompanyId(activeGst.companyId);
-      setSelectedGSTId(activeGst.id);
-    } else if (companies && companies.length > 0 && selectedCompanyId === null) {
-      // Fallback to first company
-      setSelectedCompanyId(companies[0].id);
-    }
-  }, [activeGst, companies, selectedCompanyId, selectedGSTId]);
-
-  // Fetch GSTs for selected company
-  const { data: gsts, isLoading: isGstsLoading } = useCompanyGSTs(selectedCompanyId || 0);
-
-  // Auto select first GST when company changes
-  useEffect(() => {
-    if (gsts && gsts.length > 0) {
-      const hasActiveGST = gsts.some(g => g.id === selectedGSTId);
-      if (!hasActiveGST) {
-        setSelectedGSTId(gsts[0].id);
-      }
-    } else {
-      setSelectedGSTId(null);
-    }
-  }, [gsts, selectedCompanyId, selectedGSTId]);
 
   // Fetch users mapping and company users for email resolution
   const { data: mappings, isLoading: isMappingsLoading } = useGSTUsers(selectedGSTId || undefined);
   const { data: companyUsers } = useCompanyUsers(selectedCompanyId || undefined);
 
   // Get active GST plan details
-  const activeGstDetail = gsts?.find(g => g.id === selectedGSTId);
-  const activePlanName = activeGstDetail?.subscriptionPlanName;
+  const activePlanName = currentEntity.subscriptionPlanName;
   const matchedPlan = plans?.find(p => p.name === activePlanName);
   const userLimit = matchedPlan ? matchedPlan.userCount : 1;
 
@@ -76,17 +42,6 @@ export function UserManagementPage() {
   // Mutations
   const createSubUser = useCreateSubUser();
   const deactivateMapping = useDeactivateMapping();
-
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setSelectedCompanyId(id);
-    setSelectedGSTId(null); // Will be auto-set by the effect
-  };
-
-  const handleGSTChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setSelectedGSTId(id);
-  };
 
   const handleDeleteUser = async (mappingId: number) => {
     if (confirm('Are you sure you want to remove this user from this GST registration?')) {
@@ -137,37 +92,13 @@ export function UserManagementPage() {
     return searchString.includes(searchTerm.toLowerCase());
   });
 
-  const isLoading = isCompaniesLoading || isGstsLoading || isMappingsLoading;
+  const isLoading = isMappingsLoading;
 
   return (
     <div className={styles.container}>
       {/* Top Header Row with dropdown selectors and Add button */}
       <div className={styles.headerRow}>
         <div className={styles.controls}>
-          <select 
-            className={styles.select} 
-            value={selectedCompanyId || ''} 
-            onChange={handleCompanyChange}
-            disabled={isCompaniesLoading}
-          >
-            {isCompaniesLoading && <option>Loading Companies...</option>}
-            {companies?.map((c) => (
-              <option key={c.id} value={c.id}>{c.companyName}</option>
-            ))}
-          </select>
-
-          <select 
-            className={styles.select} 
-            value={selectedGSTId || ''} 
-            onChange={handleGSTChange}
-            disabled={isGstsLoading || !selectedCompanyId}
-          >
-            {isGstsLoading && <option>Loading GSTINs...</option>}
-            {!isGstsLoading && (!gsts || gsts.length === 0) && <option>No GSTINs found</option>}
-            {gsts?.map((g) => (
-              <option key={g.id} value={g.id}>{g.gstNumber}</option>
-            ))}
-          </select>
         </div>
 
         <button 
