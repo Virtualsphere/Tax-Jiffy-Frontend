@@ -65,7 +65,7 @@ export function EWayBillPage() {
     }
   }, [currentEntity, selectedYear, selectedMonth]);
 
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Import', 'List', 'Reconciliation'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
 
@@ -100,11 +100,11 @@ export function EWayBillPage() {
           onSync={handleSync}
         />
       )}
+      {activeMainTab === 'List' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>List coming soon</div>
+      )}
       {activeMainTab === 'Reconciliation' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
-      )}
-      {activeMainTab === 'Return' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
       )}
     </div>
   );

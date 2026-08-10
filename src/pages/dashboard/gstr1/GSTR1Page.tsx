@@ -458,7 +458,7 @@ export function GSTR1Page() {
   );
 
   /* ── Step 2: Match & Confirm — new 3-tab layout ── */
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Import', 'E-Invoice Reco', 'E-way Bill Reco', 'Return'] as const;
   type MainTab = typeof MAIN_TABS[number];
 
   const renderMatching = () => {
@@ -544,17 +544,22 @@ export function GSTR1Page() {
             </>
           )}
 
-          {/* ── Reconciliation Tab ── */}
-          {currentMainTab === 'Reconciliation' && (
+          {/* ── E-Invoice Reco Tab ── */}
+          {currentMainTab === 'E-Invoice Reco' && (
             <div style={{ width: '100%' }}>
               {matchingFiling?.id || upload.data?.filingId ? (
                 <GSTR1ReconciliationTab filingId={matchingFiling?.id || upload.data?.filingId || 0} />
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#94a3b8' }}>
-                  Please upload a sale register first to view reconciliation.
+                  Please upload a sale register first to view E-Invoice reconciliation.
                 </div>
               )}
             </div>
+          )}
+
+          {/* ── E-way Bill Reco Tab ── */}
+          {currentMainTab === 'E-way Bill Reco' && (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-way Bill Reco coming soon</div>
           )}
 
           {/* ── Return Tab ── */}
@@ -584,39 +589,59 @@ export function GSTR1Page() {
                     <p className={styles.parsingSubtitle}>Fetching compiled GSTR-1 report from server</p>
                   </div>
                 </div>
-              ) : (
-                <>
+              ) : (() => {
+                  const isDraftEmpty = 
+                    (!draft.data.rows || draft.data.rows.length === 0) &&
+                    (!draft.data.outwardData || Object.keys(draft.data.outwardData).length === 0) &&
+                    (!draft.data.amendmentsData || Object.keys(draft.data.amendmentsData).length === 0) &&
+                    (!draft.data.advancedData || Object.keys(draft.data.advancedData).length === 0) &&
+                    (!draft.data.othersData || Object.keys(draft.data.othersData).length === 0);
 
-                  {/* All sections stacked vertically — always shown */}
-                  <GSTR1BasicTab 
-                    data={draft.data.rows ?? []} 
-                    expandedAccordion={expandedAccordion}
-                    setExpandedAccordion={setExpandedAccordion}
-                  />
-                  <GSTR1OutwardTab
-                    data={draft.data.outwardData ?? {}}
-                    expandedAccordion={expandedAccordion}
-                    setExpandedAccordion={setExpandedAccordion}
-                  />
-                  <GSTR1AmendmentsTab
-                    data={draft.data.amendmentsData ?? {}}
-                    expandedAccordion={expandedAccordion}
-                    setExpandedAccordion={setExpandedAccordion}
-                    selectedMonth={selectedMonth}
-                    selectedYear={selectedYear}
-                  />
-                  <GSTR1AdvancedTab
-                    data={draft.data.advancedData ?? {}}
-                    expandedAccordion={expandedAccordion}
-                    setExpandedAccordion={setExpandedAccordion}
-                  />
-                  <GSTR1OthersTab
-                    data={draft.data.othersData ?? {}}
-                    expandedAccordion={expandedAccordion}
-                    setExpandedAccordion={setExpandedAccordion}
-                  />
-                </>
-              )}
+                  if (isDraftEmpty) {
+                    return (
+                      <div style={{ padding: '4rem 2rem', textAlign: 'center', color: '#64748b', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', margin: '2rem 0' }}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto 1rem', opacity: 0.5 }}>
+                          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <p style={{ fontSize: '1.1rem', fontWeight: 500, color: '#475569', marginBottom: '0.5rem' }}>No data available</p>
+                        <p style={{ fontSize: '0.9rem' }}>There is no data available for the selected month.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {/* All sections stacked vertically — always shown */}
+                      <GSTR1BasicTab 
+                        data={draft.data.rows ?? []} 
+                        expandedAccordion={expandedAccordion}
+                        setExpandedAccordion={setExpandedAccordion}
+                      />
+                      <GSTR1OutwardTab
+                        data={draft.data.outwardData ?? {}}
+                        expandedAccordion={expandedAccordion}
+                        setExpandedAccordion={setExpandedAccordion}
+                      />
+                      <GSTR1AmendmentsTab
+                        data={draft.data.amendmentsData ?? {}}
+                        expandedAccordion={expandedAccordion}
+                        setExpandedAccordion={setExpandedAccordion}
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                      />
+                      <GSTR1AdvancedTab
+                        data={draft.data.advancedData ?? {}}
+                        expandedAccordion={expandedAccordion}
+                        setExpandedAccordion={setExpandedAccordion}
+                      />
+                      <GSTR1OthersTab
+                        data={draft.data.othersData ?? {}}
+                        expandedAccordion={expandedAccordion}
+                        setExpandedAccordion={setExpandedAccordion}
+                      />
+                    </>
+                  );
+                })()}
 
               {/* Footer */}
               <div className={styles.matchFooter}>

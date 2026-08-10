@@ -86,7 +86,7 @@ function IconVerified() {
 }
 
 
-const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+const MAIN_TABS = ['Import', '2B-Reco', 'Return'] as const;
 type MainTab = typeof MAIN_TABS[number];
 
 export function GSTR2BPage() {
@@ -312,8 +312,8 @@ export function GSTR2BPage() {
         </div>
       )}
 
-      {activeMainTab === 'Reconciliation' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
+      {activeMainTab === '2B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>2B-Reco coming soon</div>
       )}
     </div>
   );

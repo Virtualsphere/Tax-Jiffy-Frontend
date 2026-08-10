@@ -12,7 +12,7 @@ export function SaleRegisterPage() {
     console.log('Syncing Sale Register');
   }, []);
 
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Import', 'List', '2B-Reco', '3B-Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
 
@@ -41,11 +41,14 @@ export function SaleRegisterPage() {
           onSync={handleSync}
         />
       )}
-      {activeMainTab === 'Reconciliation' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
+      {activeMainTab === 'List' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>List coming soon</div>
       )}
-      {activeMainTab === 'Return' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
+      {activeMainTab === '2B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>2B-Reco coming soon</div>
+      )}
+      {activeMainTab === '3B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>3B-Reco coming soon</div>
       )}
     </div>
   );

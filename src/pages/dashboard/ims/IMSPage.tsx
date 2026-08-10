@@ -12,7 +12,7 @@ export function IMSPage() {
     console.log('Syncing IMS');
   }, []);
 
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Import', 'Inward - IMS Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
 
@@ -41,11 +41,8 @@ export function IMSPage() {
           onSync={handleSync}
         />
       )}
-      {activeMainTab === 'Reconciliation' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
-      )}
-      {activeMainTab === 'Return' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
+      {activeMainTab === 'Inward - IMS Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Inward - IMS Reco coming soon</div>
       )}
     </div>
   );

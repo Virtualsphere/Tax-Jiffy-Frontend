@@ -224,9 +224,9 @@ function TwoBCredentialModal({
 
 // ── Main Component ────────────────────────────────────────────────────────
 export function GSTR3BPage() {
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Summary', '3B-Reco', 'Return'] as const;
   type MainTab = typeof MAIN_TABS[number];
-  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>('Summary');
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null);
   const [isFiled, setIsFiled] = useState(false);
   const [showImsModal, setShowImsModal] = useState(false);
@@ -493,7 +493,7 @@ export function GSTR3BPage() {
         </div>
       </div>
 
-      {activeMainTab === 'Import' && (
+      {activeMainTab === 'Summary' && (
         <>
           {/* ── Page Header ── */}
           <div className={styles.pageHeader}>
@@ -927,8 +927,12 @@ export function GSTR3BPage() {
         />
       )}
 
-      {activeMainTab === 'Reconciliation' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
+      {activeMainTab === '3B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>3B-Reco coming soon</div>
+      )}
+
+      {activeMainTab === 'Return' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
       )}
     </div>
   );

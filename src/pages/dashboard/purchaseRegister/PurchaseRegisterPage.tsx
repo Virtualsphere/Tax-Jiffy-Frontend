@@ -234,7 +234,7 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
 
 // ── Main Component ────────────────────────────────────────────────────────
 export function PurchaseRegisterPage() {
-  const MAIN_TABS = ['Import', 'Reconciliation', 'Return'] as const;
+  const MAIN_TABS = ['Import', 'List', 'E-Invoice Reco', 'E-way Bill Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
   const [step, setStep] = useState<Step>(1);
@@ -568,11 +568,14 @@ export function PurchaseRegisterPage() {
         </>
       )}
 
-      {activeMainTab === 'Reconciliation' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
+      {activeMainTab === 'List' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>List coming soon</div>
       )}
-      {activeMainTab === 'Return' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Return coming soon</div>
+      {activeMainTab === 'E-Invoice Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-Invoice Reco coming soon</div>
+      )}
+      {activeMainTab === 'E-way Bill Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-way Bill Reco coming soon</div>
       )}
     </div>
   );
