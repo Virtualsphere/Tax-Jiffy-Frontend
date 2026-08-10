@@ -137,6 +137,16 @@ export function GSTR1AdvancedTab({ data, expandedAccordion, setExpandedAccordion
     </div>
   );
 
+  if (!data || Object.keys(data).length === 0) {
+    return (
+      <div className={styles.outwardTabContent}>
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+          No data available for advanced details in this draft.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.outwardTabContent}>
       {/* Table 11 */}
