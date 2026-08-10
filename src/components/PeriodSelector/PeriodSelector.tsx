@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import styles from './PeriodSelector.module.css';
-import { MONTHS } from '@/context/PeriodContext';
 
 type Props = {
   year: string;
@@ -20,6 +19,10 @@ type MonthOption = {
 };
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const CALENDAR_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +66,7 @@ export function PeriodSelector({ year, month, onYearChange, onMonthChange }: Pro
 
       list.push({
         label: `${SHORT_MONTHS[currentM]} ${currentY}`,
-        monthName: MONTHS[currentM],
+        monthName: CALENDAR_MONTHS[currentM],
         monthIndex: currentM,
         year: currentY,
         fyLabel,

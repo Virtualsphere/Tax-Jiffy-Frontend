@@ -168,12 +168,12 @@ export function GSTR1Page() {
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
   
-  const activeGstId = currentEntity?.id || 1;
+  const activeGstId = currentEntity?.id;
 
   // Hook to query filings for this company
   const { data: filings } = useQuery({
     queryKey: ['gstr1-filings', activeGstId],
-    queryFn: () => gstr1Api.getFilingsByCompanyGst(activeGstId),
+    queryFn: () => gstr1Api.getFilingsByCompanyGst(activeGstId!),
     enabled: !!activeGstId,
   });
 
@@ -235,7 +235,7 @@ export function GSTR1Page() {
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      if (upload.isPending) return;
+      if (upload.isPending || !activeGstId) return;
       const f = e.dataTransfer.files[0];
       if (f) upload.mutate(f, activeGstId, uploadYear, uploadMonth);
     },
@@ -244,7 +244,7 @@ export function GSTR1Page() {
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (upload.isPending) return;
+      if (upload.isPending || !activeGstId) return;
       const f = e.target.files?.[0];
       if (f) upload.mutate(f, activeGstId, uploadYear, uploadMonth);
     },

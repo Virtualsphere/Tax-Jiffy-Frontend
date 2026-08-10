@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
-import { MOCK_DRAFT_DATA } from '@/pages/dashboard/gstr1/data/gstr1.mock';
-import type { Gstr1DraftData } from '@/pages/dashboard/gstr1/types/gstr1.types';
+import type { Gstr1DraftData, Gstr1DraftTab } from '@/pages/dashboard/gstr1/types/gstr1.types';
 
 type UseGstr1DraftReturn = {
   data: Gstr1DraftData;
@@ -10,10 +9,20 @@ type UseGstr1DraftReturn = {
   error: any;
 };
 
+const DRAFT_TABS: readonly Gstr1DraftTab[] = ['Basic', 'Outward', 'Amendments', 'Advanced', 'Others'];
+
+const EMPTY_DRAFT_DATA: Gstr1DraftData = {
+  tabs: DRAFT_TABS,
+  tabBadges: { Basic: null, Outward: null, Amendments: null, Advanced: null, Others: null },
+  rows: [],
+  filingPeriodYear: '',
+  filingPeriodMonth: '',
+};
+
 /**
- * Returns GSTR-1 draft data.
- * If `filingId` is provided, fetches the compiled report from the backend.
- * Otherwise, falls back to the default mock data.
+ * Returns GSTR-1 draft data for a filing.
+ * If `filingId` is not provided, or no filing exists yet for the selected period,
+ * returns an empty draft — never fabricated placeholder data.
  */
 export function useGstr1Draft(filingId?: number): UseGstr1DraftReturn {
   const { data: reportData, isLoading, isError, error } = useQuery({
@@ -24,7 +33,7 @@ export function useGstr1Draft(filingId?: number): UseGstr1DraftReturn {
 
   if (filingId && reportData) {
     const mappedData: Gstr1DraftData = {
-      tabs: MOCK_DRAFT_DATA.tabs,
+      tabs: DRAFT_TABS,
       tabBadges: {
         Basic: null,
         Outward:
@@ -41,8 +50,8 @@ export function useGstr1Draft(filingId?: number): UseGstr1DraftReturn {
         Others: null,
       },
       rows: reportData.basicData || [],
-      filingPeriodYear: MOCK_DRAFT_DATA.filingPeriodYear,
-      filingPeriodMonth: MOCK_DRAFT_DATA.filingPeriodMonth,
+      filingPeriodYear: '',
+      filingPeriodMonth: '',
       outwardData: reportData.outwardData,
       amendmentsData: reportData.amendmentsData,
       advancedData: reportData.advancedData,
@@ -58,9 +67,9 @@ export function useGstr1Draft(filingId?: number): UseGstr1DraftReturn {
   }
 
   return {
-    data: MOCK_DRAFT_DATA,
-    isLoading: false,
-    isError: false,
-    error: null,
+    data: EMPTY_DRAFT_DATA,
+    isLoading: !!filingId && isLoading,
+    isError,
+    error,
   };
 }
