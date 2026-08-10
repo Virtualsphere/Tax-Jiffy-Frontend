@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
+import { einvoiceRecoApi } from '@/pages/dashboard/gstr1/api/einvoiceReco.api';
 import { handleApiError } from '@/services/api';
 import type { Gstr1MatchStats } from '@/pages/dashboard/gstr1/types/gstr1.types';
 
@@ -46,36 +46,34 @@ export function useGstr1Match(): UseGstr1MatchReturn {
     };
   }, [isMatching]);
 
-  const startMatching = useCallback(async (_filingId?: number) => {
+  const startMatching = useCallback(async (filingId?: number) => {
+    if (!filingId) {
+      console.error('[gstr1] startMatching called without a filingId');
+      return;
+    }
+
     setIsComplete(false);
     setMatchStats(null);
     setIsMatching(true);
 
     try {
-      // POST /api/gstr1/sync — syncs the uploaded data with the GST portal
-      // companyGstId is hardcoded to 1 until the Company context is built.
-      // financialYear & taxPeriod default to the most common case for now.
-      const syncResponse = await gstr1Api.sync({
-        companyGstId: 1,
-        financialYear: '2023-24',
-        taxPeriod: 'OCTOBER',
-      });
+      // Reconcile this filing's sale register against synced e-invoices for its period
+      // (same call as the Reconciliation tab's "Sync E-Invoices" button).
+      await einvoiceRecoApi.syncEInvoiceReco(filingId);
+      const results = await einvoiceRecoApi.getReconciliationResult(filingId);
 
       // Stop the animation, jump to 100%
       if (intervalRef.current) clearInterval(intervalRef.current);
       setProgress(100);
 
-      // Derive match statistics from the sync response row counts
-      const totalSynced = syncResponse.totalRowsSynced ?? 0;
+      const matched = results.filter((r) => r.matchStatus === 'MATCHED').length;
+      const mismatched = results.filter((r) => r.matchStatus === 'VALUE_MISMATCH').length;
+      const missingInSystem = results.filter((r) => r.matchStatus === 'IN_SALE_REGISTER_ONLY').length;
 
       setTimeout(() => {
         setIsMatching(false);
         setIsComplete(true);
-        setMatchStats({
-          matched: totalSynced,
-          mismatched: 0,
-          missingInSystem: 0,
-        });
+        setMatchStats({ matched, mismatched, missingInSystem });
       }, 500);
     } catch (err) {
       if (intervalRef.current) clearInterval(intervalRef.current);
