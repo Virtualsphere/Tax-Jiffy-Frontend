@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import styles from './RolesPage.module.css';
 import { useRoles, useCreateRole, useUpdateRole, useDeleteRole } from './hooks/useRoles';
-import { useMyCompanies } from '../user/hooks/useMyCompanies';
-import { useCompanyGSTs } from '../user/hooks/useCompanyGSTs';
 import type { RolesResponse } from './types/roles.types';
 import { UserManagementPage } from '../users/UserManagementPage';
 import { useSaveRoleMapping, useRoleMappings } from './hooks/useRoleMapping';
@@ -398,7 +396,7 @@ export function RolesPage() {
   const [deletingRole, setDeletingRole] = useState<RolesResponse | null>(null);
 
   // Queries
-  const { data: currentEntity, isLoading: isEntityLoading } = useCurrentEntity();
+  const { data: currentEntity } = useCurrentEntity();
   const selectedCompanyId = currentEntity.companyId || '';
   const selectedGSTId = currentEntity.id || '';
 

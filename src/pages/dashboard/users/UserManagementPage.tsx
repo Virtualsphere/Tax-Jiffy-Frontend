@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import styles from './UserManagementPage.module.css';
 import { useGSTUsers } from '../user/hooks/useGSTUsers';
 import { useCompanyUsers } from '../user/hooks/useCompanyUsers';
@@ -21,8 +20,6 @@ export function UserManagementPage() {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [formError, setFormError] = useState('');
-
-  const [searchParams] = useSearchParams();
 
   // Queries
   const { data: plans } = useSubscriptions();
