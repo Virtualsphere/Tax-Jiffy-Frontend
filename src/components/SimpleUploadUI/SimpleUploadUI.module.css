@@ -56,10 +56,6 @@
   margin: 0;
 }
 
-.periodRow {
-  flex-shrink: 0;
-}
-
 .dropzone {
   border: 2px dashed #cbd5e1;
   border-radius: 12px;

@@ -478,19 +478,27 @@ export function GSTR3BPage() {
 
   return (
     <div className={styles.page}>
-      <div className="global-main-tabs-container">
-        <div className="global-main-tabs-wrapper">
-          {MAIN_TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-              onClick={() => setActiveMainTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '1.5rem' }}>
+        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
+          <div className="global-main-tabs-wrapper">
+            {MAIN_TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+                onClick={() => setActiveMainTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
+        <PeriodSelector
+          year={selectedYear.label}
+          month={selectedMonth}
+          onYearChange={(yLabel) => { const fy = FY_YEARS.find((f) => f.label === yLabel); if (fy) setSelectedYear(fy); }}
+          onMonthChange={setSelectedMonth}
+        />
       </div>
 
       {activeMainTab === 'Summary' && (
@@ -506,16 +514,6 @@ export function GSTR3BPage() {
       {/* ── Filing Selector ── */}
       <div className={styles.filingSelector}>
         <div className={styles.filingSelectorLeft}>
-          <div className={styles.filingSelectorGroup}>
-            <span className={styles.filingSelectorLabel}>Filing Period</span>
-            <PeriodSelector
-              year={selectedYear.label}
-              month={selectedMonth}
-              onYearChange={(yLabel) => { const fy = FY_YEARS.find((f) => f.label === yLabel); if (fy) setSelectedYear(fy); }}
-              onMonthChange={setSelectedMonth}
-            />
-          </div>
-
           {/* Purchase Register filing selector */}
           <div className={styles.filingSelectorGroup}>
             <span className={styles.filingSelectorLabel}>

@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod } from '@/context/PeriodContext';
 import styles from './SimpleUploadUI.module.css';
 
 interface SimpleUploadUIProps {
@@ -36,7 +35,7 @@ function formatFileSize(bytes: number): string {
 }
 
 export function SimpleUploadUI({ title, subtitle, onUpload, onSync }: SimpleUploadUIProps) {
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
+  const { selectedYear, selectedMonth } = usePeriod();
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,17 +82,6 @@ export function SimpleUploadUI({ title, subtitle, onUpload, onSync }: SimpleUplo
             <p className={styles.uploadSubtitle}>
               Select or drop an Excel file to upload.
             </p>
-          </div>
-          <div className={styles.periodRow}>
-            <PeriodSelector
-              year={selectedYear.label}
-              month={selectedMonth}
-              onYearChange={(yLabel) => {
-                const fy = FY_YEARS.find((f) => f.label === yLabel);
-                if (fy) setSelectedYear(fy);
-              }}
-              onMonthChange={setSelectedMonth}
-            />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
-import { usePeriod } from '@/context/PeriodContext';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { toRetPeriod } from '@/lib/period';
 import { eInvoiceApi } from './api/einvoice.api';
@@ -9,7 +10,7 @@ import type { EinvoiceFiling, EinvoiceIrn } from './types/einvoice.types';
 
 export function EInvoicePage() {
   const { data: currentEntity } = useCurrentEntity();
-  const { selectedYear, selectedMonth } = usePeriod();
+  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const retPeriod = useMemo(
@@ -97,19 +98,30 @@ export function EInvoicePage() {
         </div>
       )}
 
-      <div className="global-main-tabs-container">
-        <div className="global-main-tabs-wrapper">
-          {MAIN_TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-              onClick={() => setActiveMainTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '1.5rem' }}>
+        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
+          <div className="global-main-tabs-wrapper">
+            {MAIN_TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+                onClick={() => setActiveMainTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
+        <PeriodSelector
+          year={selectedYear.label}
+          month={selectedMonth}
+          onYearChange={(yLabel) => {
+            const fy = FY_YEARS.find((f) => f.label === yLabel);
+            if (fy) setSelectedYear(fy);
+          }}
+          onMonthChange={setSelectedMonth}
+        />
       </div>
 
       {activeMainTab === 'Import' && (
