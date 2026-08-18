@@ -5,8 +5,7 @@ import '@/styles/index.css';
 import '@/styles/ag-grid-custom.css';
 
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import { AllEnterpriseModule } from 'ag-grid-enterprise';
-ModuleRegistry.registerModules([AllCommunityModule, AllEnterpriseModule]);
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const rootElement = document.getElementById('root');
 

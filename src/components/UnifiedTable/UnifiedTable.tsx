@@ -4,7 +4,6 @@ import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Just in case, though they use legacy/custom
-import 'ag-grid-enterprise';
 
 import styles from './UnifiedTable.module.css';
 
@@ -133,9 +132,6 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     filter: 'agTextColumnFilter',
     floatingFilter: false,
     minWidth: 100,
-    enableRowGroup: true,
-    enablePivot: true,
-    enableValue: true,
     // 1.6: Always show column menu
     suppressHeaderMenuButton: false,
     suppressHeaderFilterButton: false,
@@ -549,14 +545,6 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 pagination={!hidePagination}
                 paginationPageSize={rowsPerPage}
                 pinnedBottomRowData={pinnedBottomRowData}
-                enableRangeSelection={true}
-                statusBar={{
-                  statusPanels: [
-                    { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
-                    { statusPanel: 'agSelectedRowCountComponent', align: 'center' },
-                    { statusPanel: 'agAggregationComponent', align: 'right' }
-                  ]
-                }}
                 onGridReady={(params: GridReadyEvent) => {
                   setGridApi(params.api);
                   if (page > 1 && !hidePagination) {
