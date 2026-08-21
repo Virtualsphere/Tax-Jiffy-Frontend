@@ -129,5 +129,4 @@ export const DEFAULT_SIDEBAR_ENTITY = {
   companyName: 'VOLLERT INDIA PVT LTD.',
   gstin: '09AADCV5659C1Z5',
   location: 'Uttar Pradesh',
-  period: "JUNE'2026",
 } as const;

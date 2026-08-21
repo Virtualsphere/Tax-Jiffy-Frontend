@@ -26,6 +26,7 @@ export function useLogin() {
         userId: session.userId,
         userName: session.userName,
         email: session.email,
+        role: session.role,
       });
       void navigate(ROUTES.dashboard.companies);
     },

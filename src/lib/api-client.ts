@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { env } from '@/config/env';
+import { ROUTES } from '@/config/routes';
 import { authStorage } from '@/features/auth/lib/auth-storage';
 
 export const apiClient = axios.create({
@@ -24,11 +25,19 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Centralized auth expiry handling — extend as needed
       authStorage.clearToken();
+
+      // A 401 from the login call itself means "wrong credentials" — the form
+      // shows that inline. Redirecting only makes sense for an expired session
+      // on some other page, and never when we are already on an auth screen.
+      const isLoginAttempt = error.config?.url?.includes('/auth/login') ?? false;
+      const onAuthScreen = window.location.pathname.startsWith(ROUTES.auth.root);
+
+      if (!isLoginAttempt && !onAuthScreen) {
+        window.location.assign(`${ROUTES.auth.login}?session=expired`);
+      }
     }
 
     return Promise.reject(error);
   },
 );
-

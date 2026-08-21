@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { ROUTES } from '@/config/routes';
+import { authStorage } from '@/features/auth/lib/auth-storage';
 import styles from './CompaniesDashboardPage.module.css';
 import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -50,7 +51,7 @@ export function CompaniesDashboardPage() {
   }, []);
 
   const handleNavigateToEntity = (gstId: number) => {
-    localStorage.setItem('active_company_gst_id', String(gstId));
+    authStorage.setActiveEntityId(gstId);
     navigate(ROUTES.dashboard.root);
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { ROUTES } from '@/config/routes';
+import { authStorage } from '@/features/auth/lib/auth-storage';
 import styles from './UserDashboardPage.module.css';
 import { AddNewGSTINModal } from './components/AddNewGSTINModal/AddNewGSTINModal';
 import { UpgradePlanModal } from './components/UpgradePlanModal/UpgradePlanModal';
@@ -249,7 +250,7 @@ export function UserDashboardPage() {
   }, []);
 
   const handleNavigateToEntity = (gstId: number) => {
-    localStorage.setItem('active_company_gst_id', String(gstId));
+    authStorage.setActiveEntityId(gstId);
     navigate(ROUTES.dashboard.root);
   };
 

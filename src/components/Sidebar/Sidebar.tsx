@@ -19,7 +19,6 @@ export type SidebarEntity = {
   companyName: string;
   gstin: string;
   location: string;
-  period: string;
 };
 
 export type SidebarProps = {
@@ -222,7 +221,7 @@ export function Sidebar({
         <div className={styles.userInfo}>
           <span className={styles.userName}>{user.name}</span>
           <span className={styles.userEmail}>{user.email}</span>
-          <span className={styles.userRole}>{user.role}</span>
+          {user.role && <span className={styles.userRole}>{user.role}</span>}
         </div>
         <button onClick={handleLogout} className={styles.logoutButton} title="Logout">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

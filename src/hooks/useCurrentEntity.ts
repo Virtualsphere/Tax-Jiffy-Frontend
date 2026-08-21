@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { companyGSTApi } from '@/pages/dashboard/user/api/company-gst.api';
+import { authStorage } from '@/features/auth/lib/auth-storage';
 
 export type CurrentEntity = {
   id: number;
@@ -7,14 +8,12 @@ export type CurrentEntity = {
   companyName: string;
   gstin: string;
   location: string;
-  period: string;
   isPaymentDone: boolean;
   subscriptionPlanName: string;
 };
 
 export function useCurrentEntity() {
-  const activeIdStr = localStorage.getItem('active_company_gst_id');
-  const activeId = activeIdStr ? Number(activeIdStr) : null;
+  const activeId = authStorage.getActiveEntityId();
 
   const query = useQuery({
     queryKey: ['active-entity-v2', activeId],
@@ -34,7 +33,6 @@ export function useCurrentEntity() {
         companyName: gst.companyName,
         gstin: gst.gstNumber,
         location: stateName,
-        period: "FEB'2026",
         isPaymentDone: gst.isPaymentDone,
         subscriptionPlanName: gst.subscriptionPlanName,
       };
@@ -48,7 +46,6 @@ export function useCurrentEntity() {
     companyName: 'No Entity Selected',
     gstin: 'N/A',
     location: 'N/A',
-    period: 'N/A',
     isPaymentDone: false,
     subscriptionPlanName: '',
   };

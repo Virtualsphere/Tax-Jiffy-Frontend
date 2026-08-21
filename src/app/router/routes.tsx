@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { UserDashboardLayout } from '@/layouts/UserDashboardLayout';
 import { ROUTES } from '@/config/routes';
 import { ErrorPage } from '@/pages/errors/ErrorPage';
+import { RequireAuth } from '@/features/auth';
 
 const LandingPage = lazy(() =>
   import('@/pages/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
@@ -206,139 +207,145 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: ROUTES.dashboard.companies,
-    element: <UserDashboardLayout />,
+    element: <RequireAuth />,
     errorElement: <ErrorPage />,
     children: [
       {
-        index: true,
-        element: (
-          <SuspenseWrapper>
-            <CompaniesDashboardPage />
-          </SuspenseWrapper>
-        ),
-      },
-    ],
-  },
-  {
-    path: ROUTES.dashboard.user,
-    element: <UserDashboardLayout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        element: (
-          <SuspenseWrapper>
-            <UserDashboardPage />
-          </SuspenseWrapper>
-        ),
-      },
-    ],
-  },
-  {
-    path: ROUTES.dashboard.root,
-    element: <DashboardLayout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="gstr-1" replace />,
+        path: ROUTES.dashboard.companies,
+        element: <UserDashboardLayout />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: (
+              <SuspenseWrapper>
+                <CompaniesDashboardPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
       {
-        path: 'users',
-        element: (
-          <SuspenseWrapper>
-            <UserManagementPage />
-          </SuspenseWrapper>
-        ),
+        path: ROUTES.dashboard.user,
+        element: <UserDashboardLayout />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: (
+              <SuspenseWrapper>
+                <UserDashboardPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
       {
-        path: 'roles',
-        element: (
-          <SuspenseWrapper>
-            <RolesPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'subscription-plans',
-        element: (
-          <SuspenseWrapper>
-            <SubscriptionPlansPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'gstr-1',
-        element: (
-          <SuspenseWrapper>
-            <GSTR1Page />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'e-way-bill',
-        element: (
-          <SuspenseWrapper>
-            <EWayBillPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'e-invoice',
-        element: (
-          <SuspenseWrapper>
-            <EInvoicePage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'gstr-2b',
-        element: (
-          <SuspenseWrapper>
-            <GSTR2BPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'purchase-register',
-        element: (
-          <SuspenseWrapper>
-            <PurchaseRegisterPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'gstr-3b',
-        element: (
-          <SuspenseWrapper>
-            <GSTR3BPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'sale-register',
-        element: (
-          <SuspenseWrapper>
-            <SaleRegisterPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: 'ims',
-        element: (
-          <SuspenseWrapper>
-            <IMSPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: ':moduleId',
-        element: (
-          <SuspenseWrapper>
-            <ModulePlaceholderPage />
-          </SuspenseWrapper>
-        ),
+        path: ROUTES.dashboard.root,
+        element: <DashboardLayout />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="gstr-1" replace />,
+          },
+          {
+            path: 'users',
+            element: (
+              <SuspenseWrapper>
+                <UserManagementPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <SuspenseWrapper>
+                <RolesPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'subscription-plans',
+            element: (
+              <SuspenseWrapper>
+                <SubscriptionPlansPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'gstr-1',
+            element: (
+              <SuspenseWrapper>
+                <GSTR1Page />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'e-way-bill',
+            element: (
+              <SuspenseWrapper>
+                <EWayBillPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'e-invoice',
+            element: (
+              <SuspenseWrapper>
+                <EInvoicePage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'gstr-2b',
+            element: (
+              <SuspenseWrapper>
+                <GSTR2BPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'purchase-register',
+            element: (
+              <SuspenseWrapper>
+                <PurchaseRegisterPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'gstr-3b',
+            element: (
+              <SuspenseWrapper>
+                <GSTR3BPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'sale-register',
+            element: (
+              <SuspenseWrapper>
+                <SaleRegisterPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: 'ims',
+            element: (
+              <SuspenseWrapper>
+                <IMSPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: ':moduleId',
+            element: (
+              <SuspenseWrapper>
+                <ModulePlaceholderPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
     ],
   },

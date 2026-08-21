@@ -22,6 +22,28 @@ export const MONTHS = [
   'October', 'November', 'December', 'January', 'February', 'March',
 ];
 
+/** Calendar order, so the index lines up with Date#getMonth(). */
+const CALENDAR_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/**
+ * A GST return is filed for a month only once that month has ended, so the
+ * period a user wants on arrival is the previous calendar month.
+ */
+function getDefaultPeriod(): { year: FYYear; month: string } {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  // Jan–Mar still belong to the financial year that started the previous April.
+  const fyStart = target.getMonth() >= 3 ? target.getFullYear() : target.getFullYear() - 1;
+
+  return {
+    year: FY_YEARS.find((fy) => fy.startYear === fyStart) ?? FY_YEARS[0],
+    month: CALENDAR_MONTHS[target.getMonth()],
+  };
+}
+
 export type PeriodContextValue = {
   selectedYear: FYYear;
   selectedMonth: string;
@@ -34,8 +56,8 @@ export type PeriodContextValue = {
 const PeriodContext = createContext<PeriodContextValue | null>(null);
 
 export function PeriodProvider({ children }: { children: ReactNode }) {
-  const [selectedYear, setSelectedYear] = useState<FYYear>(FY_YEARS[2]); // default: 2023-24
-  const [selectedMonth, setSelectedMonth] = useState<string>('October');
+  const [selectedYear, setSelectedYear] = useState<FYYear>(() => getDefaultPeriod().year);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => getDefaultPeriod().month);
 
   const periodLabel = `${selectedMonth} ${selectedYear.label}`;
 

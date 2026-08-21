@@ -4,7 +4,7 @@ import { ROUTES } from '@/config/routes';
 import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
+import { usePeriod } from '@/context/PeriodContext';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
@@ -104,7 +104,7 @@ function MatchingIcon() {
 /* ── Component ── */
 export function GSTR1Page() {
   const [step, setStep] = useState<Step>(1);
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
+  const { selectedYear, selectedMonth } = usePeriod();
   const { data: currentEntity } = useCurrentEntity();
 
   // ── Local upload-period state (independent from global context) ──
@@ -133,36 +133,6 @@ export function GSTR1Page() {
     const fyStart = Number(fyLabel.split('-')[0]);
     return ['January', 'February', 'March'].includes(month) ? fyStart + 1 : fyStart;
   };
-
-  // Sync active entity period to PeriodContext AND local upload state
-  useEffect(() => {
-    if (currentEntity && currentEntity.id !== 0 && currentEntity.period) {
-      const parts = currentEntity.period.split("'");
-      if (parts.length === 2) {
-        const monthAbbr = parts[0]; // e.g. "FEB"
-        const year = parts[1]; // e.g. "2026"
-        
-        const monthNames: Record<string, string> = {
-          JAN: 'January', FEB: 'February', MAR: 'March', APR: 'April', MAY: 'May', JUN: 'June',
-          JUL: 'July', AUG: 'August', SEP: 'September', OCT: 'October', NOV: 'November', DEC: 'December'
-        };
-        const monthName = monthNames[monthAbbr.toUpperCase()] || 'October';
-        
-        const yearNum = Number(year);
-        const isJanFebMar = ['JAN', 'FEB', 'MAR'].includes(monthAbbr.toUpperCase());
-        // For Jan/Feb/Mar, the financial year starts in the previous calendar year
-        const fyStart = isJanFebMar ? yearNum - 1 : yearNum;
-        const fyLabel = `20${fyStart - 2000}-${String(fyStart + 1 - 2000).padStart(2, '0')}`; // e.g. "2025-26"
-        
-        const fyObj = FY_YEARS.find(y => y.label === fyLabel);
-        if (fyObj) setSelectedYear(fyObj);
-        setSelectedMonth(monthName);
-        // Also seed local upload period
-        setUploadYear(fyLabel);
-        setUploadMonth(monthName);
-      }
-    }
-  }, [currentEntity, setSelectedYear, setSelectedMonth]);
 
   // Hooks
   const upload = useUploadSalesRegister();
