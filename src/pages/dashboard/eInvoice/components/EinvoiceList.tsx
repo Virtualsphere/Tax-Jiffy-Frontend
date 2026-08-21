@@ -6,6 +6,8 @@ interface EinvoiceListProps {
   irns: EinvoiceIrn[];
   loading: boolean;
   retPeriod: string;
+  /** Renders bare, without card chrome or header, for nesting inside another card. */
+  embedded?: boolean;
 }
 
 function formatAmount(v: number | null): string {
@@ -19,20 +21,9 @@ function statusClass(status: string | null): string {
   return styles.statusDefault;
 }
 
-export function EinvoiceList({ filing, irns, loading, retPeriod }: EinvoiceListProps) {
-  return (
-    <div className={styles.card}>
-      <div className={styles.header}>
-        <div>
-          <h3 className={styles.title}>Invoices</h3>
-          <p className={styles.subtitle}>
-            {filing
-              ? `${irns.length} invoice${irns.length === 1 ? '' : 's'} for period ${retPeriod} · Status: ${filing.syncStatus}`
-              : `No data uploaded or synced yet for period ${retPeriod}`}
-          </p>
-        </div>
-      </div>
-
+export function EinvoiceList({ filing, irns, loading, retPeriod, embedded = false }: EinvoiceListProps) {
+  const body = (
+    <>
       {loading && <p className={styles.emptyState}>Loading invoices…</p>}
 
       {!loading && filing && irns.length === 0 && (
@@ -77,6 +68,25 @@ export function EinvoiceList({ filing, irns, loading, retPeriod }: EinvoiceListP
           </table>
         </div>
       )}
+    </>
+  );
+
+  if (embedded) return body;
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <div>
+          <h3 className={styles.title}>Invoices</h3>
+          <p className={styles.subtitle}>
+            {filing
+              ? `${irns.length} invoice${irns.length === 1 ? '' : 's'} for period ${retPeriod} · Status: ${filing.syncStatus}`
+              : `No data uploaded or synced yet for period ${retPeriod}`}
+          </p>
+        </div>
+      </div>
+
+      {body}
     </div>
   );
 }

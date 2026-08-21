@@ -186,3 +186,71 @@
 
 .actionButton:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
 .actionButton:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.checkingState {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.storedDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.smallButton {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.smallButtonPrimary {
+  background: linear-gradient(135deg, #5a6acf 0%, #6366f1 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.smallButton:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.errorBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.errorTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.errorDetail {
+  font-size: 0.8125rem;
+  color: #7f1d1d;
+  word-break: break-word;
+}
