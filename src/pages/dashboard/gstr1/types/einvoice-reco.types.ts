@@ -52,3 +52,26 @@ export interface ReconciliationRow {
   einvoiceIrn: string | null;
   einvoiceStatus: string | null;
 }
+
+/**
+ * A row for the "E-Invoice Only" view — an e-invoice raised on the portal with no
+ * matching entry in the uploaded sale register.
+ *
+ * Built from two backend sources: the IN_EINVOICE_ONLY rows of `/result`, plus the
+ * unpaired rows of `/einvoices`. The second source matters because the backend only
+ * runs reconciliation over B2B + INV e-invoices — SEZ/export supplies and credit/debit
+ * notes never reach `/result`, so `/einvoices` is the only place they surface.
+ */
+export interface EInvoiceOnlyRow {
+  rowKey: string;
+  invoiceNumber: string;
+  recipientGstin: string;
+  matchStatus: string;
+  einvoiceInvoiceValue: number | null;
+  einvoiceIrn: string | null;
+  einvoiceStatus: string | null;
+  docDate: string | null;
+  docType: string | null;
+  supplyType: string | null;
+  ewbNo: number | null;
+}
