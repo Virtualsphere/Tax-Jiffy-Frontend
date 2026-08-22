@@ -5,7 +5,7 @@ import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadS
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
 import { usePeriod } from '@/context/PeriodContext';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
 import { GSTR1OutwardTab } from './tabs/GSTR1OutwardTab';
@@ -14,7 +14,8 @@ import { GSTR1AdvancedTab } from './tabs/GSTR1AdvancedTab';
 import { GSTR1OthersTab } from './tabs/GSTR1OthersTab';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { Gstr1SubmitModal } from './Gstr1SubmitModal';
-import { GSTR1ReconciliationTab } from './tabs/GSTR1ReconciliationTab';
+import { EInvoiceReconciliationPanel } from './tabs/EInvoiceReconciliationPanel';
+import { EwaybillReconciliationPanel } from './tabs/EwaybillReconciliationPanel';
 
 import { useQuery } from '@tanstack/react-query';
 import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
@@ -260,21 +261,6 @@ export function GSTR1Page() {
 
   /* ── Quick Link Helpers ── */
 
-  const renderPeriodSelector = () => (
-    <PeriodSelector
-      year={uploadYear}
-      month={uploadMonth}
-      onYearChange={(yLabel) => {
-        setUploadYear(yLabel);
-        if (upload.data) upload.reset();
-      }}
-      onMonthChange={(mLabel) => {
-        setUploadMonth(mLabel);
-        if (upload.data) upload.reset();
-      }}
-    />
-  );
-
   /* ── Step 1: Upload ── */
   const renderUpload = () => (
     <div className={styles.card}>
@@ -438,23 +424,23 @@ export function GSTR1Page() {
       <>
         {/* Main Tabs + Period Selector in one bar */}
         <div className={styles.draftSection}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f1f3f9', borderRadius: 9999, padding: '4px', marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {MAIN_TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  className={`${styles.draftTab} ${currentMainTab === tab ? styles.draftTabActive : ''}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div style={{ paddingRight: '4px' }}>
-              {renderPeriodSelector()}
-            </div>
-          </div>
+          <MainTabsBar
+            tabs={MAIN_TABS}
+            activeTab={currentMainTab}
+            onTabChange={setActiveTab}
+            period={{
+              year: uploadYear,
+              month: uploadMonth,
+              onYearChange: (yLabel) => {
+                setUploadYear(yLabel);
+                if (upload.data) upload.reset();
+              },
+              onMonthChange: (mLabel) => {
+                setUploadMonth(mLabel);
+                if (upload.data) upload.reset();
+              },
+            }}
+          />
 
           {/* ── Import Tab ── */}
           {currentMainTab === 'Import' && (
@@ -518,7 +504,7 @@ export function GSTR1Page() {
           {currentMainTab === 'E-Invoice Reco' && (
             <div style={{ width: '100%' }}>
               {matchingFiling?.id || upload.data?.filingId ? (
-                <GSTR1ReconciliationTab filingId={matchingFiling?.id || upload.data?.filingId || 0} />
+                <EInvoiceReconciliationPanel filingId={matchingFiling?.id || upload.data?.filingId || 0} />
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#94a3b8' }}>
                   Please upload a sale register first to view E-Invoice reconciliation.
@@ -529,7 +515,15 @@ export function GSTR1Page() {
 
           {/* ── E-way Bill Reco Tab ── */}
           {currentMainTab === 'E-way Bill Reco' && (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-way Bill Reco coming soon</div>
+            <div style={{ width: '100%' }}>
+              {matchingFiling?.id || upload.data?.filingId ? (
+                <EwaybillReconciliationPanel filingId={matchingFiling?.id || upload.data?.filingId || 0} />
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#94a3b8' }}>
+                  Please upload a sale register first to view E-way Bill reconciliation.
+                </div>
+              )}
+            </div>
           )}
 
           {/* ── Return Tab ── */}

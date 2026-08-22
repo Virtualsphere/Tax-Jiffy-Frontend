@@ -18,6 +18,8 @@ export interface Gstr2bReconciliationRow {
   gstr2bInvoiceId: number | null;
   imsInvoiceId: number | null;
   supplierGstin: string | null;
+  /** Trade name from the supplier master; the grid falls back to the GSTIN when absent. */
+  supplierName?: string | null;
   invoiceNumber: string | null;
   invoiceDate: string | null;
   itcAvailability: string | null;

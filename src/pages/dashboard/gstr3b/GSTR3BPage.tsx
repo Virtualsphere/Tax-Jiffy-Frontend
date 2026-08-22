@@ -15,8 +15,8 @@ import {
 import { usePurchaseRegisterFilings } from '@/pages/dashboard/purchaseRegister/hooks/usePurchaseRegisterSheets';
 import * as XLSX from 'xlsx';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod } from '@/context/PeriodContext';
+import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
 import type {
   Gstr3bFiling,
@@ -235,7 +235,7 @@ export function GSTR3BPage() {
   // The purchase register filing ID to link into this GSTR-3B filing
   const [selectedPrFilingId, setSelectedPrFilingId] = useState<number | null>(null);
 
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
+  const { selectedYear, selectedMonth } = usePeriod();
   const { data: currentEntity } = useCurrentEntity();
 
   const companyGstId = currentEntity?.id ?? null;
@@ -478,28 +478,7 @@ export function GSTR3BPage() {
 
   return (
     <div className={styles.page}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '1.5rem' }}>
-        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
-          <div className="global-main-tabs-wrapper">
-            {MAIN_TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-                onClick={() => setActiveMainTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-        <PeriodSelector
-          year={selectedYear.label}
-          month={selectedMonth}
-          onYearChange={(yLabel) => { const fy = FY_YEARS.find((f) => f.label === yLabel); if (fy) setSelectedYear(fy); }}
-          onMonthChange={setSelectedMonth}
-        />
-      </div>
+      <MainTabsBar tabs={MAIN_TABS} activeTab={activeMainTab} onTabChange={setActiveMainTab} />
 
       {activeMainTab === 'Summary' && (
         <>

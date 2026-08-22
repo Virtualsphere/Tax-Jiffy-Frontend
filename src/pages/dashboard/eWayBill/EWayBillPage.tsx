@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
+import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
+import { usePeriod } from '@/context/PeriodContext';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { toSyncDate } from '@/lib/period';
 import { describeApiError } from '@/lib/api-error';
@@ -11,7 +11,7 @@ import type { EWayBillFiling, EWayBillRecord } from './types/ewaybill.types';
 
 export function EWayBillPage() {
   const { data: currentEntity } = useCurrentEntity();
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth, periodLabel } = usePeriod();
+  const { selectedYear, selectedMonth, periodLabel } = usePeriod();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const syncDate = useMemo(
@@ -136,31 +136,7 @@ export function EWayBillPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '1.5rem' }}>
-        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
-          <div className="global-main-tabs-wrapper">
-            {MAIN_TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-                onClick={() => setActiveMainTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-        <PeriodSelector
-          year={selectedYear.label}
-          month={selectedMonth}
-          onYearChange={(yLabel) => {
-            const fy = FY_YEARS.find((f) => f.label === yLabel);
-            if (fy) setSelectedYear(fy);
-          }}
-          onMonthChange={setSelectedMonth}
-        />
-      </div>
+      <MainTabsBar tabs={MAIN_TABS} activeTab={activeMainTab} onTabChange={setActiveMainTab} />
 
       {activeMainTab === 'Import' && (
         <SimpleUploadUI

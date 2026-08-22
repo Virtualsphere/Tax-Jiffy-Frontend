@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react';
 import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
+import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 
 export function SaleRegisterPage() {
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
-
   const handleUpload = useCallback((file: File, year: string, month: string) => {
     // API logic to be provided by user later
     console.log('Uploading Sale Register file:', file.name, year, month);
@@ -16,37 +13,13 @@ export function SaleRegisterPage() {
     console.log('Syncing Sale Register');
   }, []);
 
-  const MAIN_TABS = ['Import', 'List', '2B-Reco', '3B-Reco'] as const;
+  const MAIN_TABS = ['Import', 'List', 'E-Invoice Reco', 'E-way Bill Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
 
   return (
     <div style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '1.5rem' }}>
-        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
-          <div className="global-main-tabs-wrapper">
-            {MAIN_TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-                onClick={() => setActiveMainTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-        <PeriodSelector
-          year={selectedYear.label}
-          month={selectedMonth}
-          onYearChange={(yLabel) => {
-            const fy = FY_YEARS.find((f) => f.label === yLabel);
-            if (fy) setSelectedYear(fy);
-          }}
-          onMonthChange={setSelectedMonth}
-        />
-      </div>
+      <MainTabsBar tabs={MAIN_TABS} activeTab={activeMainTab} onTabChange={setActiveMainTab} />
 
       {activeMainTab === 'Import' && (
         <SimpleUploadUI
@@ -59,11 +32,11 @@ export function SaleRegisterPage() {
       {activeMainTab === 'List' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>List coming soon</div>
       )}
-      {activeMainTab === '2B-Reco' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>2B-Reco coming soon</div>
+      {activeMainTab === 'E-Invoice Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-Invoice Reco coming soon</div>
       )}
-      {activeMainTab === '3B-Reco' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>3B-Reco coming soon</div>
+      {activeMainTab === 'E-way Bill Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-way Bill Reco coming soon</div>
       )}
     </div>
   );

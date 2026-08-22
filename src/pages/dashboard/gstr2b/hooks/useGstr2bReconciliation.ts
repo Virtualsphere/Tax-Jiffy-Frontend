@@ -35,3 +35,32 @@ export function useFinalizeGstr2b(filingId?: number) {
     },
   });
 }
+
+export interface Gstr2bInvoicePatch {
+  invoiceId: number;
+  patch: Gstr2bInvoiceUpdateRequest;
+}
+
+/** How many PATCHes are allowed in flight at once during a bulk action. */
+const BULK_CONCURRENCY = 6;
+
+/**
+ * Applies the same per-invoice update as `useUpdateGstr2bInvoice` across a selection,
+ * but invalidates once at the end instead of once per row — a bulk fix over a hundred
+ * invoices should cost one refetch, not a hundred.
+ */
+export function useBulkUpdateGstr2bInvoices(filingId?: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (updates: Gstr2bInvoicePatch[]) => {
+      for (let i = 0; i < updates.length; i += BULK_CONCURRENCY) {
+        const slice = updates.slice(i, i + BULK_CONCURRENCY);
+        await Promise.all(slice.map((u) => gstr2bApi.updateInvoice(u.invoiceId, u.patch)));
+      }
+      return updates.length;
+    },
+    onSettled: () => {
+      if (filingId) queryClient.invalidateQueries({ queryKey: GSTR2B_RECO_QUERY_KEYS.reconciliation(filingId) });
+    },
+  });
+}

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import { useUploadPurchaseRegister } from './hooks/useUploadPurchaseRegister';
 import { usePurchaseRegisterSheets } from './hooks/usePurchaseRegisterSheets';
-import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod } from '@/context/PeriodContext';
+import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { UnifiedTable, TagCellRenderer } from '@/components/UnifiedTable';
 import styles from './PurchaseRegisterPage.module.css';
@@ -234,7 +234,7 @@ function usePrColDefs(activeTab: SheetTab): (ColDef | ColGroupDef)[] {
 
 // ── Main Component ────────────────────────────────────────────────────────
 export function PurchaseRegisterPage() {
-  const MAIN_TABS = ['Import', 'List', 'E-Invoice Reco', 'E-way Bill Reco'] as const;
+  const MAIN_TABS = ['Import', 'List', '2B-Reco', '3B-Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
   const [activeMainTab, setActiveMainTab] = useState<MainTab>('Import');
   const [step, setStep] = useState<Step>(1);
@@ -242,7 +242,7 @@ export function PurchaseRegisterPage() {
   const [dragOver, setDragOver] = useState(false);
   const navigate = useNavigate();
 
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
+  const { selectedYear, selectedMonth } = usePeriod();
   const { data: currentEntity } = useCurrentEntity();
 
   const upload = useUploadPurchaseRegister();
@@ -308,17 +308,6 @@ export function PurchaseRegisterPage() {
           <p className={styles.uploadSubtitle}>
             Upload your GSTR-2 Excel file (purchase returns). All sheets will be parsed automatically.
           </p>
-        </div>
-        <div className={styles.periodRow}>
-          <PeriodSelector
-            year={selectedYear.label}
-            month={selectedMonth}
-            onYearChange={(yLabel) => {
-              const fy = FY_YEARS.find((f) => f.label === yLabel);
-              if (fy) setSelectedYear(fy);
-            }}
-            onMonthChange={setSelectedMonth}
-          />
         </div>
       </div>
 
@@ -536,20 +525,7 @@ export function PurchaseRegisterPage() {
 
   return (
     <div className={styles.page}>
-      <div className="global-main-tabs-container">
-        <div className="global-main-tabs-wrapper">
-          {MAIN_TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-              onClick={() => setActiveMainTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+      <MainTabsBar tabs={MAIN_TABS} activeTab={activeMainTab} onTabChange={setActiveMainTab} />
 
       {activeMainTab === 'Import' && (
         <>
@@ -571,11 +547,11 @@ export function PurchaseRegisterPage() {
       {activeMainTab === 'List' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>List coming soon</div>
       )}
-      {activeMainTab === 'E-Invoice Reco' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-Invoice Reco coming soon</div>
+      {activeMainTab === '2B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>2B-Reco coming soon</div>
       )}
-      {activeMainTab === 'E-way Bill Reco' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>E-way Bill Reco coming soon</div>
+      {activeMainTab === '3B-Reco' && (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>3B-Reco coming soon</div>
       )}
     </div>
   );

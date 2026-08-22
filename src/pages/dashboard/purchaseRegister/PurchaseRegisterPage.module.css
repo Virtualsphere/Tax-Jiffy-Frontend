@@ -102,10 +102,6 @@
   margin: 0;
 }
 
-.periodRow {
-  flex-shrink: 0;
-}
-
 /* ── Dropzone ── */
 .dropzone {
   border: 2px dashed #cbd5e1;
