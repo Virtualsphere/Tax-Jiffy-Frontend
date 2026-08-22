@@ -1,11 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 
 import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
+import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { usePeriod, FY_YEARS } from '@/context/PeriodContext';
+import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { toRetPeriod } from '@/lib/period';
+import { describeApiError } from '@/lib/api-error';
 import styles from './GSTR2BPage.module.css';
 import { useGstr2bData } from './hooks/useGstr2bData';
+import {
+  purchaseRegisterApi,
+  type PrB2b,
+  type PurchaseRegisterFiling,
+} from '@/pages/dashboard/purchaseRegister/api/purchaseRegisterApi';
+import { Gstr2bInvoiceList } from './components/Gstr2bInvoiceList';
+import { Gstr2bReconciliationPanel } from './tabs/Gstr2bReconciliationPanel';
 
 /* ── Icons ── */
 function IconGSTIN() {
@@ -100,6 +113,113 @@ export function GSTR2BPage() {
 
   const { data, isLoading } = useGstr2bData();
 
+  const { data: currentEntity } = useCurrentEntity();
+  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = usePeriod();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const retPeriod = useMemo(
+    () => toRetPeriod(selectedYear.label, selectedMonth),
+    [selectedYear, selectedMonth]
+  );
+
+  // The "uploaded GSTR-2B data" this page reconciles IS the purchase-register upload —
+  // there is no separate GSTR-2B filing. Uploading here calls the same /api/gstr2/upload
+  // endpoint as the Purchase Register page, and both pages read the same filing/invoices.
+  const [filings, setFilings] = useState<PurchaseRegisterFiling[]>([]);
+  const [loadingFilings, setLoadingFilings] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadFilings = useCallback(async () => {
+    if (!currentEntity?.id) {
+      setFilings([]);
+      return;
+    }
+    setLoadingFilings(true);
+    setLoadError(null);
+    try {
+      setFilings(await purchaseRegisterApi.getFilingsByCompanyGst(currentEntity.id));
+    } catch (error) {
+      console.error(error);
+      setLoadError(describeApiError(error));
+      setFilings([]);
+    } finally {
+      setLoadingFilings(false);
+    }
+  }, [currentEntity]);
+
+  useEffect(() => {
+    loadFilings();
+  }, [loadFilings]);
+
+  const filing = useMemo(
+    () => filings.find(
+      (f) => f.financialYear === selectedYear.label && f.taxPeriod.toUpperCase() === selectedMonth.toUpperCase()
+    ) ?? null,
+    [filings, selectedYear, selectedMonth]
+  );
+
+  const [invoices, setInvoices] = useState<PrB2b[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!filing) {
+        setInvoices([]);
+        return;
+      }
+      setLoadingInvoices(true);
+      try {
+        const rows = await purchaseRegisterApi.getB2b(filing.id);
+        if (!cancelled) setInvoices(rows);
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) setInvoices([]);
+      } finally {
+        if (!cancelled) setLoadingInvoices(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [filing]);
+
+  const handleUpload = useCallback(async (file: File, year: string, month: string) => {
+    if (!currentEntity?.id) {
+      alert('Please select an entity first.');
+      return;
+    }
+    try {
+      setIsUploading(true);
+      await purchaseRegisterApi.upload(file, currentEntity.id, year, month.toUpperCase());
+      alert(`File ${file.name} uploaded successfully!`);
+      await loadFilings();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to upload GSTR-2B. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [currentEntity, loadFilings]);
+
+  const handleSync = useCallback(() => {
+    alert('GSTR-2B is uploaded from an Excel export, not synced live. Use "Upload new file" instead.');
+  }, []);
+
+  const hasStoredGstr2bData = !!filing && invoices.length > 0;
+  const loadingExisting = loadingFilings || loadingInvoices;
+
+  const storedGstr2bSummary = useMemo(() => {
+    if (!filing) return undefined;
+    const count = `${invoices.length} invoice${invoices.length === 1 ? '' : 's'}`;
+    const when = filing.createdDate
+      ? new Date(filing.createdDate).toLocaleDateString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric',
+        })
+      : null;
+    return [count, when ? `Uploaded ${when}` : null, `Status: ${filing.filingStatus}`]
+      .filter(Boolean)
+      .join(' · ');
+  }, [filing, invoices.length]);
+
   const registrationColDefs = useMemo<ColDef[]>(() => [
     {
       field: 'field_attribute',
@@ -175,26 +295,57 @@ export function GSTR2BPage() {
   }
 
   return (
-    <div className={styles.pageContainer}>
-      <div className="global-main-tabs-container">
-        <div className="global-main-tabs-wrapper">
-          {MAIN_TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
-              onClick={() => setActiveMainTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+    <div className={styles.pageContainer} style={{ position: 'relative' }}>
+      {isUploading && (
+        <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, background: '#eef2ff', color: '#4f46e5', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold' }}>
+          Uploading GSTR-2B...
         </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div className="global-main-tabs-container" style={{ marginBottom: 0 }}>
+          <div className="global-main-tabs-wrapper">
+            {MAIN_TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`global-main-tab ${activeMainTab === tab ? 'global-main-tab-active' : ''}`}
+                onClick={() => setActiveMainTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+        <PeriodSelector
+          year={selectedYear.label}
+          month={selectedMonth}
+          onYearChange={(yLabel) => {
+            const fy = FY_YEARS.find((f) => f.label === yLabel);
+            if (fy) setSelectedYear(fy);
+          }}
+          onMonthChange={setSelectedMonth}
+        />
       </div>
 
       <h1 className={styles.pageTitle} style={{ padding: '0 24px', marginTop: '24px' }}>GSTR 2B Details</h1>
 
       {activeMainTab === 'Import' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Import section coming soon</div>
+        <div style={{ padding: '0 24px 32px' }}>
+          <SimpleUploadUI
+            title="GSTR-2B"
+            subtitle="Upload the GSTR-2B export for this return period, then reconcile it against IMS"
+            onUpload={handleUpload}
+            onSync={handleSync}
+            loadingExistingData={loadingExisting}
+            hasExistingData={hasStoredGstr2bData}
+            existingSummary={storedGstr2bSummary}
+            existingError={loadError}
+            existingData={
+              <Gstr2bInvoiceList filing={filing} invoices={invoices} loading={false} retPeriod={retPeriod} embedded />
+            }
+          />
+        </div>
       )}
 
       {activeMainTab === 'Return' && (
@@ -313,7 +464,15 @@ export function GSTR2BPage() {
       )}
 
       {activeMainTab === '2B-Reco' && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>2B-Reco coming soon</div>
+        <div style={{ padding: '0 24px 32px' }}>
+          {!filing ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+              Upload GSTR-2B for {retPeriod} on the Import tab to start reconciling it against IMS.
+            </div>
+          ) : (
+            <Gstr2bReconciliationPanel filingId={filing.id} filingStatus={filing.filingStatus} retPeriod={retPeriod} />
+          )}
+        </div>
       )}
     </div>
   );

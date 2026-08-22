@@ -1,0 +1,83 @@
+.card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.emptyState {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.actionBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.actionAccepted {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.actionRejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.actionDefault {
+  background: #f1f5f9;
+  color: #64748b;
+}
