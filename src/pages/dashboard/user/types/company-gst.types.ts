@@ -14,9 +14,13 @@ export interface CompanyGSTResponse {
   gstNumber: string;
   companyId: number;
   companyName: string;
-  subscriptionPlanName: string;
+  subscriptionPlanId: number | null;
+  subscriptionPlanName: string | null;
+  planAmount: number | null;
+  planUserCount: number | null;
+  planTransactionCount: number | null;
   isPaymentDone: boolean;
-  startDate: string;
-  endDate: string;
+  startDate: string | null;
+  endDate: string | null;
   isActive: boolean;
 }

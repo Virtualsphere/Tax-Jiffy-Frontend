@@ -20,6 +20,12 @@ export const companyGSTApi = {
     return response.data.data;
   },
 
+  /** Active + deactivated GST numbers for this company — full subscription history. */
+  getAllByCompany: async (companyId: number): Promise<CompanyGSTResponse[]> => {
+    const response = await apiClient.get<ApiResponse<CompanyGSTResponse[]>>(`${BASE_URL}/by-company/${companyId}/all`);
+    return response.data.data;
+  },
+
   getById: async (id: number): Promise<CompanyGSTResponse> => {
     const response = await apiClient.get<ApiResponse<CompanyGSTResponse>>(`${BASE_URL}/${id}`);
     return response.data.data;
