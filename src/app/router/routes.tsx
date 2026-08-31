@@ -45,6 +45,9 @@ const CompaniesDashboardPage = lazy(() =>
 const UserDashboardPage = lazy(() =>
   import('@/pages/dashboard/user/UserDashboardPage').then((m) => ({ default: m.UserDashboardPage })),
 );
+const BillingPage = lazy(() =>
+  import('@/pages/dashboard/billing/BillingPage').then((m) => ({ default: m.BillingPage })),
+);
 const UserManagementPage = lazy(() =>
   import('@/pages/dashboard/users/UserManagementPage').then((m) => ({ default: m.UserManagementPage })),
 );
@@ -248,6 +251,14 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Navigate to="gstr-1" replace />,
+          },
+          {
+            path: 'billing',
+            element: (
+              <SuspenseWrapper>
+                <BillingPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: 'users',
