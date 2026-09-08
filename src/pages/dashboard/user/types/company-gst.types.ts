@@ -3,10 +3,13 @@ export interface CompanyGSTRequest {
   gstNumber: string;
 }
 
+/**
+ * No startDate/endDate here on purpose — the subscription period (always 1 month) is computed
+ * server-side. Sending client-supplied dates would let anyone grant themselves an arbitrarily
+ * long subscription.
+ */
 export interface PurchaseSubscriptionRequest {
   subscriptionPlanId: number;
-  startDate: string;
-  endDate: string;
 }
 
 export interface CompanyGSTResponse {
@@ -14,9 +17,13 @@ export interface CompanyGSTResponse {
   gstNumber: string;
   companyId: number;
   companyName: string;
-  subscriptionPlanName: string;
+  subscriptionPlanId: number | null;
+  subscriptionPlanName: string | null;
+  planAmount: number | null;
+  planUserCount: number | null;
+  planTransactionCount: number | null;
   isPaymentDone: boolean;
-  startDate: string;
-  endDate: string;
+  startDate: string | null;
+  endDate: string | null;
   isActive: boolean;
 }

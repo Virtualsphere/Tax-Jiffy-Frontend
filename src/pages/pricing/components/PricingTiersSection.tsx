@@ -60,22 +60,11 @@ export function PricingTiersSection({ isAnnual, gstId, companyId }: PricingTiers
     setPurchasingPlan(planType);
     setError(null);
 
-    const formatLocalDateTime = (date: Date) => {
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    };
-
     try {
-      const today = new Date();
-      const nextYear = new Date();
-      nextYear.setFullYear(today.getFullYear() + 1);
-
       await purchaseSub.mutateAsync({
         id: gstId,
         data: {
           subscriptionPlanId: plan.id,
-          startDate: formatLocalDateTime(today),
-          endDate: formatLocalDateTime(nextYear),
         }
       });
 
