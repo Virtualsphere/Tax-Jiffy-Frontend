@@ -541,6 +541,30 @@
   flex-shrink: 0;
 }
 
+/* The name/avatar block is a link to the profile; the logout button beside it
+   stays a separate control. */
+.userLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin: -4px;
+  transition: background 0.15s ease;
+}
+
+.userLink:hover {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.userLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
 .avatar {
   width: 36px;
   height: 36px;

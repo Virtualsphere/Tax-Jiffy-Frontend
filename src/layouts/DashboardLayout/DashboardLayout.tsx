@@ -10,7 +10,7 @@ const TITLE_MAP: Record<string, string> = {
   '': 'Dashboard',
   users: 'User Management',
   roles: 'Roles',
-  billing: 'Billing',
+  profile: 'Profile',
   'subscription-plans': 'Subscription Plans',
   'sale-register': 'Sale Register',
   'gstr-1': 'GSTR-1',

@@ -63,6 +63,15 @@ export function IconUsers() {
   );
 }
 
+export function IconUser() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16 }}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
 export function IconShield() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16 }}>
@@ -120,7 +129,7 @@ export const SIDEBAR_ITEMS: SidebarNavItem[] = [
     icon: <IconSettings />,
     children: [
       { id: 'role-editor', label: 'Role Editor', icon: <IconShield />, path: ROUTES.dashboard.roles },
-      { id: 'billing', label: 'Billing', icon: <IconWallet />, path: ROUTES.dashboard.billing },
+      { id: 'profile', label: 'Profile', icon: <IconUser />, path: ROUTES.dashboard.profile },
     ]
   }
 ];

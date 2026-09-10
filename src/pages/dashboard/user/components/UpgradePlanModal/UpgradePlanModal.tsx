@@ -16,7 +16,7 @@ export function UpgradePlanModal({ gstId, onClose, isNewPurchase = false }: Upgr
   const [selectedPlanId, setSelectedPlanId] = useState<number | ''>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: plans, isLoading: isLoadingPlans } = useSubscriptions();
+  const { data: plans, isLoading: isLoadingPlans, isError: isPlansError } = useSubscriptions();
   const queryClient = useQueryClient();
   const purchaseSub = usePurchaseSubscription();
 
@@ -48,6 +48,13 @@ export function UpgradePlanModal({ gstId, onClose, isNewPurchase = false }: Upgr
       setErrorMessage(err.response?.data?.message || err.message || 'An error occurred while processing the subscription. Please try again or contact support.');
     }
   };
+
+  // An upgrade cannot land back on the entry-level tier, so those are filtered
+  // out. A fresh purchase can pick any active plan.
+  const availablePlans = isNewPurchase
+    ? plans
+    : plans?.filter((p: SubscriptionPlanResponse) => !p.name.toLowerCase().includes('basic'));
+  const hasNoPlans = !isLoadingPlans && !isPlansError && availablePlans?.length === 0;
 
   const isSubmitting = purchaseSub.isPending;
 
@@ -86,14 +93,25 @@ export function UpgradePlanModal({ gstId, onClose, isNewPurchase = false }: Upgr
                   required
                 >
                   <option value="" disabled>{isNewPurchase ? 'Select a subscription plan' : 'Select a plan to upgrade to'}</option>
-                  {isLoadingPlans ? (
-                    <option disabled>Loading...</option>
-                  ) : (
-                    (isNewPurchase ? plans : plans?.filter(p => !p.name.toLowerCase().includes('basic')))?.map((p: SubscriptionPlanResponse) => (
-                      <option key={p.id} value={p.id}>{p.name} - ₹{p.planAmount}</option>
-                    ))
-                  )}
+                  {isLoadingPlans && <option disabled>Loading...</option>}
+                  {isPlansError && <option disabled>Could not load plans</option>}
+                  {hasNoPlans && <option disabled>No plans available</option>}
+                  {!isLoadingPlans && !isPlansError && availablePlans?.map((p: SubscriptionPlanResponse) => (
+                    <option key={p.id} value={p.id}>{p.name} - ₹{p.planAmount}</option>
+                  ))}
                 </select>
+                {isPlansError && (
+                  <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px', lineHeight: '1.4' }}>
+                    We couldn&apos;t load the subscription plans. Please close this dialog and try again.
+                  </p>
+                )}
+                {hasNoPlans && (
+                  <p style={{ color: '#64748b', fontSize: '13px', marginTop: '8px', lineHeight: '1.4' }}>
+                    {isNewPurchase
+                      ? 'No active subscription plans have been set up yet. An administrator can add them under Subscription Plans.'
+                      : 'There are no higher plans to upgrade to right now.'}
+                  </p>
+                )}
               </div>
             </div>
             <div className={styles.footer}>

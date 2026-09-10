@@ -18,7 +18,7 @@ export const ROUTES = {
     user: '/dashboard/user',
     users: '/dashboard/users',
     roles: '/dashboard/roles',
-    billing: '/dashboard/billing',
+    profile: '/dashboard/profile',
     subscriptionPlans: '/dashboard/subscription-plans',
     saleRegister: '/dashboard/sale-register',
     gstr1: '/dashboard/gstr-1',
