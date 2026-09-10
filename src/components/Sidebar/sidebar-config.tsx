@@ -119,7 +119,6 @@ export const SIDEBAR_ITEMS: SidebarNavItem[] = [
     label: 'Settings',
     icon: <IconSettings />,
     children: [
-      { id: 'user-management', label: 'User Management', icon: <IconUsers />, path: ROUTES.dashboard.users },
       { id: 'role-editor', label: 'Role Editor', icon: <IconShield />, path: ROUTES.dashboard.roles },
       { id: 'billing', label: 'Billing', icon: <IconWallet />, path: ROUTES.dashboard.billing },
     ]

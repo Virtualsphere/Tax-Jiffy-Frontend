@@ -120,12 +120,16 @@
 }
 
 /* Filter Bar */
+/* Wraps rather than overflowing: the bar carries a search box, any number of
+   page-supplied dropdowns, and seven controls. On a narrow viewport the
+   controls drop to their own line instead of running off the edge. */
 .filterBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px 16px 24px;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .fullscreenContainer .filterBar {
@@ -135,13 +139,18 @@
 .filterGroup {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
+  gap: 8px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  /* Without this the search box cannot shrink below its content width. */
+  min-width: 0;
 }
 
 .searchWrapper {
   position: relative;
-  width: 320px;
+  flex: 1 1 220px;
+  min-width: 170px;
+  max-width: 320px;
 }
 
 .searchIcon {
@@ -192,17 +201,27 @@
 .filterButton {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 7px 10px;
   border: 1px solid #d0d5dd;
   border-radius: 8px;
   background: #ffffff;
   color: #344054;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  /* Labels stay on one line; the bar wraps instead. */
+  white-space: nowrap;
+  flex: none;
+}
+
+/* A toggle that is currently on, e.g. the column-filter row. */
+.filterButton[aria-pressed='true'] {
+  border-color: #4338ca;
+  background: #eef0ff;
+  color: #4338ca;
 }
 
 .filterButton:hover {

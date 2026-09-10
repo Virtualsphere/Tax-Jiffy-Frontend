@@ -61,6 +61,16 @@
   margin-bottom: 4px;
 }
 
+/* The GSTIN rendered as the card title. Sized from the shared token so it
+   matches the sidebar, companies list, billing and GSTR-3B. */
+.gstinValue {
+  font-size: var(--text-gstin);
+  font-weight: var(--weight-gstin);
+  letter-spacing: var(--tracking-gstin);
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
 .companyMeta {
   font-size: 13px;
   color: #64748b;

@@ -59,10 +59,11 @@
 }
 
 .companyName {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--text-gstin);
+  font-weight: var(--weight-gstin);
   color: #0f172a;
   margin: 0;
+  letter-spacing: var(--tracking-gstin);
 }
 
 .companyMeta {

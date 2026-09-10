@@ -91,7 +91,7 @@ function GSTMappingCard({ gstId, companies, handleNavigateToEntity, onCompanyLoa
           {companyLogo && (
             <AuthenticatedImage src={companyLogo} alt="logo" style={{ width: 32, height: 32, borderRadius: 4 }} />
           )}
-          <h2 className={styles.companyName}>{gst.gstNumber}</h2>
+          <h2 className={styles.gstinValue}>{gst.gstNumber}</h2>
         </div>
         <div className={styles.companyMeta}>
           {defaultMock.state}

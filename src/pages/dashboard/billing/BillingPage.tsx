@@ -3,6 +3,8 @@ import { useQueries } from '@tanstack/react-query';
 import { useMyCompanies } from '@/pages/dashboard/user/hooks/useMyCompanies';
 import { companyGSTApi } from '@/pages/dashboard/user/api/company-gst.api';
 import type { CompanyGSTResponse } from '@/pages/dashboard/user/types/company-gst.types';
+import type { ColDef } from 'ag-grid-community';
+import { DataTable, column } from '@/components/UnifiedTable';
 import styles from './BillingPage.module.css';
 
 type SubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'PENDING' | 'DEACTIVATED';
@@ -62,6 +64,28 @@ export function BillingPage() {
   }, [companyIds, gstQueries]);
 
   const allGsts = useMemo(() => Array.from(gstsByCompany.values()).flat(), [gstsByCompany]);
+
+  const gstColumns: ColDef[] = useMemo(
+    () => [
+      column.text('gstNumber', 'GSTIN', { minWidth: 170, cellClass: 'ag-cell-left ' + styles.gstin }),
+      column.text('subscriptionPlanName', 'Plan'),
+      {
+        ...column.tag('status', 'Status'),
+        field: undefined,
+        colId: 'status',
+        valueGetter: (p) => (p.data ? STATUS_META[getStatus(p.data)].label : null),
+      },
+      column.date('startDate', 'Start Date'),
+      column.date('endDate', 'Expiry Date'),
+      {
+        ...column.number('planAmount', 'Plan Amount'),
+        valueFormatter: (p) => money(p.value ?? null),
+      },
+      column.number('planUserCount', 'User Limit'),
+      column.number('planTransactionCount', 'Transaction Limit'),
+    ],
+    [],
+  );
 
   const summary = useMemo(() => {
     const active = allGsts.filter((g) => getStatus(g) === 'ACTIVE');
@@ -146,44 +170,12 @@ export function BillingPage() {
                   {gsts.length === 0 ? (
                     <p className={styles.emptyState}>No GST numbers added yet for this company.</p>
                   ) : (
-                    <div className={styles.tableWrapper}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr>
-                            <th>GSTIN</th>
-                            <th>Plan</th>
-                            <th>Status</th>
-                            <th>Start Date</th>
-                            <th>Expiry Date</th>
-                            <th>Plan Amount</th>
-                            <th>User Limit</th>
-                            <th>Transaction Limit</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {gsts.map((gst) => {
-                            const status = getStatus(gst);
-                            const meta = STATUS_META[status];
-                            return (
-                              <tr key={gst.id}>
-                                <td className={styles.gstin}>{gst.gstNumber}</td>
-                                <td>{gst.subscriptionPlanName ?? '—'}</td>
-                                <td>
-                                  <span className={`${styles.statusBadge} ${styles[meta.className as keyof typeof styles]}`}>
-                                    {meta.label}
-                                  </span>
-                                </td>
-                                <td>{formatDate(gst.startDate)}</td>
-                                <td>{formatDate(gst.endDate)}</td>
-                                <td>{money(gst.planAmount)}</td>
-                                <td>{gst.planUserCount ?? '—'}</td>
-                                <td>{gst.planTransactionCount ?? '—'}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                      <DataTable
+                        rowData={gsts}
+                        columnDefs={gstColumns}
+                        hideHeader
+                        variant="nested"
+                      />
                   )}
                 </div>
               </div>

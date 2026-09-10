@@ -7,7 +7,8 @@ import {
 import { handleApiError } from '@/services/api';
 
 const ALLOWED_EXTENSIONS = ['.xlsx', '.xls'];
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+// Must not exceed the backend's spring.servlet.multipart.max-file-size (50MB).
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
 function isExcelFile(file: File): boolean {
   const name = file.name.toLowerCase();
@@ -65,7 +66,7 @@ export function useUploadPurchaseRegister(): UseUploadPurchaseRegisterReturn {
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        setError(`File exceeds the 100 MB limit. Please upload a smaller file.`);
+        setError(`File exceeds the 50 MB limit. Please upload a smaller file.`);
         if (inputRef.current) inputRef.current.value = '';
         return;
       }

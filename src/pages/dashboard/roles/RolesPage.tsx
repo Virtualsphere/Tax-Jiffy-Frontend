@@ -6,8 +6,9 @@ import { UserManagementPage } from '../users/UserManagementPage';
 import { useSaveRoleMapping, useRoleMappings } from './hooks/useRoleMapping';
 import type { RoleMappingRequest } from './types/roleMapping.types';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
-
-const ITEMS_PER_PAGE = 10;
+import { APP_PAGES } from '@/config/app-pages';
+import type { ColDef } from 'ag-grid-community';
+import { DataTable, column, rowActionsColumn } from '@/components/UnifiedTable';
 
 /* ── Helpers ─────────────────────────────────────────── */
 function formatRoleId(id: number): string {
@@ -15,12 +16,13 @@ function formatRoleId(id: number): string {
 }
 
 
-const AVAILABLE_SCREENS = [
-  { pageName: 'Menus', screenName: 'Appearance - Menus' },
-  { pageName: 'Dashboard', screenName: 'Dashboard View' },
-  { pageName: 'User Management', screenName: 'Users List' },
-  { pageName: 'GSTR-1', screenName: 'B2B Invoices' },
-  { pageName: 'GSTR-1', screenName: 'B2C Invoices' },
+type PermissionField = 'view' | 'add' | 'edit' | 'delete';
+
+const PERMISSION_FIELDS: { field: PermissionField; label: string }[] = [
+  { field: 'view', label: 'View' },
+  { field: 'add', label: 'Add' },
+  { field: 'edit', label: 'Edit' },
+  { field: 'delete', label: 'Delete' },
 ];
 
 type ScreenPermission = {
@@ -32,6 +34,53 @@ type ScreenPermission = {
   delete: boolean;
   mappingId?: number;
 };
+
+/* ── Permissions matrix (shared by the Add and Edit dialogs) ── */
+interface PermissionsTableProps {
+  permissions: ScreenPermission[];
+  onToggle: (index: number, field: PermissionField) => void;
+  onToggleColumn: (field: PermissionField, checked: boolean) => void;
+}
+
+function PermissionsTable({ permissions, onToggle, onToggleColumn }: PermissionsTableProps) {
+  return (
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <th className={styles.th}>Page Name</th>
+          <th className={styles.th}>Screen Name</th>
+          {PERMISSION_FIELDS.map(({ field, label }) => {
+            const allChecked = permissions.length > 0 && permissions.every((row) => row[field]);
+            return (
+              <th key={field} className={styles.thCenter}>
+                <div>{label}</div>
+                <input
+                  type="checkbox"
+                  checked={allChecked}
+                  onChange={(e) => onToggleColumn(field, e.target.checked)}
+                  title={`${allChecked ? 'Clear' : 'Select'} ${label} on every screen`}
+                />
+              </th>
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody>
+        {permissions.map((row, idx) => (
+          <tr key={`${row.pageName}||${row.screenName}`} className={styles.tr}>
+            <td className={styles.td}>{row.pageName}</td>
+            <td className={styles.td}>{row.screenName}</td>
+            {PERMISSION_FIELDS.map(({ field }) => (
+              <td key={field} className={styles.tdCenter}>
+                <input type="checkbox" checked={row[field]} onChange={() => onToggle(idx, field)} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
 /* ── Add Role Modal ───────────────────────────────────── */
 interface AddRoleModalProps {
@@ -48,13 +97,17 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
   const saveMapping = useSaveRoleMapping();
 
   const [permissions, setPermissions] = useState<ScreenPermission[]>(
-    AVAILABLE_SCREENS.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
+    APP_PAGES.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
   );
 
-  const togglePermission = (index: number, field: 'add' | 'edit' | 'view' | 'delete') => {
+  const togglePermission = (index: number, field: PermissionField) => {
     const newPerms = [...permissions];
     newPerms[index] = { ...newPerms[index], [field]: !newPerms[index][field] };
     setPermissions(newPerms);
+  };
+
+  const toggleColumn = (field: PermissionField, checked: boolean) => {
+    setPermissions((prev) => prev.map((row) => ({ ...row, [field]: checked })));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +128,11 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
         companyGstId: Number(companyGstId),
       });
 
-      const mappingPromises = permissions.map(p => {
+      const grantedPermissions = permissions.filter(
+        (p) => p.view || p.add || p.edit || p.delete,
+      );
+
+      const mappingPromises = grantedPermissions.map(p => {
         const req: RoleMappingRequest = {
           roleId: createdRole.id,
           companyId: Number(companyId),
@@ -136,30 +193,11 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
 
             <h5 className={styles.sectionTitle} style={{ marginTop: '20px', marginBottom: '10px', fontSize: '1.1rem', fontWeight: 600 }}>Permissions</h5>
             <div className={styles.tableContainer} style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th className={styles.th}>Page Name</th>
-                    <th className={styles.th}>Screen Name</th>
-                    <th className={styles.thCenter}>View</th>
-                    <th className={styles.thCenter}>Add</th>
-                    <th className={styles.thCenter}>Edit</th>
-                    <th className={styles.thCenter}>Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {permissions.map((row, idx) => (
-                    <tr key={idx} className={styles.tr}>
-                      <td className={styles.td}>{row.pageName}</td>
-                      <td className={styles.td}>{row.screenName}</td>
-                      <td className={styles.tdCenter}><input type="checkbox" checked={row.view} onChange={() => togglePermission(idx, 'view')} /></td>
-                      <td className={styles.tdCenter}><input type="checkbox" checked={row.add} onChange={() => togglePermission(idx, 'add')} /></td>
-                      <td className={styles.tdCenter}><input type="checkbox" checked={row.edit} onChange={() => togglePermission(idx, 'edit')} /></td>
-                      <td className={styles.tdCenter}><input type="checkbox" checked={row.delete} onChange={() => togglePermission(idx, 'delete')} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <PermissionsTable
+                permissions={permissions}
+                onToggle={togglePermission}
+                onToggleColumn={toggleColumn}
+              />
             </div>
 
           </div>
@@ -194,12 +232,12 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
   const { data: existingMappings, isLoading: isMappingsLoading } = useRoleMappings(role.id, companyGstId);
 
   const [permissions, setPermissions] = useState<ScreenPermission[]>(
-    AVAILABLE_SCREENS.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
+    APP_PAGES.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
   );
 
   useEffect(() => {
     if (existingMappings && existingMappings.length > 0) {
-      const merged = AVAILABLE_SCREENS.map(screen => {
+      const merged = APP_PAGES.map(screen => {
         const mapping = existingMappings.find(m => m.pageNumber === screen.pageName && m.screenNumber === screen.screenName);
         return {
           ...screen,
@@ -214,10 +252,14 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
     }
   }, [existingMappings]);
 
-  const togglePermission = (index: number, field: 'add' | 'edit' | 'view' | 'delete') => {
+  const togglePermission = (index: number, field: PermissionField) => {
     const newPerms = [...permissions];
     newPerms[index] = { ...newPerms[index], [field]: !newPerms[index][field] };
     setPermissions(newPerms);
+  };
+
+  const toggleColumn = (field: PermissionField, checked: boolean) => {
+    setPermissions((prev) => prev.map((row) => ({ ...row, [field]: checked })));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -241,7 +283,11 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
         } 
       });
 
-      const mappingPromises = permissions.map(p => {
+      const changedPermissions = permissions.filter(
+        (p) => p.mappingId != null || p.view || p.add || p.edit || p.delete,
+      );
+
+      const mappingPromises = changedPermissions.map(p => {
         const req: RoleMappingRequest = {
           roleId: role.id,
           companyId: Number(companyId),
@@ -290,30 +336,11 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
               {isMappingsLoading ? (
                  <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Loading permissions...</p>
               ) : (
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th className={styles.th}>Page Name</th>
-                      <th className={styles.th}>Screen Name</th>
-                      <th className={styles.thCenter}>View</th>
-                      <th className={styles.thCenter}>Add</th>
-                      <th className={styles.thCenter}>Edit</th>
-                      <th className={styles.thCenter}>Delete</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {permissions.map((row, idx) => (
-                      <tr key={idx} className={styles.tr}>
-                        <td className={styles.td}>{row.pageName}</td>
-                        <td className={styles.td}>{row.screenName}</td>
-                        <td className={styles.tdCenter}><input type="checkbox" checked={row.view} onChange={() => togglePermission(idx, 'view')} /></td>
-                        <td className={styles.tdCenter}><input type="checkbox" checked={row.add} onChange={() => togglePermission(idx, 'add')} /></td>
-                        <td className={styles.tdCenter}><input type="checkbox" checked={row.edit} onChange={() => togglePermission(idx, 'edit')} /></td>
-                        <td className={styles.tdCenter}><input type="checkbox" checked={row.delete} onChange={() => togglePermission(idx, 'delete')} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <PermissionsTable
+                  permissions={permissions}
+                  onToggle={togglePermission}
+                  onToggleColumn={toggleColumn}
+                />
               )}
             </div>
             
@@ -387,8 +414,6 @@ function DeleteRoleModal({ role, onClose }: DeleteRoleModalProps) {
 /* ── Main Page ────────────────────────────────────────── */
 export function RolesPage() {
   const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -403,28 +428,34 @@ export function RolesPage() {
   const { data: roles, isLoading: isRolesLoading } = useRoles(selectedCompanyId, selectedGSTId);
   if (currentEntity) { console.log('Current Entity in RolesPage 2:', currentEntity); }
 
-  // Filtered + paginated roles
-  const filteredRoles = useMemo(() => {
-    if (!roles) return [];
-    const term = searchTerm.toLowerCase();
-    return roles.filter(
-      (r) =>
-        r.roleName.toLowerCase().includes(term) ||
-        formatRoleId(r.id).toLowerCase().includes(term)
-    );
-  }, [roles, searchTerm]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / ITEMS_PER_PAGE));
-  const paginatedRoles = filteredRoles.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+  // Roles as grid rows. Search and pagination are handled by DataTable.
+  const roleRows = useMemo(
+    () =>
+      (roles ?? []).map((role) => ({
+        ...role,
+        roleIdLabel: formatRoleId(role.id),
+      })),
+    [roles],
   );
 
-  // Auto-reset page when search changes
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
-  };
+  type RoleRow = (typeof roleRows)[number];
+
+  const columnDefs: ColDef[] = useMemo(
+    () => [
+      column.text('roleIdLabel', 'Role ID', { maxWidth: 140 }),
+      column.text('roleName', 'Role Name', { minWidth: 200 }),
+      rowActionsColumn<RoleRow>([
+        { label: 'Edit', onClick: (role) => setEditingRole(role), title: 'Edit role' },
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onClick: (role) => setDeletingRole(role),
+          title: 'Delete role',
+        },
+      ]),
+    ],
+    [],
+  );
 
   // Next role ID prediction (max id + 1)
   const nextRoleId = roles && roles.length > 0
@@ -482,134 +513,15 @@ export function RolesPage() {
         {/* ── Roles Table Card ── */}
         <div>
           <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Roles List</h3>
-              <div className={styles.searchWrapper}>
-                <svg
-                  className={styles.searchIcon}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  id="roles-search"
-                  type="text"
-                  className={styles.searchInput}
-                  placeholder="Search roles..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className={styles.tableContainer}>
-              {isLoading ? (
-                <div className={styles.loadingRow}>Loading roles...</div>
-              ) : filteredRoles.length === 0 ? (
-                <div className={styles.emptyState}>
-                  {searchTerm
-                    ? 'No roles match your search.'
-                    : 'No roles found. Click "+ Add Role" to create the first one.'}
-                </div>
-              ) : (
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th className={styles.th}>Role ID</th>
-                      <th className={styles.th}>Role Name</th>
-                      <th className={styles.th} style={{ textAlign: 'right' }}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedRoles.map((role) => (
-                      <tr key={role.id} className={styles.tr}>
-                        <td className={styles.td}>
-                          <span className={styles.roleIdText}>{formatRoleId(role.id)}</span>
-                        </td>
-                        <td className={styles.td}>
-                          <div className={styles.roleNameCell}>
-                            <span className={`${styles.dotIndicator} ${!role.isActive ? styles.dotInactive : ''}`} />
-                            {role.roleName}
-                          </div>
-                        </td>
-                        <td className={styles.td}>
-                          <div className={styles.actionsCell}>
-                            <button
-                              id={`edit-role-${role.id}`}
-                              className={styles.editBtn}
-                              onClick={() => setEditingRole(role)}
-                              title="Edit role"
-                            >
-                              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Edit
-                            </button>
-                            <button
-                              id={`delete-role-${role.id}`}
-                              className={styles.deleteBtn}
-                              onClick={() => setDeletingRole(role)}
-                              title="Delete role"
-                            >
-                              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            {/* Pagination */}
-            {!isLoading && filteredRoles.length > 0 && (
-              <div className={styles.pagination}>
-                <div className={styles.pageInfo}>
-                  Showing{' '}
-                  <strong>
-                    {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredRoles.length)}
-                  </strong>{' '}
-                  of <strong>{filteredRoles.length}</strong>
-                </div>
-                <div className={styles.pageControls}>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    title="Previous page"
-                  >
-                    ‹
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      className={`${styles.pageBtn} ${page === currentPage ? styles.active : ''}`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    title="Next page"
-                  >
-                    ›
-                  </button>
-                </div>
-              </div>
-            )}
+            <DataTable
+              title="Roles List"
+              rowData={roleRows}
+              columnDefs={columnDefs}
+              loading={isLoading}
+              loadingMessage="Loading roles..."
+              emptyMessage={'No roles found. Click "+ Add Role" to create the first one.'}
+              variant="nested"
+            />
           </div>
         </div>
 

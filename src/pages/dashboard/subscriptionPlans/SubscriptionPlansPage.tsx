@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { ColDef } from 'ag-grid-community';
+import { DataTable, column, rowActionsColumn } from '@/components/UnifiedTable';
 import { useSubscriptions } from '../user/hooks/useSubscriptions';
 import {
   useCreateSubscriptionPlan,
@@ -101,6 +103,36 @@ export function SubscriptionPlansPage() {
 
   const isSaving = createPlan.isPending || updatePlan.isPending;
 
+  const columnDefs: ColDef[] = useMemo(
+    () => [
+      column.text('name', 'Plan Name', { minWidth: 180 }),
+      {
+        ...column.number('planAmount', 'Amount (₹)'),
+        valueFormatter: (p) =>
+          p.value == null ? '—' : `₹${Number(p.value).toLocaleString('en-IN')}`,
+      },
+      column.number('userCount', 'Users Allowed'),
+      column.number('transactionCount', 'Transactions'),
+      {
+        ...column.tag('isActive', 'Status'),
+        field: undefined,
+        colId: 'status',
+        valueGetter: (p) => (p.data?.isActive ? 'Active' : 'Inactive'),
+      },
+      rowActionsColumn<SubscriptionPlanResponse>([
+        { label: 'Edit', onClick: (plan) => openEdit(plan) },
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onClick: (plan) => handleDelete(plan),
+          disabled: () => deletePlan.isPending,
+        },
+      ]),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [deletePlan.isPending],
+  );
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -130,53 +162,10 @@ export function SubscriptionPlansPage() {
           </button>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={styles.th}>Plan Name</th>
-                <th className={styles.th}>Amount (₹)</th>
-                <th className={styles.th}>Users Allowed</th>
-                <th className={styles.th}>Transactions</th>
-                <th className={styles.th}>Status</th>
-                <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plans.map((plan) => (
-                <tr key={plan.id} className={styles.tr}>
-                  <td className={styles.td}>
-                    <span className={styles.planName}>{plan.name}</span>
-                  </td>
-                  <td className={styles.td}>
-                    <span className={styles.amount}>₹{plan.planAmount.toLocaleString('en-IN')}</span>
-                  </td>
-                  <td className={styles.td}>{plan.userCount}</td>
-                  <td className={styles.td}>{plan.transactionCount}</td>
-                  <td className={styles.td}>
-                    <span className={plan.isActive ? styles.badgeActive : styles.badgeInactive}>
-                      {plan.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className={styles.td} style={{ textAlign: 'right' }}>
-                    <div className={styles.actions}>
-                      <button className={styles.editBtn} onClick={() => openEdit(plan)}>
-                        ✏️ Edit
-                      </button>
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={() => handleDelete(plan)}
-                        disabled={deletePlan.isPending}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rowData={plans}
+          columnDefs={columnDefs}
+        />
       )}
 
       {isModalOpen && (

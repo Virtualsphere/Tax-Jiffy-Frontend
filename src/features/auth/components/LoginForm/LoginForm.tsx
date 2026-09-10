@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import styles from '@/features/auth/components/LoginForm/LoginForm.module.css';
@@ -9,6 +9,10 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+  // Set by the session guard and the 401 interceptor when a token runs out.
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('session') === 'expired';
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,6 +27,12 @@ export function LoginForm() {
           Sign in to manage your automated GST compliance.
         </p>
       </header>
+
+      {sessionExpired && !login.isError && (
+        <p className={styles.notice} role="status">
+          Your session has expired. Please sign in again.
+        </p>
+      )}
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>

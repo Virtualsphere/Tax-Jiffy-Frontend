@@ -129,6 +129,8 @@
 .gstin {
   font-family: monospace;
   font-weight: 600;
+  font-size: var(--text-gstin);
+  letter-spacing: var(--tracking-gstin);
 }
 
 .statusBadge {

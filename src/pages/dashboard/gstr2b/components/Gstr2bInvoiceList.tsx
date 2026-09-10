@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
+import type { ColDef, ValueGetterParams } from 'ag-grid-community';
+import { DataTable, column } from '@/components/UnifiedTable';
 import type { PrB2b, PurchaseRegisterFiling } from '@/pages/dashboard/purchaseRegister/api/purchaseRegisterApi';
-import styles from './Gstr2bInvoiceList.module.css';
 
 interface Gstr2bInvoiceListProps {
   filing: PurchaseRegisterFiling | null;
@@ -10,71 +12,48 @@ interface Gstr2bInvoiceListProps {
   embedded?: boolean;
 }
 
-function formatAmount(v: number | null): string {
-  if (v == null) return '—';
-  return v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 export function Gstr2bInvoiceList({ filing, invoices, loading, retPeriod, embedded = false }: Gstr2bInvoiceListProps) {
-  const body = (
-    <>
-      {loading && <p className={styles.emptyState}>Loading invoices…</p>}
-
-      {!loading && filing && invoices.length === 0 && (
-        <p className={styles.emptyState}>This period has a filing but no B2B invoice rows yet.</p>
-      )}
-
-      {!loading && !filing && (
-        <p className={styles.emptyState}>Upload a GSTR-2B file to see invoices here.</p>
-      )}
-
-      {!loading && invoices.length > 0 && (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Supplier GSTIN</th>
-                <th>Invoice No.</th>
-                <th>Invoice Date</th>
-                <th>Taxable Value</th>
-                <th>Total Tax</th>
-                <th>ITC Eligibility</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.gstinOfSupplier ?? '—'}</td>
-                  <td>{row.invoiceNumber ?? '—'}</td>
-                  <td>{row.invoiceDate ?? '—'}</td>
-                  <td>{formatAmount(row.taxableValue)}</td>
-                  <td>{formatAmount(row.integratedTaxPaid + row.centralTaxPaid + row.stateUtTaxPaid + row.cessPaid)}</td>
-                  <td>{row.eligibilityForItc ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
+  const columnDefs: ColDef[] = useMemo(
+    () => [
+      column.text('gstinOfSupplier', 'Supplier GSTIN', { minWidth: 160 }),
+      column.text('invoiceNumber', 'Invoice No.'),
+      column.date('invoiceDate', 'Invoice Date'),
+      column.amount('taxableValue', 'Taxable Value'),
+      {
+        // Total tax is the sum of the four heads; there is no such field on the row.
+        ...column.amount('totalTax', 'Total Tax'),
+        field: undefined,
+        colId: 'totalTax',
+        valueGetter: (p: ValueGetterParams<PrB2b>) =>
+          (p.data?.integratedTaxPaid ?? 0) +
+          (p.data?.centralTaxPaid ?? 0) +
+          (p.data?.stateUtTaxPaid ?? 0) +
+          (p.data?.cessPaid ?? 0),
+      },
+      column.tag('eligibilityForItc', 'ITC Eligibility'),
+    ],
+    [],
   );
 
-  if (embedded) return body;
+  const emptyMessage = filing
+    ? 'This period has a filing but no B2B invoice rows yet.'
+    : 'Upload a GSTR-2B file to see invoices here.';
+
+  const subtitle = filing
+    ? `${invoices.length} invoice${invoices.length === 1 ? '' : 's'} for period ${retPeriod} · Status: ${filing.filingStatus}`
+    : `No data uploaded yet for period ${retPeriod}`;
 
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
-        <div>
-          <h3 className={styles.title}>Invoices</h3>
-          <p className={styles.subtitle}>
-            {filing
-              ? `${invoices.length} invoice${invoices.length === 1 ? '' : 's'} for period ${retPeriod} · Status: ${filing.filingStatus}`
-              : `No data uploaded yet for period ${retPeriod}`}
-          </p>
-        </div>
-      </div>
-
-      {body}
-    </div>
+    <DataTable
+      rowData={invoices}
+      columnDefs={columnDefs}
+      loading={loading}
+      loadingMessage="Loading invoices…"
+      emptyMessage={emptyMessage}
+      title="Invoices"
+      subtitle={subtitle}
+      hideHeader={embedded}
+      variant={embedded ? 'nested' : 'standalone'}
+    />
   );
 }

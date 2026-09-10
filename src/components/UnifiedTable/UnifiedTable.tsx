@@ -2,8 +2,9 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, GridReadyEvent } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css'; // Just in case, though they use legacy/custom
+// Legacy theming, shared with every other grid in the app. The palette lives
+// in src/styles/ag-grid-custom.css, which is loaded globally by main.tsx.
+import { ROW_HEIGHT, type TableDensity } from './table-theme';
 
 import styles from './UnifiedTable.module.css';
 
@@ -44,6 +45,20 @@ export interface UnifiedTableProps {
   autoWidth?: boolean;
   filterCount?: number;
   showFilterBarInFullscreenOnly?: boolean;
+
+  /** Tick-box selection plus a header select-all. Off unless a page acts on a selection. */
+  selectable?: boolean;
+  onSelectionChanged?: (rows: any[]) => void;
+  /** Conditional row styling, e.g. tinting rows that carry a risk. */
+  rowClassRules?: Record<string, (params: any) => boolean>;
+  /** Called after an edit to an editable column. */
+  onCellValueChanged?: (event: any) => void;
+  /** Stable row identity so edits survive a data refresh. */
+  getRowId?: (params: any) => string;
+  /** Starting row density; the toolbar can change it. */
+  density?: TableDensity;
+  /** Filename for the CSV export button. */
+  exportFileName?: string;
 }
 
 export const UnifiedTable: React.FC<UnifiedTableProps> = ({
@@ -71,8 +86,17 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
   autoWidth = false,
   filterCount = 0,
   showFilterBarInFullscreenOnly = false,
+  selectable = false,
+  onSelectionChanged,
+  rowClassRules,
+  onCellValueChanged,
+  getRowId,
+  density: densityProp = 'comfortable',
+  exportFileName = 'table-export.csv',
 }) => {
   const [gridApi, setGridApi] = useState<any>(null);
+  const [density, setDensity] = useState<TableDensity>(densityProp);
+  const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
   const [showColumnPopover, setShowColumnPopover] = useState(false);
   const [filterModel, setFilterModel] = useState<Record<string, string>>({});
@@ -130,12 +154,12 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     resizable: true,
     sortable: true,
     filter: 'agTextColumnFilter',
-    floatingFilter: false,
+    floatingFilter: showColumnFilters,
     minWidth: 100,
     // 1.6: Always show column menu
     suppressHeaderMenuButton: false,
     suppressHeaderFilterButton: false,
-  }), []);
+  }), [showColumnFilters]);
 
   const enhancedColumnDefs = useMemo(() => {
     if (!rowData || rowData.length === 0) return columnDefs;
@@ -321,6 +345,27 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
     });
   }, [autoWidth]);
 
+  /** CSV straight from the grid, so what you see is what you get. */
+  const handleExport = useCallback(() => {
+    if (onExport) { onExport(); return; }
+    gridApi?.exportDataAsCsv({
+      fileName: exportFileName,
+      processCellCallback: (params: any) =>
+        params.value instanceof Date ? params.value.toLocaleDateString('en-IN') : params.value,
+    });
+  }, [gridApi, onExport, exportFileName]);
+
+  const handleClearFilters = useCallback(() => {
+    gridApi?.setFilterModel(null);
+    gridApi?.setGridOption('quickFilterText', '');
+    setFilterModel({});
+    setFilterSelections({});
+  }, [gridApi]);
+
+  const toggleDensity = useCallback(() => {
+    setDensity((prev) => (prev === 'comfortable' ? 'compact' : 'comfortable'));
+  }, []);
+
   // Determine final container class (including fullscreen)
   const finalContainerClass = `${containerClass} ${isFullscreen ? styles.fullscreenContainer : ''}`;
 
@@ -409,8 +454,11 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                   <input 
                     type="text" 
                     className={styles.searchInput} 
-                    placeholder="Search invoice no., supplier, GSTIN, state..."
-                    onChange={(e) => onSearch?.(e.target.value)}
+                    placeholder="Search…"
+                    onChange={(e) => {
+                      onSearch?.(e.target.value);
+                      if (!onSearch) gridApi?.setGridOption('quickFilterText', e.target.value);
+                    }}
                   />
                 </div>
                 
@@ -430,7 +478,24 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 ))}
               </div>
               
-              <div className={styles.filterGroup} style={{ flex: 'none', gap: '8px' }}>
+              <div className={styles.filterGroup} style={{ flex: 'none', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  className={styles.filterButton}
+                  onClick={() => setShowColumnFilters((prev) => !prev)}
+                  aria-pressed={showColumnFilters}
+                  title="Show a filter box under every column header"
+                >
+                  Column filters
+                </button>
+                <button className={styles.filterButton} onClick={toggleDensity} title="Row height">
+                  {density === 'comfortable' ? 'Comfortable' : 'Compact'}
+                </button>
+                <button className={styles.filterButton} onClick={handleClearFilters}>
+                  Clear
+                </button>
+                <button className={styles.filterButton} onClick={handleExport}>
+                  Export
+                </button>
                 <div style={{ position: 'relative' }}>
                   <button className={styles.filterButton} onClick={() => { setShowFilterPopover(prev => !prev); setShowColumnPopover(false); }}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -528,9 +593,20 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                 rowData={rowData}
                 columnDefs={enhancedColumnDefs}
                 defaultColDef={defaultColDef}
-                headerHeight={48}
-                groupHeaderHeight={48}
-                floatingFiltersHeight={48}
+                rowHeight={ROW_HEIGHT[density]}
+                headerHeight={40}
+                groupHeaderHeight={40}
+                floatingFiltersHeight={44}
+                animateRows
+                enableCellTextSelection
+                tooltipShowDelay={300}
+                multiSortKey="ctrl"
+                stopEditingWhenCellsLoseFocus
+                undoRedoCellEditing
+                undoRedoCellEditingLimit={25}
+                rowClassRules={rowClassRules}
+                onCellValueChanged={onCellValueChanged}
+                getRowId={getRowId}
                 autoSizeStrategy={{
                   type: 'fitCellContents',
                   defaultMinWidth: 100,
@@ -539,7 +615,17 @@ export const UnifiedTable: React.FC<UnifiedTableProps> = ({
                   menu: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
                   filter: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 2 15 2 9 8 9 14 7 14 7 8"></polygon></svg>'
                 }}
-                rowSelection="multiple"
+                rowSelection={
+                  selectable
+                    ? { mode: 'multiRow', checkboxes: true, headerCheckbox: true, enableClickSelection: false }
+                    : undefined
+                }
+                selectionColumnDef={{ pinned: 'left', width: 46, resizable: false }}
+                onSelectionChanged={
+                  onSelectionChanged
+                    ? (e: any) => onSelectionChanged(e.api.getSelectedRows())
+                    : undefined
+                }
                 domLayout={!isFullscreen ? 'autoHeight' : 'normal'}
                 suppressPaginationPanel={true}
                 pagination={!hidePagination}

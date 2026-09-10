@@ -8,6 +8,14 @@ import { ROUTES } from '@/config/routes';
 import { ErrorPage } from '@/pages/errors/ErrorPage';
 import { RequireAuth } from '@/features/auth';
 
+// Auth pages are imported eagerly, not lazily. They are small, and they are the
+// first thing an unauthenticated visitor sees: behind `Suspense fallback={null}`
+// the marketing column painted immediately while the form column stayed blank
+// until the chunk arrived, which read as the sign-in form appearing 1-2s late.
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { SignupPage } from '@/features/auth/pages/SignupPage';
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
+
 const LandingPage = lazy(() =>
   import('@/pages/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
 );
@@ -28,15 +36,6 @@ const ContactSupportPage = lazy(() =>
 );
 const ResourcesPage = lazy(() =>
   import('@/pages/resources/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
-);
-const LoginPage = lazy(() =>
-  import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
-);
-const SignupPage = lazy(() =>
-  import('@/features/auth/pages/SignupPage').then((m) => ({ default: m.SignupPage })),
-);
-const ForgotPasswordPage = lazy(() =>
-  import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
 );
 
 const CompaniesDashboardPage = lazy(() =>

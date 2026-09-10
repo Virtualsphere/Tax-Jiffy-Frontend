@@ -3,21 +3,38 @@
 
 /* Base theme mimicking the modern Invoices design */
 .ag-theme-tax-jiffy {
-  --ag-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --ag-header-background-color: #ffffff;
-  --ag-header-foreground-color: #101828;
-  --ag-background-color: #ffffff;
-  --ag-data-color: #475467;
-  --ag-borders: none;
-  --ag-row-border-color: #eaecf0;
+  /* Reference reconciliation-table palette. Every grid in the app inherits it. */
+  --ag-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ag-foreground-color: #0B1F3A;
+  --ag-data-color: #0B1F3A;
+  --ag-background-color: #FFFFFF;
+  --ag-odd-row-background-color: #FFFFFF;
+
+  --ag-header-background-color: #FAFBFD;
+  --ag-header-foreground-color: #6B7A93;
   --ag-header-column-separator-display: none;
   --ag-cell-horizontal-border: solid transparent;
-  
+
+  --ag-borders: none;
+  --ag-border-color: #EBEEF4;
+  --ag-row-border-color: #EBEEF4;
+
+  --ag-row-hover-color: #F4F7FC;
+  --ag-selected-row-background-color: #EEF0FF;
+  --ag-range-selection-border-color: #4338CA;
+  --ag-checkbox-checked-color: #4338CA;
+  --ag-alpine-active-color: #4338CA;
+  --ag-input-focus-border-color: #4338CA;
+
   --ag-font-size: 13px;
+  --ag-header-font-size: 11.5px;
   --ag-header-font-weight: 600;
-  --ag-row-height: 56px;
-  --ag-header-height: 48px;
-  
+  --ag-row-height: 48px;
+  --ag-header-height: 40px;
+  --ag-cell-horizontal-padding: 12px;
+  --ag-border-radius: 6px;
+  --ag-wrapper-border-radius: 10px;
+
   border-radius: 0;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
@@ -32,7 +49,26 @@
 /* Header tweaks */
 .ag-theme-tax-jiffy .ag-header-cell,
 .ag-theme-tax-jiffy .ag-header-group-cell {
-  padding: 0 24px;
+  padding: 0 12px;
+}
+
+/* Reference header treatment: small, letter-spaced, uppercase. */
+.ag-theme-tax-jiffy .ag-header-cell-text,
+.ag-theme-tax-jiffy .ag-header-group-text {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Numbers line up column to column. */
+.ag-theme-tax-jiffy .ag-cell {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pinned total row reads as a summary, not another record. */
+.ag-theme-tax-jiffy .ag-row-pinned,
+.ag-theme-tax-jiffy .ag-floating-bottom .ag-row {
+  font-weight: 600;
+  background: #FBFCFE;
 }
 
 /* ── Compact grid: Table 9/10 amendments — reduced padding so headers don't wrap ── */
@@ -818,4 +854,25 @@
 .ag-theme-tax-jiffy-data .ag-status-name-value-value {
   font-weight: 600;
   color: #344054;
+}
+
+/* Floating filter row: the inputs must sit inside their column, whatever the
+   column width. Without the min-width override AG Grid's default input keeps
+   its intrinsic width and spills past narrow columns. */
+.ag-theme-tax-jiffy .ag-floating-filter-body,
+.ag-theme-tax-jiffy .ag-floating-filter-full-body {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ag-theme-tax-jiffy .ag-floating-filter-input,
+.ag-theme-tax-jiffy .ag-floating-filter-body .ag-input-field-input {
+  min-width: 0;
+  width: 100%;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.ag-theme-tax-jiffy .ag-floating-filter-button {
+  margin-left: 4px;
 }

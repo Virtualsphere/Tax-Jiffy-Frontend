@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { useUploadSalesRegister } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
+import type { UploadErrorKind } from '@/pages/dashboard/gstr1/hooks/useUploadSalesRegister';
 import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
 import { usePeriod } from '@/context/PeriodContext';
@@ -16,6 +17,8 @@ import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { Gstr1SubmitModal } from './Gstr1SubmitModal';
 import { EInvoiceReconciliationPanel } from './tabs/EInvoiceReconciliationPanel';
 import { EwaybillReconciliationPanel } from './tabs/EwaybillReconciliationPanel';
+import { ExistingFilingNotice } from '@/components/ExistingFilingNotice';
+import { findFilingForPeriod, formatPeriodLabel } from '@/lib/filing-period';
 
 import { useQuery } from '@tanstack/react-query';
 import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
@@ -23,6 +26,15 @@ import { gstr1Api } from '@/pages/dashboard/gstr1/api/gstr1.api';
 
 /* ── Types ── */
 type Step = 1 | 2 | 3;
+
+/* Every upload failure used to be titled "Invalid File Format", including
+   server and network errors, which sent people hunting for a problem in a
+   perfectly good file. */
+const UPLOAD_ERROR_TITLES: Record<UploadErrorKind, string> = {
+  format: 'Invalid File Format',
+  size: 'File Too Large',
+  upload: 'Upload Failed',
+};
 
 
 function formatFileSize(bytes: number): string {
@@ -129,12 +141,6 @@ export function GSTR1Page() {
     };
   }, [pickerOpen]);
 
-  // Helper: get calendar-year for a given GST month + FY label
-  const getCalendarYear = (month: string, fyLabel: string): number => {
-    const fyStart = Number(fyLabel.split('-')[0]);
-    return ['January', 'February', 'March'].includes(month) ? fyStart + 1 : fyStart;
-  };
-
   // Hooks
   const upload = useUploadSalesRegister();
   const match = useGstr1Match();
@@ -148,10 +154,13 @@ export function GSTR1Page() {
     enabled: !!activeGstId,
   });
 
-  const matchingFiling = filings?.find((f: any) => 
-    f.financialYear === uploadYear && 
-    f.taxPeriod.toUpperCase() === uploadMonth.toUpperCase()
-  );
+  const matchingFiling = findFilingForPeriod(filings, uploadYear, uploadMonth);
+
+  // "Replace file" is scoped to the period it was clicked on, so changing the
+  // period selector puts the already-uploaded notice back.
+  const periodKey = `${uploadYear}|${uploadMonth}`;
+  const [replaceForPeriod, setReplaceForPeriod] = useState<string | null>(null);
+  const isReplacingPeriod = replaceForPeriod === periodKey;
 
   const activeFilingId = matchingFiling?.id || upload.data?.filingId;
 
@@ -302,7 +311,7 @@ export function GSTR1Page() {
         <div className={styles.dropzoneIcon}>⬆</div>
         <p className={styles.dropzoneTitle}>Drag and drop your Excel file here</p>
         <p className={styles.dropzoneHint}>
-          Supported formats: .xlsx, .xls (Max 100MB)
+          Supported formats: .xlsx, .xls (Max 50MB)
           <br />
           Ensure all sheets follow the template structure.
         </p>
@@ -335,7 +344,9 @@ export function GSTR1Page() {
             <AlertTriangleIcon className={styles.fileTypeErrorIconSvg} />
           </div>
           <div className={styles.fileTypeErrorContent}>
-            <p className={styles.fileTypeErrorTitle}>Invalid File Format</p>
+            <p className={styles.fileTypeErrorTitle}>
+              {UPLOAD_ERROR_TITLES[upload.errorKind ?? 'upload']}
+            </p>
             <p className={styles.fileTypeErrorMessage}>{upload.error}</p>
           </div>
         </div>
@@ -445,44 +456,22 @@ export function GSTR1Page() {
           {/* ── Import Tab ── */}
           {currentMainTab === 'Import' && (
             <>
-              {matchingFiling ? (
-                <div className={styles.card} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <path d="M8 16.5l5 5L24 10" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#15803d', margin: '0 0 0.25rem' }}>
-                        File already uploaded for this period
-                      </h3>
-                      <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-                        A filing already exists for{' '}
-                        <strong>{uploadMonth} {getCalendarYear(uploadMonth, uploadYear)}</strong>.
-                        To view the data, switch to the <strong>Return</strong> tab.
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                      <button
-                        type="button"
-                        className={styles.proceedBtn}
-                        onClick={() => setActiveTab('Return')}
-                        style={{ opacity: 1 }}
-                      >
-                        View in Return tab →
-                      </button>
-                      <button
-                        type="button"
-                        style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit' }}
-                        onClick={() => {
-                          upload.reset();
-                        }}
-                      >
-                        Upload new file anyway
-                      </button>
-                    </div>
-                  </div>
+              {matchingFiling && !isReplacingPeriod ? (
+                <div className={styles.card}>
+                  <ExistingFilingNotice
+                    fileName={matchingFiling.originalFileName}
+                    periodLabel={formatPeriodLabel(uploadMonth, uploadYear)}
+                    uploadedOn={matchingFiling.createdDate}
+                    filingId={matchingFiling.id}
+                    status={matchingFiling.filingStatus}
+                    onContinue={() => setActiveTab('Return')}
+                    continueLabel="View in Return tab →"
+                    onReplace={() => {
+                      upload.reset();
+                      setReplaceForPeriod(periodKey);
+                    }}
+                    busy={upload.isPending}
+                  />
                 </div>
               ) : (
                 <>

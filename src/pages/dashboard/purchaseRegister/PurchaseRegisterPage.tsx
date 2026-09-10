@@ -2,11 +2,13 @@ import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ColDef, ColGroupDef } from 'ag-grid-community';
 import { useUploadPurchaseRegister } from './hooks/useUploadPurchaseRegister';
-import { usePurchaseRegisterSheets } from './hooks/usePurchaseRegisterSheets';
+import { usePurchaseRegisterSheets, usePurchaseRegisterFilings } from './hooks/usePurchaseRegisterSheets';
 import { usePeriod } from '@/context/PeriodContext';
 import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { UnifiedTable, TagCellRenderer } from '@/components/UnifiedTable';
+import { ExistingFilingNotice } from '@/components/ExistingFilingNotice';
+import { findFilingForPeriod, formatPeriodLabel } from '@/lib/filing-period';
 import styles from './PurchaseRegisterPage.module.css';
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
@@ -246,7 +248,22 @@ export function PurchaseRegisterPage() {
   const { data: currentEntity } = useCurrentEntity();
 
   const upload = useUploadPurchaseRegister();
-  const sheets = usePurchaseRegisterSheets(step === 2 ? upload.data?.filingId : null);
+  const activeGstId = currentEntity?.id || 1;
+
+  // A register may already have been uploaded for this period on an earlier
+  // visit. Mirrors GSTR-1: surface what is on the server rather than showing an
+  // empty dropzone that invites a duplicate upload.
+  const { data: prFilings } = usePurchaseRegisterFilings(activeGstId);
+  const existingFiling = findFilingForPeriod(prFilings, selectedYear.label, selectedMonth);
+
+  // "Replace file" is scoped to the period it was clicked on, so changing the
+  // period selector puts the already-uploaded notice back.
+  const periodKey = `${selectedYear.label}|${selectedMonth}`;
+  const [replaceForPeriod, setReplaceForPeriod] = useState<string | null>(null);
+  const isReplacingPeriod = replaceForPeriod === periodKey;
+
+  const activeFilingId = upload.data?.filingId ?? existingFiling?.id;
+  const sheets = usePurchaseRegisterSheets(step === 2 ? activeFilingId : null);
 
   // Automatically send user to GSTR-3B section when upload is successful
   useEffect(() => {
@@ -256,8 +273,6 @@ export function PurchaseRegisterPage() {
   }, [upload.data?.filingId, navigate]);
 
   const colDefs = usePrColDefs(activeTab);
-
-  const activeGstId = currentEntity?.id || 1;
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -300,6 +315,35 @@ export function PurchaseRegisterPage() {
   };
 
   /* ── Step 1: Upload ── */
+  const renderExistingFiling = () => (
+    <div className={styles.card}>
+      <div className={styles.uploadHeader}>
+        <div>
+          <h3 className={styles.uploadTitle}>Upload Purchase Register</h3>
+          <p className={styles.uploadSubtitle}>
+            Upload your GSTR-2 Excel file (purchase returns). All sheets will be parsed automatically.
+          </p>
+        </div>
+      </div>
+
+      <ExistingFilingNotice
+        fileName={existingFiling?.originalFileName}
+        periodLabel={formatPeriodLabel(selectedMonth, selectedYear.label)}
+        uploadedOn={existingFiling?.createdDate}
+        filingId={existingFiling?.id ?? 0}
+        status={existingFiling?.filingStatus}
+        onContinue={() => setStep(2)}
+        continueLabel="Review sheets →"
+        onReplace={() => {
+          upload.reset();
+          setReplaceForPeriod(periodKey);
+        }}
+        busy={upload.isPending}
+      />
+    </div>
+  );
+
+  /* ── Step 1: Upload ── */
   const renderUpload = () => (
     <div className={styles.card}>
       <div className={styles.uploadHeader}>
@@ -336,7 +380,7 @@ export function PurchaseRegisterPage() {
       >
         <div className={styles.dropzoneIcon}><UploadIcon /></div>
         <p className={styles.dropzoneTitle}>Drag and drop your GSTR-2 Excel file here</p>
-        <p className={styles.dropzoneHint}>Supported formats: .xlsx, .xls · Max 100 MB</p>
+        <p className={styles.dropzoneHint}>Supported formats: .xlsx, .xls · Max 50 MB</p>
         <button
           type="button"
           className={styles.uploadBtn}
@@ -538,7 +582,8 @@ export function PurchaseRegisterPage() {
 
           {renderStepper()}
 
-          {step === 1 && renderUpload()}
+          {step === 1 &&
+            (existingFiling && !isReplacingPeriod ? renderExistingFiling() : renderUpload())}
           {step === 2 && renderReview()}
           {step === 3 && renderSuccess()}
         </>
