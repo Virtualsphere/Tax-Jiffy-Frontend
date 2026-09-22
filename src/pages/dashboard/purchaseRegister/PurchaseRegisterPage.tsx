@@ -8,6 +8,7 @@ import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { UnifiedTable, TagCellRenderer } from '@/components/UnifiedTable';
 import { ExistingFilingNotice } from '@/components/ExistingFilingNotice';
+import { DownloadTemplateButton } from '@/components/DownloadTemplateButton/DownloadTemplateButton';
 import { findFilingForPeriod, formatPeriodLabel } from '@/lib/filing-period';
 import styles from './PurchaseRegisterPage.module.css';
 
@@ -324,6 +325,7 @@ export function PurchaseRegisterPage() {
             Upload your GSTR-2 Excel file (purchase returns). All sheets will be parsed automatically.
           </p>
         </div>
+        <DownloadTemplateButton templateKey="gstr2" className={styles.templateBtn} />
       </div>
 
       <ExistingFilingNotice
@@ -353,6 +355,7 @@ export function PurchaseRegisterPage() {
             Upload your GSTR-2 Excel file (purchase returns). All sheets will be parsed automatically.
           </p>
         </div>
+        <DownloadTemplateButton templateKey="gstr2" className={styles.templateBtn} />
       </div>
 
       <div

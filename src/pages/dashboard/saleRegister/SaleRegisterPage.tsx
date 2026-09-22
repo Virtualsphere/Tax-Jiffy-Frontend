@@ -25,6 +25,7 @@ export function SaleRegisterPage() {
         <SimpleUploadUI
           title="Sale Register"
           subtitle="Upload your Sale Register data"
+          templateKey="gstr1"
           onUpload={handleUpload}
           onSync={handleSync}
         />

@@ -7,6 +7,7 @@ import { useGstr1Match } from '@/pages/dashboard/gstr1/hooks/useGstr1Match';
 import { useGstr1Draft } from '@/pages/dashboard/gstr1/hooks/useGstr1Draft';
 import { usePeriod } from '@/context/PeriodContext';
 import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
+import { DownloadTemplateButton } from '@/components/DownloadTemplateButton/DownloadTemplateButton';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 import { GSTR1BasicTab } from './tabs/GSTR1BasicTab';
 import { GSTR1OutwardTab } from './tabs/GSTR1OutwardTab';
@@ -280,9 +281,7 @@ export function GSTR1Page() {
             Please use the standardized Excel template for optimal validation.
           </p>
         </div>
-        <button type="button" className={styles.templateBtn}>
-          ⬇ Download Template
-        </button>
+        <DownloadTemplateButton templateKey="gstr1" className={styles.templateBtn} />
       </div>
 
       <div

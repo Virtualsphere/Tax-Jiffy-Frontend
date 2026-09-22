@@ -89,6 +89,33 @@
   flex-wrap: wrap;
 }
 
+.templateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.templateBtn:hover:not(:disabled) {
+  border-color: #5a6acf;
+  color: #5a6acf;
+  box-shadow: 0 2px 8px rgb(90 106 207 / 0.1);
+}
+
+.templateBtn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .uploadTitle {
   font-size: 1.1rem;
   font-weight: 700;

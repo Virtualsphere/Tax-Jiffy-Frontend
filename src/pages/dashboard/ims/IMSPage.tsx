@@ -126,6 +126,7 @@ export function IMSPage() {
         <SimpleUploadUI
           title="IMS"
           subtitle="Upload your IMS data or Sync directly from GST portal"
+          templateKey="ims"
           onUpload={handleUpload}
           onSync={handleSync}
           loadingExistingData={loadingInvoices}

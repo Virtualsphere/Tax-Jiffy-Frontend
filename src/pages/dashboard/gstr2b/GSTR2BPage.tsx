@@ -311,6 +311,7 @@ export function GSTR2BPage() {
           <SimpleUploadUI
             title="GSTR-2B"
             subtitle="Upload the GSTR-2B export for this return period, then reconcile it against IMS"
+            templateKey="gstr2"
             onUpload={handleUpload}
             onSync={handleSync}
             loadingExistingData={loadingExisting}

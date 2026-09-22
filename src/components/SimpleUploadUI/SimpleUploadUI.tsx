@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePeriod } from '@/context/PeriodContext';
+import { DownloadTemplateButton } from '@/components/DownloadTemplateButton/DownloadTemplateButton';
+import type { TemplateKey } from '@/lib/templates.api';
 import styles from './SimpleUploadUI.module.css';
 
 interface SimpleUploadUIProps {
@@ -7,6 +9,11 @@ interface SimpleUploadUIProps {
   subtitle: string;
   onUpload: (file: File, year: string, month: string) => void | Promise<void>;
   onSync: () => void | Promise<void>;
+  /**
+   * Blank Excel template offered next to the dropzone. Omit it on screens the
+   * backend has no template for — the button is then simply not rendered.
+   */
+  templateKey?: TemplateKey;
   /** True while the lookup for the selected period's stored data is in flight. */
   loadingExistingData?: boolean;
   /** True when the selected period already has uploaded or synced data to show. */
@@ -49,6 +56,7 @@ export function SimpleUploadUI({
   subtitle,
   onUpload,
   onSync,
+  templateKey,
   loadingExistingData = false,
   hasExistingData = false,
   existingSummary,
@@ -163,11 +171,16 @@ export function SimpleUploadUI({
                   : 'Select or drop an Excel file to upload.'}
               </p>
             </div>
-            {hasExistingData && (
+            {(hasExistingData || templateKey) && (
               <div className={styles.headerActions}>
-                <button type="button" className={styles.smallButton} onClick={() => setReplacing(false)}>
-                  Cancel
-                </button>
+                {hasExistingData && (
+                  <button type="button" className={styles.smallButton} onClick={() => setReplacing(false)}>
+                    Cancel
+                  </button>
+                )}
+                {templateKey && (
+                  <DownloadTemplateButton templateKey={templateKey} className={styles.smallButton} />
+                )}
               </div>
             )}
           </div>

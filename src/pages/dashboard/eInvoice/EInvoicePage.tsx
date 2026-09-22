@@ -124,6 +124,7 @@ export function EInvoicePage() {
         <SimpleUploadUI
           title="E-Invoice"
           subtitle="Upload your E-Invoice data or Sync directly from GST portal"
+          templateKey="einvoice"
           onUpload={handleUpload}
           onSync={handleSync}
           loadingExistingData={loadingIrns}

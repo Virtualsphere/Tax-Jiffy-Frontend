@@ -193,10 +193,15 @@
   white-space: nowrap;
 }
 
-.templateBtn:hover {
+.templateBtn:hover:not(:disabled) {
   border-color: #5a6acf;
   color: #5a6acf;
   box-shadow: 0 2px 8px rgb(90 106 207 / 0.1);
+}
+
+.templateBtn:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* ── Dropzone ── */

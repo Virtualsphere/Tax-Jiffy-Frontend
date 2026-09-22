@@ -142,6 +142,7 @@ export function EWayBillPage() {
         <SimpleUploadUI
           title="E-Way Bill"
           subtitle="Upload your E-Way Bill data or Sync directly from GST portal"
+          templateKey="ewaybill"
           onUpload={handleUpload}
           onSync={handleSync}
           loadingExistingData={loadingRecords}
