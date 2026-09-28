@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Hamburger from 'hamburger-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { authStorage } from '@/features/auth/lib/auth-storage';
@@ -88,13 +88,20 @@ export function UserSidebar({
       </nav>
 
       <div className={styles.userProfile}>
-        <div className={styles.avatar} aria-label="User avatar" title={user?.name || 'User'}>
-          {user?.initials || <span role="img" aria-label="user">👤</span>}
-        </div>
-        <div className={styles.userInfo}>
-          <span className={styles.userName}>{user?.name || 'User'}</span>
-          <span className={styles.userEmail}>{user?.email || 'user@example.com'}</span>
-        </div>
+        <Link
+          to={ROUTES.dashboard.profile}
+          className={styles.profileLink}
+          title="View profile"
+          onClick={() => onMobileClose?.()}
+        >
+          <div className={styles.avatar} aria-label="User avatar">
+            {user?.initials || <span role="img" aria-label="user">👤</span>}
+          </div>
+          <div className={styles.userInfo}>
+            <span className={styles.userName}>{user?.name || 'User'}</span>
+            <span className={styles.userEmail}>{user?.email || 'user@example.com'}</span>
+          </div>
+        </Link>
         <button onClick={handleLogout} className={styles.logoutButton} title="Logout">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

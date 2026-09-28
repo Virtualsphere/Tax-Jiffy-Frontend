@@ -54,6 +54,18 @@
   margin: 0;
 }
 
+.welcomeRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.welcomeDivider {
+  width: 1px;
+  height: 32px;
+  background: #d5daf0;
+}
+
 .welcomeDate {
   display: flex;
   align-items: center;
@@ -264,6 +276,15 @@
     gap: 16px;
     padding: 20px;
     align-items: flex-start;
+  }
+
+  .welcomeRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .welcomeDivider {
+    display: none;
   }
 
   .sectionHeader {

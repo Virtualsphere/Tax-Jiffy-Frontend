@@ -8,6 +8,7 @@ import { useMyCompanies } from '../user/hooks/useMyCompanies';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDeleteCompany } from '../user/hooks/useDeleteCompany';
 import { companyGSTApi } from '../user/api/company-gst.api';
+import { UserProfileButton } from '@/components/UserProfileButton/UserProfileButton';
 
 import { AddNewGSTINModal } from '../user/components/AddNewGSTINModal/AddNewGSTINModal';
 import { UpgradePlanModal } from '../user/components/UpgradePlanModal/UpgradePlanModal';
@@ -131,14 +132,18 @@ export function CompaniesDashboardPage() {
             <p className={styles.welcomeSubtitle}>Manage your GST numbers and stay compliant.</p>
           </div>
         </div>
-        <div className={styles.welcomeDate}>
-          <svg width="20" height="20" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <div>
-            <span className={styles.dateLabel}>Today is</span>
-            <span className={styles.dateValue}>{formattedDate}</span>
+        <div className={styles.welcomeRight}>
+          <div className={styles.welcomeDate}>
+            <svg width="20" height="20" fill="none" stroke="#5a6acf" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <div>
+              <span className={styles.dateLabel}>Today is</span>
+              <span className={styles.dateValue}>{formattedDate}</span>
+            </div>
           </div>
+          <span className={styles.welcomeDivider} aria-hidden="true" />
+          <UserProfileButton />
         </div>
       </div>
 
