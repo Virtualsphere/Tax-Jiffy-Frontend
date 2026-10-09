@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { MY_PERMISSIONS_KEY, type ScreenPermission } from '@/features/permissions';
 import { roleMappingApi } from '../api/roleMapping.api';
-import type { RoleMappingRequest } from '../types/roleMapping.types';
 
 export const ROLE_MAPPING_KEYS = {
   all: ['roleMappings'] as const,
@@ -15,20 +15,16 @@ export function useRoleMappings(roleId: number | '', companyGstId: number | '') 
   });
 }
 
-export function useSaveRoleMapping() {
+export function useSaveRolePermissions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id?: number; data: RoleMappingRequest }) => {
-      if (id) {
-        return roleMappingApi.update(id, data);
-      }
-      return roleMappingApi.create(data);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ROLE_MAPPING_KEYS.byRoleAndGst(variables.data.roleId, variables.data.companyGstId)
-      });
+    mutationFn: ({ roleId, permissions }: { roleId: number; permissions: ScreenPermission[] }) =>
+      roleMappingApi.replaceForRole(roleId, permissions),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ROLE_MAPPING_KEYS.all });
+      // Editing a role can change what the current user may do.
+      queryClient.invalidateQueries({ queryKey: MY_PERMISSIONS_KEY });
     },
   });
 }

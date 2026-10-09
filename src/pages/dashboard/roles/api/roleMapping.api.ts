@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import type { ApiResponse } from '@/types';
+import type { ScreenPermission } from '@/features/permissions';
 import type { RoleMappingRequest, RoleMappingResponse } from '../types/roleMapping.types';
 
 const BASE_URL = '/role-mapping';
@@ -20,6 +21,15 @@ export const roleMappingApi = {
 
   update: async (id: number, data: RoleMappingRequest): Promise<RoleMappingResponse> => {
     const response = await apiClient.put<ApiResponse<RoleMappingResponse>>(`${BASE_URL}/${id}`, data);
+    return response.data.data;
+  },
+
+  /** Replaces the role's whole permission matrix in one transaction; screens with no flag set are removed. */
+  replaceForRole: async (roleId: number, permissions: ScreenPermission[]): Promise<RoleMappingResponse[]> => {
+    const response = await apiClient.put<ApiResponse<RoleMappingResponse[]>>(
+      `${BASE_URL}/by-role/${roleId}`,
+      permissions,
+    );
     return response.data.data;
   },
 };

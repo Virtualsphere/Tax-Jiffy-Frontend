@@ -3,12 +3,12 @@ import styles from './RolesPage.module.css';
 import { useRoles, useCreateRole, useUpdateRole, useDeleteRole } from './hooks/useRoles';
 import type { RolesResponse } from './types/roles.types';
 import { UserManagementPage } from '../users/UserManagementPage';
-import { useSaveRoleMapping, useRoleMappings } from './hooks/useRoleMapping';
-import type { RoleMappingRequest } from './types/roleMapping.types';
+import { useSaveRolePermissions, useRoleMappings } from './hooks/useRoleMapping';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
 import { APP_PAGES } from '@/config/app-pages';
 import type { ColDef } from 'ag-grid-community';
 import { DataTable, column, rowActionsColumn } from '@/components/UnifiedTable';
+import { usePermissions, type ScreenPermission as SavedScreenPermission } from '@/features/permissions';
 
 /* ── Helpers ─────────────────────────────────────────── */
 function formatRoleId(id: number): string {
@@ -32,8 +32,24 @@ type ScreenPermission = {
   edit: boolean;
   view: boolean;
   delete: boolean;
-  mappingId?: number;
 };
+
+/** The matrix rows as the bulk-save endpoint takes them. */
+function toSavedPermissions(rows: ScreenPermission[]): SavedScreenPermission[] {
+  return rows.map(({ pageName, screenName, view, add, edit, delete: del }) => ({
+    pageNumber: pageName,
+    screenNumber: screenName,
+    view,
+    add,
+    edit,
+    delete: del,
+  }));
+}
+
+/** The per-GST ADMIN role always has full access and is not editable. */
+function isAdminRole(role: RolesResponse): boolean {
+  return role.roleName.toUpperCase() === 'ADMIN';
+}
 
 /* ── Permissions matrix (shared by the Add and Edit dialogs) ── */
 interface PermissionsTableProps {
@@ -94,7 +110,7 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
   const [roleName, setRoleName] = useState('');
   const [error, setError] = useState('');
   const createRole = useCreateRole();
-  const saveMapping = useSaveRoleMapping();
+  const savePermissions = useSaveRolePermissions();
 
   const [permissions, setPermissions] = useState<ScreenPermission[]>(
     APP_PAGES.map(s => ({ ...s, add: false, edit: false, view: false, delete: false }))
@@ -128,26 +144,10 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
         companyGstId: Number(companyGstId),
       });
 
-      const grantedPermissions = permissions.filter(
-        (p) => p.view || p.add || p.edit || p.delete,
-      );
-
-      const mappingPromises = grantedPermissions.map(p => {
-        const req: RoleMappingRequest = {
-          roleId: createdRole.id,
-          companyId: Number(companyId),
-          companyGstId: Number(companyGstId),
-          pageNumber: p.pageName,
-          screenNumber: p.screenName,
-          add: p.add,
-          edit: p.edit,
-          view: p.view,
-          delete: p.delete,
-        };
-        return saveMapping.mutateAsync({ data: req });
+      await savePermissions.mutateAsync({
+        roleId: createdRole.id,
+        permissions: toSavedPermissions(permissions),
       });
-
-      await Promise.all(mappingPromises);
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to create role.');
@@ -205,8 +205,8 @@ function AddRoleModal({ nextRoleId, companyId, companyGstId, onClose }: AddRoleM
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn} disabled={createRole.isPending || saveMapping.isPending}>
-              {createRole.isPending || saveMapping.isPending ? 'Saving...' : 'Save Role'}
+            <button type="submit" className={styles.submitBtn} disabled={createRole.isPending || savePermissions.isPending}>
+              {createRole.isPending || savePermissions.isPending ? 'Saving...' : 'Save Role'}
             </button>
           </div>
         </form>
@@ -227,7 +227,7 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
   const [roleName, setRoleName] = useState(role.roleName);
   const [error, setError] = useState('');
   const updateRole = useUpdateRole();
-  const saveMapping = useSaveRoleMapping();
+  const savePermissions = useSaveRolePermissions();
   
   const { data: existingMappings, isLoading: isMappingsLoading } = useRoleMappings(role.id, companyGstId);
 
@@ -241,7 +241,6 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
         const mapping = existingMappings.find(m => m.pageNumber === screen.pageName && m.screenNumber === screen.screenName);
         return {
           ...screen,
-          mappingId: mapping?.id,
           add: mapping?.add ?? false,
           edit: mapping?.edit ?? false,
           view: mapping?.view ?? false,
@@ -283,26 +282,10 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
         } 
       });
 
-      const changedPermissions = permissions.filter(
-        (p) => p.mappingId != null || p.view || p.add || p.edit || p.delete,
-      );
-
-      const mappingPromises = changedPermissions.map(p => {
-        const req: RoleMappingRequest = {
-          roleId: role.id,
-          companyId: Number(companyId),
-          companyGstId: Number(companyGstId),
-          pageNumber: p.pageName,
-          screenNumber: p.screenName,
-          add: p.add,
-          edit: p.edit,
-          view: p.view,
-          delete: p.delete,
-        };
-        return saveMapping.mutateAsync({ id: p.mappingId, data: req });
+      await savePermissions.mutateAsync({
+        roleId: role.id,
+        permissions: toSavedPermissions(permissions),
       });
-
-      await Promise.all(mappingPromises);
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to update role.');
@@ -349,8 +332,8 @@ function EditRoleModal({ role, companyId, companyGstId, onClose }: EditRoleModal
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn} disabled={updateRole.isPending || saveMapping.isPending}>
-              {updateRole.isPending || saveMapping.isPending ? 'Saving...' : 'Save Changes'}
+            <button type="submit" className={styles.submitBtn} disabled={updateRole.isPending || savePermissions.isPending}>
+              {updateRole.isPending || savePermissions.isPending ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -413,7 +396,17 @@ function DeleteRoleModal({ role, onClose }: DeleteRoleModalProps) {
 
 /* ── Main Page ────────────────────────────────────────── */
 export function RolesPage() {
-  const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles');
+  const { can } = usePermissions();
+  const canViewRoles = can('Role Editor', 'view');
+  const canViewUsers = can('User Management', 'view');
+  const canAddRole = can('Role Editor', 'add');
+  const canEditRole = can('Role Editor', 'edit');
+  const canDeleteRole = can('Role Editor', 'delete');
+
+  const [selectedTab, setSelectedTab] = useState<'roles' | 'users'>('roles');
+  // Fall back to the tab the role can see when it cannot see the selected one.
+  const activeTab = selectedTab === 'roles' && !canViewRoles && canViewUsers ? 'users' : selectedTab;
+  const setActiveTab = setSelectedTab;
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -426,7 +419,6 @@ export function RolesPage() {
   const selectedGSTId = currentEntity.id || '';
 
   const { data: roles, isLoading: isRolesLoading } = useRoles(selectedCompanyId, selectedGSTId);
-  if (currentEntity) { console.log('Current Entity in RolesPage 2:', currentEntity); }
 
   // Roles as grid rows. Search and pagination are handled by DataTable.
   const roleRows = useMemo(
@@ -445,16 +437,22 @@ export function RolesPage() {
       column.text('roleIdLabel', 'Role ID', { maxWidth: 140 }),
       column.text('roleName', 'Role Name', { minWidth: 200 }),
       rowActionsColumn<RoleRow>([
-        { label: 'Edit', onClick: (role) => setEditingRole(role), title: 'Edit role' },
+        {
+          label: 'Edit',
+          onClick: (role) => setEditingRole(role),
+          hidden: (role) => !canEditRole || isAdminRole(role),
+          title: 'Edit role',
+        },
         {
           label: 'Delete',
           variant: 'danger',
           onClick: (role) => setDeletingRole(role),
+          hidden: (role) => !canDeleteRole || isAdminRole(role),
           title: 'Delete role',
         },
       ]),
     ],
-    [],
+    [canEditRole, canDeleteRole],
   );
 
   // Next role ID prediction (max id + 1)
@@ -468,19 +466,23 @@ export function RolesPage() {
     <div className={styles.container}>
       {/* ── Tabs ── */}
       <div className={styles.tabsRow}>
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'roles' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('roles')}
-        >
-          Manage Roles
-        </button>
+        {canViewRoles && (
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'roles' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('roles')}
+          >
+            Manage Roles
+          </button>
+        )}
 
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          Manage Users
-        </button>
+        {canViewUsers && (
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            Manage Users
+          </button>
+        )}
       </div>
 
       {activeTab === 'users' ? (
@@ -495,16 +497,18 @@ export function RolesPage() {
             </div>
             <div className={styles.controls}>
 
-          <button
-            id="roles-add-btn"
-            className={styles.addBtn}
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Role
-          </button>
+          {canAddRole && (
+            <button
+              id="roles-add-btn"
+              className={styles.addBtn}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Role
+            </button>
+          )}
         </div>
       </div>
 

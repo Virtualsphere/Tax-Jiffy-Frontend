@@ -3,6 +3,8 @@ export interface UserRequest {
   userName: string;
   userEmail: string;
   userPassword?: string;
+  /** Role on companyGstId; the backend falls back to the GST's USER role. */
+  roleId?: number;
 }
 
 export interface UserResponse {

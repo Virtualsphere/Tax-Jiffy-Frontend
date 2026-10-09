@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { NoAccess, usePermissions } from '@/features/permissions';
+import { ROUTE_PAGES } from '@/config/app-pages';
 
 import styles from '@/layouts/DashboardLayout/DashboardLayout.module.css';
 
@@ -38,6 +40,10 @@ export function DashboardLayout() {
   const title = TITLE_MAP[segment] ?? 'Dashboard';
 
   const { data: entity } = useCurrentEntity();
+
+  const { canAny, isLoading: isPermissionsLoading } = usePermissions();
+  const routePages = ROUTE_PAGES[pathname.replace(/\/$/, '')];
+  const isAllowed = !routePages || canAny(routePages, 'view');
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -89,7 +95,7 @@ export function DashboardLayout() {
         <div className={styles.content}>
           <div className={styles.contentInner}>
             <h1 className={styles.pageHeading}>{title}</h1>
-            <Outlet />
+            {routePages && isPermissionsLoading ? null : isAllowed ? <Outlet /> : <NoAccess />}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { isAxiosError } from 'axios';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import styles from './UserManagementPage.module.css';
 import { DataTable, column, rowActionsColumn } from '@/components/UnifiedTable';
@@ -8,6 +9,9 @@ import { useCreateSubUser } from '../user/hooks/useCreateSubUser';
 import { useDeactivateMapping } from '../user/hooks/useDeactivateMapping';
 import { useSubscriptions } from '../user/hooks/useSubscriptions';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { usePermissions } from '@/features/permissions';
+import { useRoles } from '../roles/hooks/useRoles';
+import { useUpdateUserRole } from '../user/hooks/useUpdateUserRole';
 
 /** One row of the users grid. */
 type UserRow = {
@@ -15,7 +19,9 @@ type UserRow = {
   userIdLabel: string;
   userName: string;
   email: string;
+  roleId: number | null;
   roleName: string;
+  isAdmin: boolean;
   isActive: boolean;
 };
 
@@ -36,11 +42,27 @@ export function UserManagementPage() {
   const selectedGSTId = currentEntity.id || null;
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const [editRoleId, setEditRoleId] = useState<number | ''>('');
+  const [editError, setEditError] = useState('');
+
+  const { can } = usePermissions();
+  const canAddUser = can('User Management', 'add');
+  const canEditUser = can('User Management', 'edit');
+  const canDeleteUser = can('User Management', 'delete');
+
+  // Roles a user can be given on this GST. ADMIN belongs to the GST owner only.
+  const { data: roles } = useRoles(selectedCompanyId ?? '', selectedGSTId ?? '');
+  const assignableRoles = useMemo(
+    () => (roles ?? []).filter((r) => r.roleName.toUpperCase() !== 'ADMIN'),
+    [roles],
+  );
 
   // Add User Form State
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRoleId, setNewUserRoleId] = useState<number | ''>('');
   const [formError, setFormError] = useState('');
 
   // Queries
@@ -61,6 +83,32 @@ export function UserManagementPage() {
   // Mutations
   const createSubUser = useCreateSubUser();
   const deactivateMapping = useDeactivateMapping();
+  const updateUserRole = useUpdateUserRole();
+
+  const openEditRole = (row: UserRow) => {
+    setEditError('');
+    setEditRoleId(row.roleId ?? '');
+    setEditingUser(row);
+  };
+
+  const handleEditRoleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser || !editRoleId) {
+      setEditError('Please select a role.');
+      return;
+    }
+    try {
+      await updateUserRole.mutateAsync({
+        mappingId: editingUser.mappingId,
+        roleId: Number(editRoleId),
+        gstId: selectedGSTId!,
+      });
+      setEditingUser(null);
+    } catch (err) {
+      const serverMessage = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined;
+      setEditError(serverMessage || (err instanceof Error ? err.message : '') || 'Failed to update role');
+    }
+  };
 
   const handleDeleteUser = async (mappingId: number) => {
     if (confirm('Are you sure you want to remove this user from this GST registration?')) {
@@ -92,12 +140,14 @@ export function UserManagementPage() {
         userName: newUserName,
         userEmail: newUserEmail,
         userPassword: newUserPassword,
+        roleId: newUserRoleId ? Number(newUserRoleId) : undefined,
       });
 
       // Clear form
       setNewUserName('');
       setNewUserEmail('');
       setNewUserPassword('');
+      setNewUserRoleId('');
       setIsAddModalOpen(false);
     } catch (err: any) {
       setFormError(err.response?.data?.message || err.message || 'Failed to create user');
@@ -111,7 +161,9 @@ export function UserManagementPage() {
         userIdLabel: `U${String(m.userId).padStart(4, '0')}`,
         userName: m.userName,
         email: companyUsers?.find((cu) => cu.id === m.userId)?.userEmail || 'N/A',
+        roleId: m.roleId ?? null,
         roleName: m.roleName || 'USER',
+        isAdmin: !!m.isAdmin,
         isActive: m.isActive,
       })),
     [mappings, companyUsers],
@@ -126,21 +178,23 @@ export function UserManagementPage() {
       rowActionsColumn<UserRow>([
         {
           label: 'Edit',
-          onClick: () => {},
-          disabled: () => true,
-          title: 'Editing an existing user is not available yet.',
+          onClick: openEditRole,
+          // The GST admin's role is fixed; the backend rejects changing it.
+          hidden: (row) => !canEditUser || row.isAdmin,
+          title: 'Change role',
         },
         {
           label: 'Delete',
           variant: 'danger',
           onClick: (row) => handleDeleteUser(row.mappingId),
           disabled: () => deactivateMapping.isPending,
+          hidden: (row) => !canDeleteUser || row.isAdmin,
         },
       ]),
     ],
     // handleDeleteUser closes over selectedGSTId, which is the part that matters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [deactivateMapping.isPending, selectedGSTId],
+    [deactivateMapping.isPending, selectedGSTId, canEditUser, canDeleteUser],
   );
 
   const emptyMessage = !selectedGSTId
@@ -170,6 +224,7 @@ export function UserManagementPage() {
           )}
         </div>
 
+        {canAddUser && (
         <button
           className={styles.addBtn}
           onClick={() => {
@@ -182,6 +237,7 @@ export function UserManagementPage() {
         >
           <span>+</span> Add User
         </button>
+        )}
       </div>
 
       <DataTable
@@ -240,6 +296,20 @@ export function UserManagementPage() {
                     required
                   />
                 </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Role</label>
+                  <select
+                    className={styles.input}
+                    value={newUserRoleId}
+                    onChange={(e) => setNewUserRoleId(e.target.value ? Number(e.target.value) : '')}
+                  >
+                    <option value="">Default (USER)</option>
+                    {assignableRoles.map((r) => (
+                      <option key={r.id} value={r.id}>{r.roleName}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className={styles.modalFooter}>
                 <button type="button" className={styles.cancelBtn} onClick={() => setIsAddModalOpen(false)}>
@@ -247,6 +317,51 @@ export function UserManagementPage() {
                 </button>
                 <button type="submit" className={styles.submitBtn} disabled={createSubUser.isPending}>
                   {createSubUser.isPending ? 'Adding...' : 'Add User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Role Modal */}
+      {editingUser && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h4 className={styles.modalTitle}>Change Role</h4>
+              <button className={styles.closeBtn} onClick={() => setEditingUser(null)}>×</button>
+            </div>
+            <form onSubmit={handleEditRoleSubmit}>
+              <div className={styles.modalBody}>
+                {editError && <div className={styles.errorAlert}>{editError}</div>}
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>User</label>
+                  <input type="text" className={styles.input} value={editingUser.userName} readOnly />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Role</label>
+                  <select
+                    className={styles.input}
+                    value={editRoleId}
+                    onChange={(e) => setEditRoleId(e.target.value ? Number(e.target.value) : '')}
+                    required
+                  >
+                    <option value="" disabled>Select a role</option>
+                    {assignableRoles.map((r) => (
+                      <option key={r.id} value={r.id}>{r.roleName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className={styles.modalFooter}>
+                <button type="button" className={styles.cancelBtn} onClick={() => setEditingUser(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className={styles.submitBtn} disabled={updateUserRole.isPending}>
+                  {updateUserRole.isPending ? 'Saving...' : 'Save Role'}
                 </button>
               </div>
             </form>
