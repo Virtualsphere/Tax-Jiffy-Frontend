@@ -25,6 +25,11 @@ export const userApi = {
     await apiClient.delete<ApiResponse<void>>(`/user-gst-mapping/${id}`);
   },
 
+  updateMappingRole: async (id: number, roleId: number): Promise<UserGSTMappingResponse> => {
+    const response = await apiClient.put<ApiResponse<UserGSTMappingResponse>>(`/user-gst-mapping/${id}/role`, { roleId });
+    return response.data.data;
+  },
+
   getMappingsByGST: async (gstId: number): Promise<UserGSTMappingResponse[]> => {
     const response = await apiClient.get<ApiResponse<UserGSTMappingResponse[]>>(`/user-gst-mapping/by-company-gst/${gstId}`);
     return response.data.data;

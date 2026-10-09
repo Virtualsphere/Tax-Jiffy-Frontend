@@ -5,7 +5,10 @@ import logo from '@/assets/logo-icon.png';
 import {
   DEFAULT_SIDEBAR_ENTITY,
   SIDEBAR_ITEMS,
+  type SidebarNavItem,
 } from '@/components/Sidebar/sidebar-config';
+import { ROUTE_PAGES } from '@/config/app-pages';
+import { usePermissions } from '@/features/permissions';
 import {
   IconChevronDown,
 } from '@/components/Sidebar/SidebarIcons';
@@ -48,6 +51,20 @@ export function Sidebar({
 
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
+
+  // Hide links the role cannot view, and sections left with no links.
+  const { canAny, roleName } = usePermissions();
+  const canSee = (path: string) => {
+    const pages = ROUTE_PAGES[path];
+    return !pages || canAny(pages, 'view');
+  };
+  const visibleItems = SIDEBAR_ITEMS.flatMap((item): SidebarNavItem[] => {
+    if (item.type === 'link') return canSee(item.path) ? [item] : [];
+    const children = item.children.filter((child) => canSee(child.path));
+    return children.length > 0 ? [{ ...item, children }] : [];
+  });
+  // The role on the active GST, which is what governs this sidebar.
+  const displayRole = roleName ?? user.role;
 
   const handleLogout = () => {
     authStorage.clearToken();
@@ -142,7 +159,7 @@ export function Sidebar({
 
       <nav id={navId} className={styles.nav} aria-label="GST modules">
         <ul className={styles.navList}>
-          {SIDEBAR_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             if (item.type === 'section') {
               const section = item;
               const isExpanded = expandedSections.includes(section.id);
@@ -223,7 +240,7 @@ export function Sidebar({
           <div className={styles.userInfo}>
             <span className={styles.userName}>{user.name}</span>
             <span className={styles.userEmail}>{user.email}</span>
-            {user.role && <span className={styles.userRole}>{user.role}</span>}
+            {displayRole && <span className={styles.userRole}>{displayRole}</span>}
           </div>
         </NavLink>
         <button onClick={handleLogout} className={styles.logoutButton} title="Logout">

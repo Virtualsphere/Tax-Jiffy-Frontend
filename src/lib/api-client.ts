@@ -18,6 +18,13 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  // The backend checks role permissions against this GST for endpoints that
+  // are addressed only by filingId (see PermissionInterceptor).
+  const activeGstId = authStorage.getActiveEntityId();
+  if (activeGstId) {
+    config.headers['X-Company-Gst-Id'] = String(activeGstId);
+  }
+
   return config;
 });
 

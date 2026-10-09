@@ -12,6 +12,8 @@
  * access to it.
  */
 
+import { ROUTES } from '@/config/routes';
+
 export type AppScreen = {
   pageName: string;
   screenName: string;
@@ -61,6 +63,35 @@ export const APP_PAGES: readonly AppScreen[] = [
   { pageName: 'Billing', screenName: 'Billing Overview' },
   { pageName: 'Subscription Plans', screenName: 'Plans List' },
 ] as const;
+
+/**
+ * Which permission pages open each dashboard route: a route is reachable (and
+ * shown in the sidebar) when the role has View on any screen of any listed page.
+ * Routes not listed here — the companies dashboard, profile — are not gated.
+ */
+export const ROUTE_PAGES: Readonly<Record<string, readonly string[]>> = {
+  [ROUTES.dashboard.eInvoice]: ['E-Invoice'],
+  [ROUTES.dashboard.eWayBill]: ['E-Way Bill'],
+  [ROUTES.dashboard.purchaseRegister]: ['Inward Supply'],
+  [ROUTES.dashboard.saleRegister]: ['Outward Supply'],
+  [ROUTES.dashboard.vendorLedger]: ['Ledgers'],
+  [ROUTES.dashboard.gstr1]: ['GSTR-1'],
+  [ROUTES.dashboard.gstr1a]: ['GSTR-1A'],
+  [ROUTES.dashboard.ims]: ['IMS'],
+  [ROUTES.dashboard.gstr2a]: ['GSTR-2A'],
+  [ROUTES.dashboard.gstr2b]: ['GSTR-2B'],
+  [ROUTES.dashboard.gstr3b]: ['GSTR-3B'],
+  [ROUTES.dashboard.gstr9]: ['GSTR-9'],
+  [ROUTES.dashboard.gstr9c]: ['GSTR-9C'],
+  [ROUTES.dashboard.itc03]: ['ITC-03'],
+  [ROUTES.dashboard.itc04]: ['ITC-04'],
+  [ROUTES.dashboard.gstLedgers]: ['GST Ledgers'],
+  [ROUTES.dashboard.challan]: ['Challans'],
+  // The Role Editor page hosts both the roles and the users tabs.
+  [ROUTES.dashboard.roles]: ['Role Editor', 'User Management'],
+  [ROUTES.dashboard.users]: ['User Management'],
+  [ROUTES.dashboard.subscriptionPlans]: ['Subscription Plans'],
+};
 
 /** Stable key for a screen — used to match saved mappings back to this list. */
 export function screenKey(pageName: string, screenName: string): string {

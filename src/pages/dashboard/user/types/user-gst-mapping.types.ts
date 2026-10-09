@@ -9,6 +9,7 @@ export interface UserGSTMappingResponse {
   userName: string;
   companyGstId: number;
   gstNumber: string;
+  roleId: number | null;
   roleName: string;
   isAdmin: boolean;
   isActive: boolean;
