@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useGstr1SubmitPayload, useSubmitGstr1 } from '@/pages/dashboard/gstr1/hooks/useGstr1Submit';
 import type { Gstr1SubmitRequest } from '@/pages/dashboard/gstr1/types/gstr1-api.types';
+import { useGstSessionGate } from '@/hooks/useGstSessionGate';
+import { apiErrorMessage } from '@/lib/gst-session.api';
 import styles from '@/pages/dashboard/gstr1/GSTR1Page.module.css';
 
 interface Gstr1SubmitModalProps {
   filingId: number;
-  /** Pre-filled GSTIN from current entity */
-  prefillGstin?: string;
-  /** Pre-filled return period e.g. "012025" */
-  prefillRetPeriod?: string;
-  /** Pre-filled state code derived from GSTIN (first 2 chars) */
-  prefillStateCd?: string;
+  /** CompanyGST id of the active entity (the GST portal session is kept per GSTIN). */
+  companyGstId: number;
+  /** GSTIN of the active entity, shown in the OTP dialog */
+  gstin?: string;
   /** Called with the ARN when submission succeeds */
   onSuccess: (arn: string) => void;
   /** Called when modal is dismissed */
@@ -18,35 +18,25 @@ interface Gstr1SubmitModalProps {
 }
 
 const EMPTY_FORM: Gstr1SubmitRequest = {
-  email: '',
-  gstin: '',
-  retPeriod: '',
-  gstUsername: '',
-  stateCd: '',
-  ipAddress: '',
-  txn: '',
-  clientId: '',
-  clientSecret: '',
   grossTurnover: 0,
   currentGrossTurnover: 0,
 };
 
+/**
+ * GST API keys and the session token live on the server. If the GSTIN has no active
+ * GST portal session, submitting opens the OTP dialog and continues after verification.
+ */
 export function Gstr1SubmitModal({
   filingId,
-  prefillGstin = '',
-  prefillRetPeriod = '',
-  prefillStateCd = '',
+  companyGstId,
+  gstin,
   onSuccess,
   onClose,
 }: Gstr1SubmitModalProps) {
-  const [form, setForm] = useState<Gstr1SubmitRequest>({
-    ...EMPTY_FORM,
-    gstin: prefillGstin,
-    retPeriod: prefillRetPeriod,
-    stateCd: prefillStateCd,
-  });
+  const [form, setForm] = useState<Gstr1SubmitRequest>(EMPTY_FORM);
   const [payloadExpanded, setPayloadExpanded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const gstGate = useGstSessionGate(companyGstId, gstin);
 
   // Fetch payload preview when user expands the preview panel
   const payloadQuery = useGstr1SubmitPayload(
@@ -58,18 +48,8 @@ export function Gstr1SubmitModal({
 
   const submitMutation = useSubmitGstr1(filingId);
 
-  // Sync prefill props if they change
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      gstin: prefillGstin || prev.gstin,
-      retPeriod: prefillRetPeriod || prev.retPeriod,
-      stateCd: prefillStateCd || prev.stateCd,
-    }));
-  }, [prefillGstin, prefillRetPeriod, prefillStateCd]);
-
   const handleChange = useCallback(
-    (field: keyof Gstr1SubmitRequest, value: string | number) => {
+    (field: keyof Gstr1SubmitRequest, value: number) => {
       setForm((prev) => ({ ...prev, [field]: value }));
     },
     [],
@@ -78,31 +58,20 @@ export function Gstr1SubmitModal({
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
     try {
-      const result = await submitMutation.mutateAsync(form);
-      if (result?.arn) {
+      const result = await gstGate.run(() => submitMutation.mutateAsync(form));
+      if (result === undefined) return; // user closed the OTP dialog
+      if (result?.success && result.arn) {
         onSuccess(result.arn);
       } else {
         setSubmitError(result?.message || 'Submission failed — no ARN received.');
       }
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        'An unexpected error occurred during submission.';
-      setSubmitError(msg);
+    } catch (err) {
+      setSubmitError(apiErrorMessage(err, 'An unexpected error occurred during submission.'));
     }
-  }, [form, submitMutation, onSuccess]);
+  }, [form, submitMutation, onSuccess, gstGate]);
 
   const isSubmitting = submitMutation.isPending;
-  const canSubmit =
-    form.email &&
-    form.gstin &&
-    form.retPeriod &&
-    form.gstUsername &&
-    form.txn &&
-    form.clientId &&
-    form.clientSecret &&
-    !isSubmitting;
+  const canSubmit = !isSubmitting;
 
   return (
     <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="submit-modal-title">
@@ -114,7 +83,7 @@ export function Gstr1SubmitModal({
             <div>
               <h2 id="submit-modal-title" className={styles.modalTitle}>Submit GSTR-1</h2>
               <p className={styles.modalSubtitle}>
-                Enter your GST portal credentials to submit the return. Filing ID: <strong>{filingId}</strong>
+                You may be asked for an OTP from the GST portal. Filing ID: <strong>{filingId}</strong>
               </p>
             </div>
           </div>
@@ -126,120 +95,6 @@ export function Gstr1SubmitModal({
         </div>
 
         <div className={styles.modalBody}>
-          {/* ── Credentials Section ── */}
-          <div className={styles.modalSection}>
-            <h3 className={styles.modalSectionTitle}>
-              <span className={styles.modalSectionDot} />
-              GST Portal Credentials
-            </h3>
-            <div className={styles.modalGrid}>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-email">Email</label>
-                <input
-                  id="sm-email"
-                  type="email"
-                  className={styles.modalInput}
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-gstin">GSTIN</label>
-                <input
-                  id="sm-gstin"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="22AAAAA0000A1Z5"
-                  value={form.gstin}
-                  onChange={(e) => handleChange('gstin', e.target.value.toUpperCase())}
-                  maxLength={15}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-retPeriod">
-                  Return Period <span className={styles.modalLabelHint}>(MMYYYY)</span>
-                </label>
-                <input
-                  id="sm-retPeriod"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="012025"
-                  value={form.retPeriod}
-                  onChange={(e) => handleChange('retPeriod', e.target.value)}
-                  maxLength={6}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-gstUsername">GST Username</label>
-                <input
-                  id="sm-gstUsername"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="your_gst_username"
-                  value={form.gstUsername}
-                  onChange={(e) => handleChange('gstUsername', e.target.value)}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-stateCd">State Code</label>
-                <input
-                  id="sm-stateCd"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="e.g. 27"
-                  value={form.stateCd}
-                  onChange={(e) => handleChange('stateCd', e.target.value)}
-                  maxLength={2}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-ipAddress">IP Address</label>
-                <input
-                  id="sm-ipAddress"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="192.168.1.1"
-                  value={form.ipAddress}
-                  onChange={(e) => handleChange('ipAddress', e.target.value)}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-txn">TXN / OTP</label>
-                <input
-                  id="sm-txn"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="Transaction / OTP token"
-                  value={form.txn}
-                  onChange={(e) => handleChange('txn', e.target.value)}
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor="sm-clientId">Client ID</label>
-                <input
-                  id="sm-clientId"
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="API Client ID"
-                  value={form.clientId}
-                  onChange={(e) => handleChange('clientId', e.target.value)}
-                />
-              </div>
-              <div className={`${styles.modalField} ${styles.modalFieldFull}`}>
-                <label className={styles.modalLabel} htmlFor="sm-clientSecret">Client Secret</label>
-                <input
-                  id="sm-clientSecret"
-                  type="password"
-                  className={styles.modalInput}
-                  placeholder="API Client Secret"
-                  value={form.clientSecret}
-                  onChange={(e) => handleChange('clientSecret', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* ── Turnover Section ── */}
           <div className={styles.modalSection}>
             <h3 className={styles.modalSectionTitle}>
@@ -352,6 +207,7 @@ export function Gstr1SubmitModal({
           </button>
         </div>
       </div>
+      {gstGate.dialog}
     </div>
   );
 }

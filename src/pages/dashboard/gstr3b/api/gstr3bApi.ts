@@ -46,31 +46,23 @@ export interface Gstr3bInterestLateFeeRequest {
   lateFeeStateUtTax?: number;
 }
 
+/**
+ * GST API keys, username and txn are server-side (per-GSTIN OTP session),
+ * so the sync requests only carry what the user actually chooses.
+ */
 export interface ImsCredentials {
-  gstin: string;
-  email: string;
-  retperiod: string;
+  /** Return period MMYYYY */
+  retPeriod: string;
   section: string;
+  /** GSTR1 or GSTR1A */
   rtnTyp: string;
-  gstUsername: string;
-  stateCd: string;
-  ipAddress: string;
-  txn: string;
-  clientId: string;
-  clientSecret: string;
 }
 
 export interface TwoBCredentials {
-  gstin: string;
-  rtnprd: string;
-  filenum: string;
-  email: string;
-  gstUsername: string;
-  stateCd: string;
-  ipAddress: string;
-  txn: string;
-  clientId: string;
-  clientSecret: string;
+  /** Return period MMYYYY; the backend defaults to the filing's period when empty */
+  rtnprd?: string;
+  /** Only needed when GSTN splits a large GSTR-2B into several files */
+  filenum?: string;
 }
 
 // Preview response types (mirrors Gstr3bPreviewResponse.java)
@@ -216,11 +208,11 @@ export const gstr3bApi = {
     return data.data;
   },
 
-  /** Sync IMS invoices into the filing */
-  syncIms: async (filingId: number, credentials: ImsCredentials): Promise<{ rowsSynced: number }> => {
+  /** Sync IMS invoices for this GSTIN/period (backend: POST /api/ims/sync) */
+  syncIms: async (companyGstId: number, credentials: ImsCredentials): Promise<{ rowsSynced: number }> => {
     const { data } = await apiClient.post<ApiResponse<{ rowsSynced: number }>>(
-      `${BASE}/filings/${filingId}/sync-ims`,
-      credentials,
+      '/ims/sync',
+      { companyGstId, ...credentials },
     );
     return data.data;
   },

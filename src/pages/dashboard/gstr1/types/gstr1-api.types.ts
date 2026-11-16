@@ -2,16 +2,8 @@
 
 // ── Submit types ──────────────────────────────────────────────────────────
 
+/** GST keys/username/txn are server-side; GSTIN and period come from the filing. */
 export type Gstr1SubmitRequest = {
-  email: string;
-  gstin: string;
-  retPeriod: string;
-  gstUsername: string;
-  stateCd: string;
-  ipAddress: string;
-  txn: string;
-  clientId: string;
-  clientSecret: string;
   grossTurnover: number;
   currentGrossTurnover: number;
 };
