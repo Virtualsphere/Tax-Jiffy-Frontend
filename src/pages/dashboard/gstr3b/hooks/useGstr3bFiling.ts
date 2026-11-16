@@ -9,6 +9,7 @@ import {
   type TwoBCredentials,
 } from '@/pages/dashboard/gstr3b/api/gstr3bApi';
 import { handleApiError } from '@/services/api';
+import { isGstSessionRequired } from '@/lib/gst-session.api';
 
 /** Manage the GSTR-3B filing for a given company GST and period */
 export function useGstr3bFiling(companyGstId: number | null | undefined) {
@@ -65,14 +66,16 @@ export function useSyncIms() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sync = useCallback(async (filingId: number, credentials: ImsCredentials) => {
+  const sync = useCallback(async (companyGstId: number, credentials: ImsCredentials) => {
     setIsLoading(true);
     setError(null);
     try {
-      const r = await gstr3bApi.syncIms(filingId, credentials);
+      const r = await gstr3bApi.syncIms(companyGstId, credentials);
       setResult(r);
       return r;
     } catch (err) {
+      // Let "GST OTP session required" reach useGstSessionGate so it can open the OTP dialog
+      if (isGstSessionRequired(err)) throw err;
       const apiError = handleApiError(err);
       setError(apiError.message);
       return null;
@@ -98,6 +101,8 @@ export function useSync2b() {
       setResult(r);
       return r;
     } catch (err) {
+      // Let "GST OTP session required" reach useGstSessionGate so it can open the OTP dialog
+      if (isGstSessionRequired(err)) throw err;
       const apiError = handleApiError(err);
       setError(apiError.message);
       return null;

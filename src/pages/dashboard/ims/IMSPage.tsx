@@ -3,6 +3,8 @@ import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
 import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { usePeriod } from '@/context/PeriodContext';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { useGstSessionGate } from '@/hooks/useGstSessionGate';
+import { apiErrorMessage } from '@/lib/gst-session.api';
 import { toRetPeriod } from '@/lib/period';
 import { describeApiError } from '@/lib/api-error';
 import { imsApi } from './api/ims.api';
@@ -11,6 +13,7 @@ import type { ImsFiling, ImsInvoice } from './types/ims.types';
 
 export function IMSPage() {
   const { data: currentEntity } = useCurrentEntity();
+  const gstGate = useGstSessionGate(currentEntity?.id, currentEntity?.gstin);
   const { selectedYear, selectedMonth } = usePeriod();
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -81,16 +84,18 @@ export function IMSPage() {
 
     try {
       setIsSyncing(true);
-      await imsApi.sync({ companyGstId: currentEntity.id, retPeriod, section: 'B2B', rtnTyp: 'GSTR1' });
+      // Opens the GST portal OTP dialog if this GSTIN has no active session, then retries
+      const res = await gstGate.run(() => imsApi.sync({ companyGstId: currentEntity.id, retPeriod, section: 'B2B', rtnTyp: 'GSTR1' }));
+      if (res === undefined) return; // OTP dialog closed without connecting
       alert('IMS sync completed successfully!');
       await loadInvoices();
     } catch (error) {
       console.error(error);
-      alert('Failed to sync IMS. Please try again.');
+      alert(`Failed to sync IMS: ${apiErrorMessage(error)}`);
     } finally {
       setIsSyncing(false);
     }
-  }, [currentEntity, retPeriod, loadInvoices]);
+  }, [currentEntity, retPeriod, loadInvoices, gstGate]);
 
   const MAIN_TABS = ['Import', 'List', 'Inward - IMS Reco'] as const;
   type MainTab = typeof MAIN_TABS[number];
@@ -144,6 +149,7 @@ export function IMSPage() {
       {activeMainTab === 'Inward - IMS Reco' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Inward - IMS Reco coming soon</div>
       )}
+      {gstGate.dialog}
     </div>
   );
 }

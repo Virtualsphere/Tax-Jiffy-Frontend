@@ -15,6 +15,8 @@ import {
 import { usePurchaseRegisterFilings } from '@/pages/dashboard/purchaseRegister/hooks/usePurchaseRegisterSheets';
 import * as XLSX from 'xlsx';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { useGstSessionGate } from '@/hooks/useGstSessionGate';
+import { toRetPeriod } from '@/lib/period';
 import { usePeriod } from '@/context/PeriodContext';
 import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { AnimatedExpandable } from '@/components/AnimatedExpandable/AnimatedExpandable';
@@ -82,59 +84,59 @@ const DynamicAgGrid = (props: any) => {
 
 // ── Credential Modal ──────────────────────────────────────────────────────
 function ImsCredentialModal({
-  gstin,
+  retPeriod,
   onClose,
   onSubmit,
   isLoading,
+  error,
 }: {
-  gstin: string;
+  retPeriod: string;
   onClose: () => void;
   onSubmit: (creds: ImsCredentials) => void;
   isLoading: boolean;
+  error: string | null;
 }) {
-  const [creds, setCreds] = useState<ImsCredentials>({
-    gstin, email: '', retperiod: '', section: 'B2B', rtnTyp: 'GSTR2B',
-    gstUsername: '', stateCd: '', ipAddress: '', txn: '', clientId: '', clientSecret: '',
-  });
-  const set = (k: keyof ImsCredentials) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setCreds((p) => ({ ...p, [k]: e.target.value }));
+  const [creds, setCreds] = useState<ImsCredentials>({ retPeriod, section: 'B2B', rtnTyp: 'GSTR1' });
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>IMS Sync Credentials</h3>
+          <h3 className={styles.modalTitle}>Sync IMS from GST portal</h3>
           <button type="button" className={styles.modalClose} onClick={onClose}>✕</button>
         </div>
         <div className={styles.modalBody}>
           <div className={styles.modalGrid}>
-            {(
-              [
-                ['gstin',       'GSTIN',         'text'],
-                ['email',       'Email',         'email'],
-                ['retperiod',   'Return Period (MMYYYY)', 'text'],
-                ['section',     'Section',       'text'],
-                ['rtnTyp',      'Return Type',   'text'],
-                ['gstUsername', 'GST Username',  'text'],
-                ['stateCd',     'State Code',    'text'],
-                ['ipAddress',   'IP Address',    'text'],
-                ['txn',         'TXN',           'text'],
-                ['clientId',    'Client ID',     'text'],
-                ['clientSecret','Client Secret', 'password'],
-              ] as [keyof ImsCredentials, string, string][]
-            ).map(([key, label, type]) => (
-              <div key={key} className={styles.formField}>
-                <label className={styles.formLabel}>{label}</label>
-                <input
-                  type={type}
-                  className={styles.formInput}
-                  value={creds[key]}
-                  onChange={set(key)}
-                  placeholder={label}
-                />
-              </div>
-            ))}
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Return Period (MMYYYY)</label>
+              <input
+                className={styles.formInput}
+                value={creds.retPeriod}
+                maxLength={6}
+                onChange={(e) => setCreds((p) => ({ ...p, retPeriod: e.target.value.replace(/\D/g, '') }))}
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Section</label>
+              <input
+                className={styles.formInput}
+                value={creds.section}
+                onChange={(e) => setCreds((p) => ({ ...p, section: e.target.value.toUpperCase() }))}
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Return Type</label>
+              <select
+                className={styles.formInput}
+                value={creds.rtnTyp}
+                onChange={(e) => setCreds((p) => ({ ...p, rtnTyp: e.target.value }))}
+              >
+                <option value="GSTR1">GSTR1</option>
+                <option value="GSTR1A">GSTR1A</option>
+              </select>
+            </div>
           </div>
+          {error && <p className={styles.formLabel} style={{ color: '#b91c1c', marginTop: 12 }}>{error}</p>}
         </div>
         <div className={styles.modalFooter}>
           <button type="button" className={styles.modalCancelBtn} onClick={onClose}>Cancel</button>
@@ -142,7 +144,7 @@ function ImsCredentialModal({
             type="button"
             className={styles.modalSubmitBtn}
             onClick={() => onSubmit(creds)}
-            disabled={isLoading}
+            disabled={isLoading || creds.retPeriod.length !== 6}
           >
             {isLoading ? 'Syncing…' : 'Sync IMS Data'}
           </button>
@@ -153,65 +155,48 @@ function ImsCredentialModal({
 }
 
 function TwoBCredentialModal({
-  gstin,
   onClose,
   onSubmit,
   isLoading,
+  error,
 }: {
-  gstin: string;
   onClose: () => void;
   onSubmit: (creds: TwoBCredentials) => void;
   isLoading: boolean;
+  error: string | null;
 }) {
-  const [creds, setCreds] = useState<TwoBCredentials>({
-    gstin, rtnprd: '', filenum: '', email: '',
-    gstUsername: '', stateCd: '', ipAddress: '', txn: '', clientId: '', clientSecret: '',
-  });
-  const set = (k: keyof TwoBCredentials) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setCreds((p) => ({ ...p, [k]: e.target.value }));
+  const [filenum, setFilenum] = useState('');
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>GSTR-2B Sync Credentials</h3>
+          <h3 className={styles.modalTitle}>Sync GSTR-2B from GST portal</h3>
           <button type="button" className={styles.modalClose} onClick={onClose}>✕</button>
         </div>
         <div className={styles.modalBody}>
+          <p className={styles.formLabel}>
+            GSTR-2B for this filing&apos;s GSTIN and period will be fetched. You may be asked for a GST portal OTP.
+          </p>
           <div className={styles.modalGrid}>
-            {(
-              [
-                ['gstin',       'GSTIN',               'text'],
-                ['rtnprd',      'Return Period',        'text'],
-                ['filenum',     'File Number',          'text'],
-                ['email',       'Email',                'email'],
-                ['gstUsername', 'GST Username',         'text'],
-                ['stateCd',     'State Code',           'text'],
-                ['ipAddress',   'IP Address',           'text'],
-                ['txn',         'TXN',                  'text'],
-                ['clientId',    'Client ID',            'text'],
-                ['clientSecret','Client Secret',        'password'],
-              ] as [keyof TwoBCredentials, string, string][]
-            ).map(([key, label, type]) => (
-              <div key={key} className={styles.formField}>
-                <label className={styles.formLabel}>{label}</label>
-                <input
-                  type={type}
-                  className={styles.formInput}
-                  value={creds[key]}
-                  onChange={set(key)}
-                  placeholder={label}
-                />
-              </div>
-            ))}
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>File Number (optional)</label>
+              <input
+                className={styles.formInput}
+                value={filenum}
+                onChange={(e) => setFilenum(e.target.value)}
+                placeholder="Only for large returns split into files"
+              />
+            </div>
           </div>
+          {error && <p className={styles.formLabel} style={{ color: '#b91c1c', marginTop: 12 }}>{error}</p>}
         </div>
         <div className={styles.modalFooter}>
           <button type="button" className={styles.modalCancelBtn} onClick={onClose}>Cancel</button>
           <button
             type="button"
             className={styles.modalSubmitBtn}
-            onClick={() => onSubmit(creds)}
+            onClick={() => onSubmit(filenum.trim() ? { filenum: filenum.trim() } : {})}
             disabled={isLoading}
           >
             {isLoading ? 'Syncing…' : 'Sync GSTR-2B Data'}
@@ -240,6 +225,7 @@ export function GSTR3BPage() {
 
   const companyGstId = currentEntity?.id ?? null;
   const gstin = currentEntity?.gstin ?? '';
+  const gstGate = useGstSessionGate(companyGstId, gstin);
 
   const { filings } = useGstr3bFiling(companyGstId && companyGstId !== 0 ? companyGstId : null);
   const { filing, setFiling, createOrLink, isLoading: isCreating, error: createError } = useCreateOrLinkGstr3b();
@@ -282,28 +268,28 @@ export function GSTR3BPage() {
 
   const handleImsSubmit = useCallback(
     async (creds: ImsCredentials) => {
-      if (!filing) return;
-      const res = await imsSync.sync(filing.id, creds);
+      if (!filing || !companyGstId) return;
+      const res = await gstGate.run(() => imsSync.sync(companyGstId, creds));
       if (res) {
         setShowImsModal(false);
         setSyncMessage(`IMS sync complete — ${res.rowsSynced} rows imported.`);
         setFiling({ ...filing, imsSyncStatus: 'SYNCED', imsSyncedAt: new Date().toISOString() });
       }
     },
-    [filing, imsSync, setFiling],
+    [filing, companyGstId, imsSync, setFiling, gstGate],
   );
 
   const handle2bSubmit = useCallback(
     async (creds: TwoBCredentials) => {
       if (!filing) return;
-      const res = await twoBSync.sync(filing.id, creds);
+      const res = await gstGate.run(() => twoBSync.sync(filing.id, creds));
       if (res) {
         setShow2bModal(false);
         setSyncMessage(`GSTR-2B sync complete — ${res.rowsSynced} ITC rows imported.`);
         setFiling({ ...filing, twoBSyncStatus: 'SYNCED', twoBSyncedAt: new Date().toISOString() });
       }
     },
-    [filing, twoBSync, setFiling],
+    [filing, twoBSync, setFiling, gstGate],
   );
 
   const handleSaveInterest = useCallback(async () => {
@@ -889,20 +875,22 @@ export function GSTR3BPage() {
       {/* ── Modals ── */}
       {showImsModal && (
         <ImsCredentialModal
-          gstin={gstin}
+          retPeriod={toRetPeriod(selectedYear.label, selectedMonth)}
           onClose={() => setShowImsModal(false)}
           onSubmit={handleImsSubmit}
           isLoading={imsSync.isLoading}
+          error={imsSync.error}
         />
       )}
       {show2bModal && (
         <TwoBCredentialModal
-          gstin={gstin}
           onClose={() => setShow2bModal(false)}
           onSubmit={handle2bSubmit}
           isLoading={twoBSync.isLoading}
+          error={twoBSync.error}
         />
       )}
+      {gstGate.dialog}
 
       {activeMainTab === '3B-Reco' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>3B-Reco coming soon</div>

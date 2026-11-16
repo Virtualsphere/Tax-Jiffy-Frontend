@@ -3,6 +3,8 @@ import { SimpleUploadUI } from '@/components/SimpleUploadUI/SimpleUploadUI';
 import { MainTabsBar } from '@/components/MainTabsBar/MainTabsBar';
 import { usePeriod } from '@/context/PeriodContext';
 import { useCurrentEntity } from '@/hooks/useCurrentEntity';
+import { useGstSessionGate } from '@/hooks/useGstSessionGate';
+import { apiErrorMessage } from '@/lib/gst-session.api';
 import { toRetPeriod } from '@/lib/period';
 import { describeApiError } from '@/lib/api-error';
 import { eInvoiceApi } from './api/einvoice.api';
@@ -11,6 +13,7 @@ import type { EinvoiceFiling, EinvoiceIrn } from './types/einvoice.types';
 
 export function EInvoicePage() {
   const { data: currentEntity } = useCurrentEntity();
+  const gstGate = useGstSessionGate(currentEntity?.id, currentEntity?.gstin);
   const { selectedYear, selectedMonth } = usePeriod();
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -79,16 +82,18 @@ export function EInvoicePage() {
 
     try {
       setIsSyncing(true);
-      await eInvoiceApi.sync({ companyGstId: currentEntity.id, retPeriod });
+      // Opens the GST portal OTP dialog if this GSTIN has no active session, then retries
+      const res = await gstGate.run(() => eInvoiceApi.sync({ companyGstId: currentEntity.id, retPeriod }));
+      if (res === undefined) return; // OTP dialog closed without connecting
       alert('E-Invoice sync completed successfully!');
       await loadInvoices();
     } catch (error) {
       console.error(error);
-      alert('Failed to sync E-Invoice. Please try again.');
+      alert(`Failed to sync E-Invoice: ${apiErrorMessage(error)}`);
     } finally {
       setIsSyncing(false);
     }
-  }, [currentEntity, retPeriod, loadInvoices]);
+  }, [currentEntity, retPeriod, loadInvoices, gstGate]);
 
   const MAIN_TABS = ['Import', 'List', 'Reconciliation'] as const;
   type MainTab = typeof MAIN_TABS[number];
@@ -142,6 +147,7 @@ export function EInvoicePage() {
       {activeMainTab === 'Reconciliation' && (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Reconciliation coming soon</div>
       )}
+      {gstGate.dialog}
     </div>
   );
 }

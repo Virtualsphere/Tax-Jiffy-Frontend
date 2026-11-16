@@ -649,23 +649,8 @@ export function GSTR1Page() {
     </div>
   );
 
-  /* Compute prefilled values for the modal */
+  /* GSTIN shown in the GST portal OTP dialog */
   const prefillGstin = currentEntity?.gstin && currentEntity.gstin !== 'N/A' ? currentEntity.gstin : '';
-  const prefillStateCd = prefillGstin.length >= 2 ? prefillGstin.substring(0, 2) : '';
-  const prefillRetPeriod = (() => {
-    const monthMap: Record<string, string> = {
-      January: '01', February: '02', March: '03', April: '04',
-      May: '05', June: '06', July: '07', August: '08',
-      September: '09', October: '10', November: '11', December: '12',
-    };
-    const mm = monthMap[selectedMonth] ?? '';
-    // selectedYear.label is like "2025-26"; for filing year we need the calendar year of the month
-    const fyStart = Number(selectedYear.label.split('-')[0]);
-    const calYear = ['January', 'February', 'March'].includes(selectedMonth)
-      ? fyStart + 1
-      : fyStart;
-    return mm ? `${mm}${calYear}` : '';
-  })();
 
   return (
     <div className={styles.page}>
@@ -677,12 +662,11 @@ export function GSTR1Page() {
       {step === 3 && renderSuccess()}
 
       {/* Submit Modal — rendered outside flow so it overlays everything */}
-      {submitModalOpen && upload.data?.filingId && (
+      {submitModalOpen && upload.data?.filingId && activeGstId && (
         <Gstr1SubmitModal
           filingId={upload.data.filingId}
-          prefillGstin={prefillGstin}
-          prefillRetPeriod={prefillRetPeriod}
-          prefillStateCd={prefillStateCd}
+          companyGstId={activeGstId}
+          gstin={prefillGstin}
           onSuccess={handleSubmitSuccess}
           onClose={() => setSubmitModalOpen(false)}
         />
